@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="school" default="all">
+  
+  
+  <property file="school.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/.pyc/**"/>
+    <exclude name="**/.pyo/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/*.lib/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/*.rbc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.zip"/>
+    <include name="*.apk"/>
+    <include name="*.war"/>
+    <include name="*.egg"/>
+    <include name="*.ear"/>
+    <include name="*.ane"/>
+    <include name="*.swc"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.android_api_20_platform" value="${jdk.home.android_api_20_platform}/../../../Program Files/Java/jdk1.8.0_05/bin"/>
+  <path id="jdk.classpath.android_api_20_platform">
+    <fileset dir="${jdk.home.android_api_20_platform}">
+      <include name="platforms/android-20/android.jar"/>
+      <include name="platforms/android-20/data/res"/>
+      <include name="tools/support/annotations.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="jre/lib/ext/access-bridge-64.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunmscapi.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.gdx-1.5.0.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx/1.5.0/e4272f711228f3cd214802949f18124e2eef1cbc/gdx-1.5.0.jar"/>
+  </path>
+  
+  <path id="library.gdx-backend-lwjgl-1.5.0.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-backend-lwjgl/1.5.0/29b646a3213ebb10f8824e2dadf08332f6c28d06/gdx-backend-lwjgl-1.5.0.jar"/>
+  </path>
+  
+  <path id="library.gdx-platform-1.5.0-natives-desktop.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-platform/1.5.0/857bcb8c34c679871154f7c10d6cc8cc3d159e3c/gdx-platform-1.5.0-natives-desktop.jar"/>
+  </path>
+  
+  <path id="library.jinput-2.0.5.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput/2.0.5/39c7796b469a600f72380316f6b1f11db6c2c7c4/jinput-2.0.5.jar"/>
+  </path>
+  
+  <path id="library.jinput-platform-2.0.5-natives-linux.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/7ff832a6eb9ab6a767f1ade2b548092d0fa64795/jinput-platform-2.0.5-natives-linux.jar"/>
+  </path>
+  
+  <path id="library.jinput-platform-2.0.5-natives-osx.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/53f9c919f34d2ca9de8c51fc4e1e8282029a9232/jinput-platform-2.0.5-natives-osx.jar"/>
+  </path>
+  
+  <path id="library.jinput-platform-2.0.5-natives-windows.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/385ee093e01f587f30ee1c8a2ee7d408fd732e16/jinput-platform-2.0.5-natives-windows.jar"/>
+  </path>
+  
+  <path id="library.jlayer-1.0.1-gdx.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/com.badlogicgames.jlayer/jlayer/1.0.1-gdx/7cca83cec5c1b2f011362f4d85aabd71a73b049d/jlayer-1.0.1-gdx.jar"/>
+  </path>
+  
+  <path id="library.jorbis-0.0.17.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.jcraft/jorbis/0.0.17/8872d22b293e8f5d7d56ff92be966e6dc28ebdc6/jorbis-0.0.17.jar"/>
+  </path>
+  
+  <path id="library.jutils-1.0.0.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/net.java.jutils/jutils/1.0.0/e12fe1fda814bd348c1579329c86943d2cd3c6a6/jutils-1.0.0.jar"/>
+  </path>
+  
+  <path id="library.lwjgl-2.9.1.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl/2.9.1/f58c5aabcef0e41718a564be9f8e412fff8db847/lwjgl-2.9.1.jar"/>
+  </path>
+  
+  <path id="library.lwjgl-platform-2.9.1-natives-linux.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.1/aa9aae879af8eb378e22cfc64db56ec2ca9a44d1/lwjgl-platform-2.9.1-natives-linux.jar"/>
+  </path>
+  
+  <path id="library.lwjgl-platform-2.9.1-natives-osx.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.1/2d12c83fdfbc04ecabf02c7bc8cc54d034f0daac/lwjgl-platform-2.9.1-natives-osx.jar"/>
+  </path>
+  
+  <path id="library.lwjgl-platform-2.9.1-natives-windows.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.1/4c517eca808522457dd95ee8fc1fbcdbb602efbe/lwjgl-platform-2.9.1-natives-windows.jar"/>
+  </path>
+  
+  <path id="library.lwjgl_util-2.9.1.classpath">
+    <pathelement location="${basedir}/../../../Users/user/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.1/290d7ba8a1bd9566f5ddf16ad06f09af5ec9b20e/lwjgl_util-2.9.1.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module android -->
+  
+  <dirname property="module.android.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.android" value="${jdk.home.android_api_20_platform}"/>
+  <property name="module.jdk.bin.android" value="${jdk.bin.android_api_20_platform}"/>
+  <property name="module.jdk.classpath.android" value="jdk.classpath.android_api_20_platform"/>
+  
+  <property name="compiler.args.android" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="android.output.dir" value="${module.android.basedir}/build/classes/production/android"/>
+  <property name="android.testoutput.dir" value="${module.android.basedir}/build/classes/test/android"/>
+  
+  <path id="android.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="android.module.production.classpath">
+    <path refid="${module.jdk.classpath.android}"/>
+  </path>
+  
+  <path id="android.runtime.production.module.classpath">
+    <pathelement location="${android.output.dir}"/>
+  </path>
+  
+  <path id="android.module.classpath">
+    <path refid="${module.jdk.classpath.android}"/>
+    <pathelement location="${android.output.dir}"/>
+  </path>
+  
+  <path id="android.runtime.module.classpath">
+    <pathelement location="${android.testoutput.dir}"/>
+    <pathelement location="${android.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.android">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.android">
+    <patternset refid="excluded.from.module.android"/>
+  </patternset>
+  
+  
+  <target name="compile.module.android" depends="compile.module.android.production,compile.module.android.tests" description="Compile module android"/>
+  
+  <target name="compile.module.android.production" depends="register.custom.compilers" description="Compile module android; production classes"/>
+  
+  <target name="compile.module.android.tests" depends="register.custom.compilers,compile.module.android.production" description="compile module android; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.android" description="cleanup module">
+    <delete dir="${android.output.dir}"/>
+    <delete dir="${android.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module core -->
+  
+  <dirname property="module.core.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.core" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.core" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.core" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.core" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="core.output.dir" value="${module.core.basedir}/core/build/classes/main"/>
+  <property name="core.testoutput.dir" value="${module.core.basedir}/core/build/classes/test"/>
+  
+  <path id="core.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="core.module.production.classpath">
+    <path refid="${module.jdk.classpath.core}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+  </path>
+  
+  <path id="core.runtime.production.module.classpath">
+    <pathelement location="${core.output.dir}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+  </path>
+  
+  <path id="core.module.classpath">
+    <path refid="${module.jdk.classpath.core}"/>
+    <pathelement location="${core.output.dir}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+  </path>
+  
+  <path id="core.runtime.module.classpath">
+    <pathelement location="${core.testoutput.dir}"/>
+    <pathelement location="${core.output.dir}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.core">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.core">
+    <patternset refid="excluded.from.module.core"/>
+  </patternset>
+  
+  <path id="core.module.sourcepath">
+    <dirset dir="${module.core.basedir}/core">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.core" depends="compile.module.core.production,compile.module.core.tests" description="Compile module core"/>
+  
+  <target name="compile.module.core.production" depends="register.custom.compilers" description="Compile module core; production classes">
+    <mkdir dir="${core.output.dir}"/>
+    <javac2 destdir="${core.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.core}/javac">
+      <compilerarg line="${compiler.args.core}"/>
+      <bootclasspath refid="core.module.bootclasspath"/>
+      <classpath refid="core.module.production.classpath"/>
+      <src refid="core.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.core"/>
+    </javac2>
+    
+    <copy todir="${core.output.dir}">
+      <fileset dir="${module.core.basedir}/core/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.core.tests" depends="register.custom.compilers,compile.module.core.production" description="compile module core; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.core" description="cleanup module">
+    <delete dir="${core.output.dir}"/>
+    <delete dir="${core.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module School -->
+  
+  <dirname property="module.school.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.school" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.school" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.school" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.school" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="school.output.dir" value="${module.school.basedir}/build/classes/production/School"/>
+  <property name="school.testoutput.dir" value="${module.school.basedir}/build/classes/test/School"/>
+  
+  <path id="school.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="school.module.production.classpath">
+    <path refid="${module.jdk.classpath.school}"/>
+  </path>
+  
+  <path id="school.runtime.production.module.classpath">
+    <pathelement location="${school.output.dir}"/>
+  </path>
+  
+  <path id="school.module.classpath">
+    <path refid="${module.jdk.classpath.school}"/>
+    <pathelement location="${school.output.dir}"/>
+  </path>
+  
+  <path id="school.runtime.module.classpath">
+    <pathelement location="${school.testoutput.dir}"/>
+    <pathelement location="${school.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.school">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.school">
+    <patternset refid="excluded.from.module.school"/>
+  </patternset>
+  
+  
+  <target name="compile.module.school" depends="compile.module.school.production,compile.module.school.tests" description="Compile module School"/>
+  
+  <target name="compile.module.school.production" depends="register.custom.compilers" description="Compile module School; production classes"/>
+  
+  <target name="compile.module.school.tests" depends="register.custom.compilers,compile.module.school.production" description="compile module School; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.school" description="cleanup module">
+    <delete dir="${school.output.dir}"/>
+    <delete dir="${school.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module desktop -->
+  
+  <dirname property="module.desktop.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.desktop" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.desktop" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.desktop" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.desktop" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="desktop.output.dir" value="${module.desktop.basedir}/desktop/build/classes/main"/>
+  <property name="desktop.testoutput.dir" value="${module.desktop.basedir}/desktop/build/classes/test"/>
+  
+  <path id="desktop.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="desktop.module.production.classpath">
+    <path refid="${module.jdk.classpath.desktop}"/>
+    <pathelement location="${core.output.dir}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+    <path refid="library.gdx-backend-lwjgl-1.5.0.classpath"/>
+    <path refid="library.gdx-platform-1.5.0-natives-desktop.classpath"/>
+    <path refid="library.lwjgl-2.9.1.classpath"/>
+    <path refid="library.lwjgl_util-2.9.1.classpath"/>
+    <path refid="library.jlayer-1.0.1-gdx.classpath"/>
+    <path refid="library.jorbis-0.0.17.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-windows.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-linux.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-osx.classpath"/>
+    <path refid="library.jinput-2.0.5.classpath"/>
+    <path refid="library.jutils-1.0.0.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-linux.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-windows.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-osx.classpath"/>
+  </path>
+  
+  <path id="desktop.runtime.production.module.classpath">
+    <pathelement location="${desktop.output.dir}"/>
+    <path refid="core.runtime.production.module.classpath"/>
+    <path refid="library.gdx-backend-lwjgl-1.5.0.classpath"/>
+    <path refid="library.gdx-platform-1.5.0-natives-desktop.classpath"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+    <path refid="library.lwjgl-2.9.1.classpath"/>
+    <path refid="library.lwjgl_util-2.9.1.classpath"/>
+    <path refid="library.jlayer-1.0.1-gdx.classpath"/>
+    <path refid="library.jorbis-0.0.17.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-windows.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-linux.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-osx.classpath"/>
+    <path refid="library.jinput-2.0.5.classpath"/>
+    <path refid="library.jutils-1.0.0.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-linux.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-windows.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-osx.classpath"/>
+  </path>
+  
+  <path id="desktop.module.classpath">
+    <path refid="${module.jdk.classpath.desktop}"/>
+    <pathelement location="${desktop.output.dir}"/>
+    <pathelement location="${core.testoutput.dir}"/>
+    <pathelement location="${core.output.dir}"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+    <path refid="library.gdx-backend-lwjgl-1.5.0.classpath"/>
+    <path refid="library.gdx-platform-1.5.0-natives-desktop.classpath"/>
+    <path refid="library.lwjgl-2.9.1.classpath"/>
+    <path refid="library.lwjgl_util-2.9.1.classpath"/>
+    <path refid="library.jlayer-1.0.1-gdx.classpath"/>
+    <path refid="library.jorbis-0.0.17.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-windows.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-linux.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-osx.classpath"/>
+    <path refid="library.jinput-2.0.5.classpath"/>
+    <path refid="library.jutils-1.0.0.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-linux.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-windows.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-osx.classpath"/>
+  </path>
+  
+  <path id="desktop.runtime.module.classpath">
+    <pathelement location="${desktop.testoutput.dir}"/>
+    <pathelement location="${desktop.output.dir}"/>
+    <path refid="core.runtime.module.classpath"/>
+    <path refid="library.gdx-backend-lwjgl-1.5.0.classpath"/>
+    <path refid="library.gdx-platform-1.5.0-natives-desktop.classpath"/>
+    <path refid="library.gdx-1.5.0.classpath"/>
+    <path refid="library.lwjgl-2.9.1.classpath"/>
+    <path refid="library.lwjgl_util-2.9.1.classpath"/>
+    <path refid="library.jlayer-1.0.1-gdx.classpath"/>
+    <path refid="library.jorbis-0.0.17.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-windows.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-linux.classpath"/>
+    <path refid="library.lwjgl-platform-2.9.1-natives-osx.classpath"/>
+    <path refid="library.jinput-2.0.5.classpath"/>
+    <path refid="library.jutils-1.0.0.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-linux.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-windows.classpath"/>
+    <path refid="library.jinput-platform-2.0.5-natives-osx.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.desktop">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.desktop">
+    <patternset refid="excluded.from.module.desktop"/>
+  </patternset>
+  
+  <path id="desktop.module.sourcepath">
+    <dirset dir="${module.desktop.basedir}/desktop">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.desktop" depends="compile.module.desktop.production,compile.module.desktop.tests" description="Compile module desktop"/>
+  
+  <target name="compile.module.desktop.production" depends="register.custom.compilers,compile.module.core" description="Compile module desktop; production classes">
+    <mkdir dir="${desktop.output.dir}"/>
+    <javac2 destdir="${desktop.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.desktop}/javac">
+      <compilerarg line="${compiler.args.desktop}"/>
+      <bootclasspath refid="desktop.module.bootclasspath"/>
+      <classpath refid="desktop.module.production.classpath"/>
+      <src refid="desktop.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.desktop"/>
+    </javac2>
+    
+    <copy todir="${desktop.output.dir}">
+      <fileset dir="${module.desktop.basedir}/desktop/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.desktop.tests" depends="register.custom.compilers,compile.module.desktop.production" description="compile module desktop; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.desktop" description="cleanup module">
+    <delete dir="${desktop.output.dir}"/>
+    <delete dir="${desktop.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.android, clean.module.core, clean.module.school, clean.module.desktop" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.android, compile.module.core, compile.module.school, compile.module.desktop" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>
