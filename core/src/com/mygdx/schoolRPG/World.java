@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * Created by user on 06.08.2014.
  */
 public class World {
-
+//LOL
     ArrayList<Area> areas;
     ArrayList<ArrayList<Integer>> areaIds;
     String folderPath, tlwPath;
