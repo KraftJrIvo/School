@@ -64,7 +64,7 @@ public class Entity {
 
     }*/
 
-    public Rectangle invalidate(Rectangle rect, Area area, float oldX, float oldY, boolean objectIsMovable, boolean objectIsPlayer) {
-        return rect;
+    public Rectangle invalidate(HittableEntity he, Area area, float oldX, float oldY) {
+        return he.getRect();
     }
 }

@@ -13,10 +13,11 @@ public class HittableEntity extends Entity {
     Rectangle hitBox;
     boolean movable;
     boolean leftSide, rightSide, downSide, upSide;
-    float oldX, oldY, floorHeight, graphicX, graphicY, oldY2;
+    float oldX, oldY, floorHeight, graphicX, graphicY, oldY2, deltaX=0, deltaY=0;
     float z = 0, zSpeed = 0;
     int pSpeed = 0;
     boolean falling;
+    boolean canUp = true, canDown = true, canLeft = true, canRight = true;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, texPath, x, y);
@@ -50,10 +51,15 @@ public class HittableEntity extends Entity {
     }
 
     @Override
-    public Rectangle invalidate(Rectangle rect, Area area, float oldX, float oldY, boolean objectIsMovable, boolean objectIsPlayer) {
+    public Rectangle invalidate(HittableEntity he, Area area, float oldX, float oldY) {
 
         boolean overlapX = false, overlapY = false;
         boolean platformMode = area.platformMode;
+       //he.deltaX = he.hitBox.x;
+        //he.deltaY = he.hitBox.y;
+        Rectangle rect = he.getRect();
+        Rectangle oldRect = new Rectangle(he.hitBox);
+        boolean objectIsPlayer = (he.getClass() == Player.class);
 
         if (rect.x+rect.width > hitBox.x+0.2f && rect.x < hitBox.x+hitBox.width-0.2f) {
             overlapX = true;
@@ -63,9 +69,12 @@ public class HittableEntity extends Entity {
             overlapY = true;
         }
 
+        float diffX=0, diffY=0;
         if (overlapX && overlapY && hitBox.overlaps(rect) && hitBox != rect) {
             oldY2 = hitBox.y;
-            if (!movable && !objectIsMovable) {
+            if (!movable && !he.movable) {
+                //he.deltaX = 0;
+                //he.deltaY = 0;
                 return rect;
             }
             Rectangle newHitBox = hitBox;
@@ -79,7 +88,7 @@ public class HittableEntity extends Entity {
             float center2X = rect.getX() + rect.getWidth()/2;
             float center2Y = rect.getY() + rect.getHeight()/2;
 
-            float diffX=0, diffY=0;
+
 
 
             if (rect.getX() > centerX && rect.getX() < centerX+hitBox.getWidth()/2) {
@@ -100,7 +109,7 @@ public class HittableEntity extends Entity {
                 }
             }
 
-            if (movable && objectIsMovable) {
+            if (movable && he.movable) {
                 if (diffX != 0 && diffY != 0) {
                     if (Math.abs(diffX) < Math.abs(diffY)) {
                         rect.x += diffX/2;
@@ -159,7 +168,7 @@ public class HittableEntity extends Entity {
                     hitBox.x -= diffX;
                     hitBox.y -= diffY;
                 }*/
-            } else if (objectIsMovable) {
+            } else if (he.movable) {
                 //System.out.println(diffX + " " + diffY + " " + rect.x + " " + (hitBox.x+hitBox.width));
                 if (diffX != 0 && diffY != 0) {
                     if (Math.abs(diffX) < Math.abs(diffY)) {
@@ -193,13 +202,18 @@ public class HittableEntity extends Entity {
 
             }
         }
+        x = hitBox.x;
+        y = hitBox.y;
+        he.deltaX += rect.x - oldRect.x;
+        he.deltaY += rect.y - oldRect.y;
+        if (this.getClass() == Player.class) {
+            System.out.println();
+        }
         //this.oldX = x;
         //this.oldY = y;
         /*if (platformMode && Math.abs(hitBox.y - oldY2) < 0.3f && pSpeed == 0) {
             hitBox.y = oldY2;
         }*/
-        x = hitBox.x;
-        y = hitBox.y;
         return rect;
     }
 
@@ -243,11 +257,21 @@ public class HittableEntity extends Entity {
             graphicX = x;
         }*/
 
+        if ((deltaX == 0 && deltaY == 0)) {
+            graphicX = Math.round(hitBox.x);
+            graphicY = Math.round(hitBox.y);
+        } else {
+            graphicX = hitBox.x;
+            graphicY = hitBox.y;
+        }
+        deltaX = 0;
+        deltaY = 0;
+
         super.initialiseIfNeeded();
         if (tex != null) {
-            batch.draw(tex, offsetX+hitBox.x+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - hitBox.y-floorHeight-z, tex.getWidth(), tex.getHeight());
+            batch.draw(tex, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z, tex.getWidth(), tex.getHeight());
         } else {
-            batch.draw(texDef, offsetX+hitBox.x+hitBox.getWidth()/2-texDef.getWidth()/2, offsetY - hitBox.y-floorHeight-z, texDef.getWidth(), texDef.getHeight());
+            batch.draw(texDef, offsetX+graphicX+hitBox.getWidth()/2-texDef.getWidth()/2, offsetY - graphicY-floorHeight-z, texDef.getWidth(), texDef.getHeight());
         }
     }
 }

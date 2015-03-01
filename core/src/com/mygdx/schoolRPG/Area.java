@@ -301,7 +301,7 @@ public class Area {
             if (!objects.get(z).falling) {
                 if (platformMode) {
                     //he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
-                    he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, he.oldY, true, isPlayer);
+                    he.hitBox = objects.get(z).invalidate(he, this, player.oldX, he.oldY);
                     //he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
                     if (he.hitBox.y < oldRect.y && he.pSpeed > 0) {
                         he.pSpeed=0;
@@ -309,7 +309,7 @@ public class Area {
                         he.pSpeed=1;
                     }
                 } else {
-                    he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
+                    he.hitBox = objects.get(z).invalidate(he, this, player.oldX, player.oldY);
                 }
             }
         }
@@ -325,15 +325,15 @@ public class Area {
                     boolean down = i > 0 && blocks.get(t).get(i-1) != 2/* && blocks.get(t).get(i-1) != 0*/;
                     tmp.setSides(left, right, down, up);
                     if (isPlayer) {
-                        he.hitBox = tmp.invalidate(he.hitBox, this, player.oldX, player.oldY, true, true);
+                        he.hitBox = tmp.invalidate(he, this, player.oldX, player.oldY);
                     } else {
                         if (!platformMode) {
-                            he.hitBox = tmp.invalidate(he.hitBox, this, player.oldX, he.oldY, true, false);
-                            he.hitBox = tmp.invalidate(he.hitBox, this, oldX, oldY, true, false);
+                            he.hitBox = tmp.invalidate(he, this, oldX, oldY);
+                            he.hitBox = tmp.invalidate(he, this, player.oldX, he.oldY);
                         } else {
-                            he.hitBox = tmp.invalidate(he.hitBox, this, player.oldX, he.oldY, true, false);
-                            he.hitBox = tmp.invalidate(he.hitBox, this, he.oldX, he.oldY, true, false);
-                            he.hitBox = tmp.invalidate(he.hitBox, this, oldX, oldY, true, false);
+                            he.hitBox = tmp.invalidate(he, this, player.oldX, he.oldY);
+                            he.hitBox = tmp.invalidate(he, this, he.oldX, he.oldY);
+                            he.hitBox = tmp.invalidate(he, this, oldX, oldY);
                         }
                     }
                     if (he.hitBox == player.hitBox && (he.hitBox.x != oldRect.x || he.hitBox.y != oldRect.y)) {
@@ -359,7 +359,10 @@ public class Area {
                 }
             }
         }
-
+        /*if ((he.hitBox.x == oldX && he.hitBox.y == oldY)) {
+            he.hitBox.x = Math.round(he.hitBox.x);
+            he.hitBox.y = Math.round(he.hitBox.y);
+        }*/
         return;
     }
 
