@@ -19,6 +19,7 @@ public class HittableEntity extends Entity {
     int pSpeed = 0;
     boolean falling;
     boolean canUp = true, canDown = true, canLeft = true, canRight = true;
+    float deadEndX=0, deadEndY=0;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, texPath, x, y);
@@ -61,7 +62,6 @@ public class HittableEntity extends Entity {
         Rectangle rect = he.getRect();
         Rectangle oldRect = new Rectangle(he.hitBox);
         boolean objectIsPlayer = (he.getClass() == Player.class);
-
         if (rect.x+rect.width > hitBox.x+0.2f && rect.x < hitBox.x+hitBox.width-0.2f) {
             overlapX = true;
         }
@@ -72,6 +72,16 @@ public class HittableEntity extends Entity {
 
         float diffX=0, diffY=0;
         if (overlapX && overlapY && hitBox.overlaps(rect) && hitBox != rect) {
+            if (deadEndX != hitBox.x) {
+                canDown = true;
+                canUp = true;
+                //deadEndY = 0;
+            }
+            if (deadEndY != hitBox.y) {
+                canLeft = true;
+                canRight = true;
+                //deadEndX = 0;
+            }
             oldY2 = hitBox.y;
             if (!movable && !he.movable) {
                 //he.deltaX = 0;
@@ -79,10 +89,6 @@ public class HittableEntity extends Entity {
                 return rect;
             }
             Rectangle newHitBox = hitBox;
-            boolean canUP = (newHitBox.getY() >= hitBox.getY());
-            boolean canDown = (newHitBox.getY() <= hitBox.getY());
-            boolean canLeft = (newHitBox.getX() <= hitBox.getX());
-            boolean canRight = (newHitBox.getX() >= hitBox.getX());
             hitBox = newHitBox;
             float centerX = hitBox.x + hitBox.width/2;
             float centerY = hitBox.y + hitBox.height/2;
@@ -110,23 +116,30 @@ public class HittableEntity extends Entity {
                 }
             }
 
-            if (movable && he.movable) {
+            boolean canMoveHor = ((diffX < 0 && canLeft) || (diffX > 0 && canRight)||diffX==0);
+            boolean canMoveVer = ((diffY < 0 && canDown) || (diffY > 0 && canUp)||diffY==0);
+
+            if (movable && he.movable && (canMoveHor || canMoveVer)) {
                 if (diffX != 0 && diffY != 0) {
-                    if (Math.abs(diffX) < Math.abs(diffY)) {
+                    if (Math.abs(diffX) < Math.abs(diffY) && canMoveHor) {
                         rect.x += diffX/2;
                         hitBox.x -= diffX/2;
-                    } else {
+                    } else if (canMoveVer) {
                         rect.y += diffY/2;
                         hitBox.y -= diffY/2;
 
                         //hitBox.x -= diffX/10;
                     }
                 } else {
-                    rect.x += diffX/2;
-                    hitBox.x -= diffX/2;
-                    rect.y += diffY/2;
-                    hitBox.y -= diffY/2;
-                    if (diffY != 0 && (downSide || upSide) && !platformMode){
+                    if (canMoveHor) {
+                        rect.x += diffX/2;
+                        hitBox.x -= diffX/2;
+                    }
+                    if (canMoveVer) {
+                        rect.y += diffY/2;
+                        hitBox.y -= diffY/2;
+                    }
+                    if (diffY != 0 && (downSide || upSide) && (platformMode || objectIsPlayer) && canMoveHor){
                         if (rightSide) {
                             if (centerX < center2X && hitBox.x + hitBox.width - rect.x < 8) {
                                 rect.x += (8 - (hitBox.x + hitBox.width - rect.x)) / 10;
@@ -143,7 +156,7 @@ public class HittableEntity extends Entity {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
                         }
-                    } else if (diffX != 0 && (leftSide || rightSide) && !platformMode) {
+                    } else if (diffX != 0 && (leftSide || rightSide) && (!platformMode || !objectIsPlayer) && canMoveVer) {
                         if (upSide) {
                             if (centerY < center2Y && hitBox.y+hitBox.height-rect.y < 5) {
                                 rect.y += (5-(hitBox.y+hitBox.height-rect.y)) / 10;
@@ -169,26 +182,31 @@ public class HittableEntity extends Entity {
                     hitBox.x -= diffX;
                     hitBox.y -= diffY;
                 }*/
-            } else if (he.movable) {
+            }
+            if (he.movable && (!movable || (!canMoveHor || !canMoveVer))) {
                 //System.out.println(diffX + " " + diffY + " " + rect.x + " " + (hitBox.x+hitBox.width));
+                canMoveHor = !(!movable || !canMoveHor);
+                canMoveVer = !(!movable || !canMoveVer);
                 if (diffX != 0 && diffY != 0) {
-                    if (Math.abs(diffX) < Math.abs(diffY)) {
+                    if (Math.abs(diffX) < Math.abs(diffY) && !canMoveHor) {
                         rect.x += diffX;
-                    } else {
+                    } else if (!canMoveVer) {
                         rect.y += diffY;
                     }
                 } else {
-                    rect.x += diffX;
-                    rect.y += diffY;
+                    if (!canMoveHor) rect.x += diffX;
+                    if (!canMoveVer) rect.y += diffY;
                     //if (objectIsPlayer) {
-                    if (!platformMode) {
-                        if (diffY != 0 && (downSide || upSide)){
+                    if (!platformMode || !objectIsPlayer) {
+                        if (diffY != 0 && (downSide || upSide) && !canMoveHor){
                             if (rightSide && centerX < center2X && hitBox.x + hitBox.width - rect.x < 8) {
-                                rect.x += (8 - (hitBox.x + hitBox.width - rect.x)) / 5;
+                                if (rect.x + (8 - (hitBox.x + hitBox.width - rect.x)) / 5 < hitBox.x+hitBox.width) rect.x += (8 - (hitBox.x + hitBox.width - rect.x)) / 5;
+                                else rect.x = hitBox.x + hitBox.width;
                             } else if (leftSide && centerX > center2X && rect.x + rect.width - hitBox.x < 8) {
-                                rect.x -= (8 - (rect.x + rect.width - hitBox.x)) / 5;
+                                if (rect.x - (8 - (rect.x + rect.width - hitBox.x)) / 5 + rect.width > hitBox.x) rect.x -= (8 - (rect.x + rect.width - hitBox.x)) / 5;
+                                else rect.x = hitBox.x - rect.width;
                             }
-                        } else if (diffX != 0 && (leftSide || rightSide)) {
+                        } else if (diffX != 0 && (leftSide || rightSide) && !canMoveVer) {
                             if (upSide && centerY < center2Y && hitBox.y+hitBox.height-rect.y < 5) {
                                 rect.y += (5-(hitBox.y+hitBox.height-rect.y)) / 5;
                             } else if (downSide && centerY > center2Y && rect.y+rect.height-hitBox.y < 5) {
@@ -198,12 +216,24 @@ public class HittableEntity extends Entity {
                     }
                     //}
                 }
+                if (diffX > 0) {
+                    he.canLeft = false;
+                    he.deadEndY = rect.y;
+                }
+                else if (diffX < 0) {
+                    he.canRight = false;
+                    he.deadEndY = rect.y;
+                }
+                if (diffY > 0) {
+                    he.canUp = false;
+                    he.deadEndX = rect.x;
+                }
+                else if (diffY < 0) {
+                    he.canDown = false;
+                    he.deadEndX = rect.x;
+                }
             }
-            if (/*objectIsMovable && */(diffX == 0 || diffY == 0)) {
 
-            }
-//            he.deltaX += rect.x - oldRect.x;
-//            he.deltaY += rect.y - oldRect.y;
             he.deltaX = deltaX || (rect.x - oldRect.x) != 0;
             he.deltaY = deltaY || (rect.y - oldRect.y) != 0;
             if (he.deltaX != false) {
