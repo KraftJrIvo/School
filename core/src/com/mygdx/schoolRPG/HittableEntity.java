@@ -13,7 +13,8 @@ public class HittableEntity extends Entity {
     Rectangle hitBox;
     boolean movable;
     boolean leftSide, rightSide, downSide, upSide;
-    float oldX, oldY, floorHeight, graphicX, graphicY, oldY2, deltaX=0, deltaY=0;
+    float oldX, oldY, floorHeight, graphicX, graphicY, oldY2;
+    boolean deltaX=false, deltaY=false;
     float z = 0, zSpeed = 0;
     int pSpeed = 0;
     boolean falling;
@@ -201,14 +202,16 @@ public class HittableEntity extends Entity {
             if (/*objectIsMovable && */(diffX == 0 || diffY == 0)) {
 
             }
+//            he.deltaX += rect.x - oldRect.x;
+//            he.deltaY += rect.y - oldRect.y;
+            he.deltaX = deltaX || (rect.x - oldRect.x) != 0;
+            he.deltaY = deltaY || (rect.y - oldRect.y) != 0;
+            if (he.deltaX != false) {
+                System.out.println();
+            }
         }
         x = hitBox.x;
         y = hitBox.y;
-        he.deltaX += rect.x - oldRect.x;
-        he.deltaY += rect.y - oldRect.y;
-        if (this.getClass() == Player.class) {
-            System.out.println();
-        }
         //this.oldX = x;
         //this.oldY = y;
         /*if (platformMode && Math.abs(hitBox.y - oldY2) < 0.3f && pSpeed == 0) {
@@ -257,15 +260,18 @@ public class HittableEntity extends Entity {
             graphicX = x;
         }*/
 
-        if ((deltaX == 0 && deltaY == 0)) {
+        if (deltaX == false) {
             graphicX = Math.round(hitBox.x);
-            graphicY = Math.round(hitBox.y);
         } else {
             graphicX = hitBox.x;
+        }
+        if (deltaY == false) {
+            graphicY = Math.round(hitBox.y);
+        } else {
             graphicY = hitBox.y;
         }
-        deltaX = 0;
-        deltaY = 0;
+        deltaX = false;
+        deltaY = false;
 
         super.initialiseIfNeeded();
         if (tex != null) {
