@@ -53,7 +53,7 @@ public class HittableEntity extends Entity {
     }
 
     @Override
-    public Rectangle invalidate(HittableEntity he, Area area, float oldX, float oldY) {
+    public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
 
         boolean overlapX = false, overlapY = false;
         boolean platformMode = area.platformMode;
@@ -139,7 +139,7 @@ public class HittableEntity extends Entity {
                         rect.y += diffY/2;
                         hitBox.y -= diffY/2;
                     }
-                    if (diffY != 0 && (downSide || upSide) && (platformMode || objectIsPlayer) && canMoveHor){
+                    if (diffY != 0 && (downSide || upSide) && ((platformMode && !objectIsPlayer) || (!platformMode && objectIsPlayer)) && canMoveHor){
                         if (rightSide) {
                             if (centerX < center2X && hitBox.x + hitBox.width - rect.x < 8) {
                                 rect.x += (8 - (hitBox.x + hitBox.width - rect.x)) / 10;
@@ -156,7 +156,7 @@ public class HittableEntity extends Entity {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
                         }
-                    } else if (diffX != 0 && (leftSide || rightSide) && (!platformMode || !objectIsPlayer) && canMoveVer) {
+                    } else if (diffX != 0 && (leftSide || rightSide) && ((platformMode && !objectIsPlayer) || !objectIsPlayer) && canMoveVer) {
                         if (upSide) {
                             if (centerY < center2Y && hitBox.y+hitBox.height-rect.y < 5) {
                                 rect.y += (5-(hitBox.y+hitBox.height-rect.y)) / 10;

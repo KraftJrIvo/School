@@ -4,9 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -243,7 +241,13 @@ public class World {
         }*/
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY) {
+    public void invalidate() {
+        if (areaTransitionX == 0 && areaTransitionY == 0) {
+            areas.get(areaIds.get(curAreaX).get(curAreaY)).invalidate();
+        }
+    }
+
+    public void draw(SpriteBatch batch) {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY) && areas.get(areaIds.get(curAreaX).get(curAreaY)) != null) {
                 areas.get(areaIds.get(curAreaX).get(curAreaY)).draw(batch, 0, 0, true);

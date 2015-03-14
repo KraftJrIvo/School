@@ -99,14 +99,19 @@ public class GameMenu extends Menu {
         if (!worlds.get(curWorld).initialised) {
             initialised = false;
         }
+        else {
+            worlds.get(curWorld).invalidate();
+        }
     }
 
     @Override
     public void draw(SpriteBatch batch, ShapeRenderer renderer) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        worlds.get(curWorld).draw(batch, 0, 0);
+        //if (worlds.get(curWorld).initialised) {
+            worlds.get(curWorld).draw(batch);
+        //}
         batch.end();
         if (android) {
             leftGameJoy.draw(batch, renderer, 1.0f);

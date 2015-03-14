@@ -64,7 +64,7 @@ public class Entity {
 
     }*/
 
-    public Rectangle invalidate(HittableEntity he, Area area, float oldX, float oldY) {
+    public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
         return he.getRect();
     }
 }

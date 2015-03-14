@@ -11,14 +11,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.zip.ZipFile;
 
 /**
  * Created by user on 06.08.2014.
@@ -56,9 +51,11 @@ public class Area {
             playerWidth = 8;
             playerHeight = 15;
         } else {
-            playerWidth = 26;
-            playerHeight = 12;
-            playerFloor = FLOOR_HEIGHT/4+1;
+            //playerWidth = 26;
+            //playerHeight = 12;
+            playerWidth = 16;
+            playerHeight = 5;
+            playerFloor = FLOOR_HEIGHT;
         }
 
         //this.id = id;
@@ -284,7 +281,7 @@ public class Area {
         }
     }
 
-    public void invalidate(HittableEntity he, float oldX, float oldY) {
+    public void invalidateCollisions(HittableEntity he, float oldX, float oldY) {
         boolean isPlayer = false;
         if (he.getClass() == Player.class) isPlayer = true;
 
@@ -300,16 +297,16 @@ public class Area {
         for (int z=0; z<objects.size(); ++z) {
             if (!objects.get(z).falling) {
                 if (platformMode) {
-                    //he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
-                    he.hitBox = objects.get(z).invalidate(he, this, player.oldX, he.oldY);
-                    //he.hitBox = objects.get(z).invalidate(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
+                    //he.hitBox = objects.get(z).invalidateCollisions(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
+                    he.hitBox = objects.get(z).pushOutSolidObjects(he, this, player.oldX, he.oldY);
+                    //he.hitBox = objects.get(z).invalidateCollisions(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
                     if (he.hitBox.y < oldRect.y && he.pSpeed > 0) {
                         he.pSpeed=0;
                     } else if (he.hitBox.y > oldRect.y && he.pSpeed < 0) {
                         he.pSpeed=1;
                     }
                 } else {
-                    he.hitBox = objects.get(z).invalidate(he, this, player.oldX, player.oldY);
+                    he.hitBox = objects.get(z).pushOutSolidObjects(he, this, player.oldX, player.oldY);
                 }
             }
         }
@@ -325,15 +322,15 @@ public class Area {
                     boolean down = i > 0 && blocks.get(t).get(i-1) != 2/* && blocks.get(t).get(i-1) != 0*/;
                     tmp.setSides(left, right, down, up);
                     if (isPlayer) {
-                        he.hitBox = tmp.invalidate(he, this, player.oldX, player.oldY);
+                        he.hitBox = tmp.pushOutSolidObjects(he, this, player.oldX, player.oldY);
                     } else {
                         if (!platformMode) {
-                            he.hitBox = tmp.invalidate(he, this, oldX, oldY);
-                            he.hitBox = tmp.invalidate(he, this, player.oldX, he.oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he, this, oldX, oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he, this, player.oldX, he.oldY);
                         } else {
-                            he.hitBox = tmp.invalidate(he, this, player.oldX, he.oldY);
-                            he.hitBox = tmp.invalidate(he, this, he.oldX, he.oldY);
-                            he.hitBox = tmp.invalidate(he, this, oldX, oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he, this, player.oldX, he.oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he, this, he.oldX, he.oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he, this, oldX, oldY);
                         }
                     }
                     if (he.hitBox == player.hitBox && (he.hitBox.x != oldRect.x || he.hitBox.y != oldRect.y)) {
@@ -411,8 +408,68 @@ public class Area {
         }
     }
 
+    public void invalidate() {
+        if (player.z < 0.5f) {
+            if (!platformMode) {
+                player.move();
+            } else {
+                player.platformMove();
+            }
+        }
+
+        for (int i=0; i<objects.size(); ++i) {
+            if (!platformMode) {
+                objects.get(i).fall();
+            } else if (objects.get(i).getClass()!=Player.class) {
+                objects.get(i).platformFall();
+                objects.get(i).platformFall();
+            }
+            float old = objects.get(i).hitBox.y;
+            if (objects.get(i).movable && objects.get(i).getClass()!=Player.class && !objects.get(i).falling) {
+                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            }
+            if (objects.get(i).hitBox.y < old) {
+                objects.get(i).pSpeed = 0;
+            }
+        }
+
+        if (!platformMode) {
+            player.fall();
+        } else {
+            player.platformFall();
+            player.platformFall();
+        }
+
+        invalidateCollisions(player, player.oldX, player.oldY);
+        playerTileX = (int)(player.hitBox.x/(TILE_WIDTH))+1;
+        playerTileY = (int)((player.hitBox.y)/(TILE_HEIGHT))+1;
+
+        for (int i=0; i<objects.size(); ++i) {
+            if (objects.get(i).movable && objects.get(i).getClass() != Player.class && !objects.get(i).falling) {
+                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            }
+        }
+
+        for (int i=objects.size()-1; i>=0; --i) {
+            if (objects.get(i).movable && (objects.get(i).getClass()!=Player.class || platformMode) && !objects.get(i).falling) {
+                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            }
+            if (!platformMode) {
+                checkFall(objects.get(i));
+                if (objects.get(i).z > cameraY + Gdx.graphics.getHeight()) {
+                    if (objects.get(i).getClass() != Player.class) {
+                        objects.remove(i);
+                    } else {
+                        respawnPlayer(null, 0, 0, 0, 0);
+                    }
+                }
+            }
+        }
+
+
+   }
+
     public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean drawPlayer) {
-        //camera.s
         if (Gdx.input.isKeyJustPressed(Input.Keys.PLUS) && zoom < 5) zoom += 1;
         else if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS) && zoom > 1) zoom -= 1;
         Matrix4 transform = new Matrix4();
@@ -428,65 +485,7 @@ public class Area {
         batch.setTransformMatrix(transform.mul(translate));
 
         moveCamera(5);
-        if (offsetX == 0 && offsetY == 0) {
-            if (player.z < 0.5f) {
-                if (!platformMode) {
-                    player.move();
-                } else {
-                    player.platformMove();
-                }
-            }
 
-            for (int i=0; i<objects.size(); ++i) {
-                if (!platformMode) {
-                    objects.get(i).fall();
-                } else if (objects.get(i).getClass()!=Player.class) {
-                    objects.get(i).platformFall();
-                    objects.get(i).platformFall();
-                }
-                float old = objects.get(i).hitBox.y;
-                if (objects.get(i).movable && objects.get(i).getClass()!=Player.class && !objects.get(i).falling) {
-                    invalidate(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
-                }
-                if (objects.get(i).hitBox.y < old) {
-                    objects.get(i).pSpeed = 0;
-                }
-            }
-
-            if (!platformMode) {
-                player.fall();
-            } else {
-                player.platformFall();
-                player.platformFall();
-            }
-
-            invalidate(player, player.oldX, player.oldY);
-            playerTileX = (int)(player.hitBox.x/(TILE_WIDTH))+1;
-            playerTileY = (int)((player.hitBox.y)/(TILE_HEIGHT))+1;
-
-            for (int i=0; i<objects.size(); ++i) {
-                if (objects.get(i).movable && objects.get(i).getClass() != Player.class && !objects.get(i).falling) {
-                    invalidate(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
-                }
-            }
-
-            for (int i=objects.size()-1; i>=0; --i) {
-                if (objects.get(i).movable && (objects.get(i).getClass()!=Player.class || platformMode) && !objects.get(i).falling) {
-                    invalidate(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
-                }
-                if (!platformMode) {
-                    checkFall(objects.get(i));
-                    if (objects.get(i).z > cameraY + Gdx.graphics.getHeight()) {
-                        if (objects.get(i).getClass() != Player.class) {
-                            objects.remove(i);
-                        } else {
-                            respawnPlayer(null, 0, 0, 0, 0);
-                        }
-                    }
-                }
-            }
-
-        }
         offsetX += -cameraX + Gdx.graphics.getWidth()/2;
         offsetY += cameraY + Gdx.graphics.getHeight()/2;
 
@@ -501,7 +500,11 @@ public class Area {
                             boolean down = i==height-1 || blocks.get(t).get(i+1)!=0;
                             boolean left = t==0 || blocks.get(t-1).get(i)!=0;
                             boolean right = t==width-1 || blocks.get(t+1).get(i)!=0;
-                            batch.draw(white.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, white.getWidth(), white.getHeight());
+                             try {
+                                batch.draw(white.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, white.getWidth(), white.getHeight());
+                            } catch (Exception e) {
+                                System.out.println();
+                            }
                         }
 
                     }
@@ -510,7 +513,11 @@ public class Area {
                         boolean down = i==height || blocks.get(t).get(i)==2;
                         boolean left = t==0 || blocks.get(t-1).get(i - 1)==2;
                         boolean right = t==width-1 || blocks.get(t+1).get(i - 1)==2;
+                        try {
                         batch.draw(black.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - (i - 1) * TILE_HEIGHT + 4, black.getWidth(), black.getHeight());
+                        } catch (Exception e) {
+                            System.out.println();
+                        }
                     }
 
                 }
@@ -580,7 +587,11 @@ public class Area {
                             boolean down = i==height || blocks.get(t).get(i)==2;
                             boolean left = t==0 || blocks.get(t-1).get(i - 1)==2;
                             boolean right = t==width-1 || blocks.get(t+1).get(i - 1)==2;
+                            try {
                             batch.draw(black.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - (i - 1) * TILE_HEIGHT + 4, black.getWidth(), black.getHeight());
+                            } catch (Exception e) {
+                                System.out.println();
+                            }
                         }
                     //}
                 }
