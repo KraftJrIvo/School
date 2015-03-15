@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.schoolRPG.tools.CharacterDirectionChecker;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.JoyStick;
 import com.mygdx.schoolRPG.tools.MultiTile;
@@ -23,6 +24,7 @@ public class Player extends HittableEntity {
     TextureRegion curPose;
     int jumpTicks = 15;
     boolean jumping = false, setToJump = false;
+    boolean lastRight, lastDown;
 
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, null, x, y, width, height, floorHeight, movable);
@@ -58,9 +60,14 @@ public class Player extends HittableEntity {
         }
         oldX = hitBox.x;
         oldY = hitBox.y;
+        float textX = hitBox.x;
+        float textY = hitBox.y;
         hitBox.x += (float)speedX/10.0f;
         hitBox.y -= (float)speedY/10.0f;
-
+        if (hitBox.x-textX > 0) lastRight = true;
+        else if (hitBox.x-textX < 0) lastRight = false;
+        if (hitBox.y-textY > 0) lastDown = true;
+        else if (hitBox.y-textY < 0) lastDown = false;
     }
 
 
@@ -184,6 +191,42 @@ public class Player extends HittableEntity {
         if ((Math.abs(hitBox.y-oldY)>0.5f || Math.abs(speedY) > 1)) {
             graphicY = y;
         }
-        characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width/2, offsetY - graphicY + floorHeight - z, Math.abs(speedX/10), Math.abs(speedY/10));
+        characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width/2, offsetY - graphicY - hitBox.height/2 + floorHeight - z, Math.abs(speedX/10), Math.abs(speedY / 10));
+        if (characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.up || characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.down) {
+            if (hitBox.width == 8) {
+                hitBox.x -= 4;
+                if (lastRight) {
+                    speedX = 4;
+                } else {
+                    speedX = -4;
+                }
+                hitBox.width = 16;
+                graphicX = hitBox.x;
+            }
+
+            if (hitBox.height == 9) {
+                hitBox.height = 5;
+                hitBox.y += 2;
+                graphicY = hitBox.y;
+            }
+        } else {
+            if (hitBox.width == 16) {
+                hitBox.x += 4;
+                //floorHeight -= 2;
+                hitBox.width = 8;
+                graphicX = hitBox.x;
+            }
+            if (hitBox.height == 5) {
+                hitBox.height = 9;
+                hitBox.y -= 2;
+                if (lastDown) {
+                    speedY = -3;
+                } else {
+                    speedY = 3;
+                }
+                graphicY = hitBox.y;
+            }
+        }
+        System.out.println(hitBox.x);
     }
 }

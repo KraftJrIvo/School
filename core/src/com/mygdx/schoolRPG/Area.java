@@ -53,7 +53,7 @@ public class Area {
             playerWidth = 8;
             playerHeight = 15;
         } else {
-            //playerWidth = 26;
+            //playerWidth = 16;
             //playerHeight = 12;
             playerWidth = 16;
             playerHeight = 5;
@@ -82,7 +82,7 @@ public class Area {
                             objects.add(new HittableEntity(assets, world.folderPath+"/sprites/red.png", i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT)-1, TILE_WIDTH, TILE_HEIGHT, FLOOR_HEIGHT/4+1, true));
                             blocks.get(i).add(1);
                         } else if (curPixelColor.equals(Color.BLUE)) {
-                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/blue.png", i*TILE_WIDTH+TILE_WIDTH/2-2.5f, (t * TILE_HEIGHT), 5, 4, -TILE_HEIGHT/2, false));
+                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/blue.png", i*TILE_WIDTH+TILE_WIDTH/2-3.5f, (t * TILE_HEIGHT), 6, 4, -TILE_HEIGHT/2, false));
                             blocks.get(i).add(1);
                         } else if (curPixelColor.equals(Color.YELLOW)) {
                             objects.add(new HittableEntity(assets, world.folderPath+"/sprites/yellow.png", i*TILE_WIDTH+TILE_WIDTH/4, (t* TILE_HEIGHT-FLOOR_HEIGHT), TILE_WIDTH/2, TILE_HEIGHT/1.6f, -FLOOR_HEIGHT/2+1, true));

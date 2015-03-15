@@ -139,9 +139,9 @@ public class HittableEntity extends Entity {
                         rect.y += diffY/2;
                         hitBox.y -= diffY/2;
                     }
-                    if (diffY != 0 && (downSide || upSide) && ((platformMode && !objectIsPlayer) || (!platformMode && objectIsPlayer)) && canMoveHor){
+                    if (diffY != 0 && (downSide || upSide) && ((platformMode && !objectIsPlayer) || !platformMode) && canMoveHor){
                         if (rightSide) {
-                            if (centerX < center2X && hitBox.x + hitBox.width - rect.x < 8) {
+                            if (centerX < center2X && hitBox.x + hitBox.width - rect.x < 8 && he.canRight) {
                                 rect.x += (8 - (hitBox.x + hitBox.width - rect.x)) / 10;
                                 hitBox.x -= (8 - (hitBox.x + hitBox.width - rect.x)) / 10;
                             } else if (oldX != rect.x && objectIsPlayer) {
@@ -149,14 +149,14 @@ public class HittableEntity extends Entity {
                             }
                         }
                         if (leftSide) {
-                            if (centerX > center2X && rect.x + rect.width - hitBox.x < 8) {
+                            if (centerX > center2X && rect.x + rect.width - hitBox.x < 8 && he.canLeft) {
                                 rect.x -= (8 - (rect.x + rect.width - hitBox.x)) / 10;
                                 hitBox.x += (8 - (rect.x + rect.width - hitBox.x)) / 10;
                             }else if (oldX != rect.x && objectIsPlayer) {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
                         }
-                    } else if (diffX != 0 && (leftSide || rightSide) && ((platformMode && !objectIsPlayer) || !objectIsPlayer) && canMoveVer) {
+                    } else if (diffX != 0 && (leftSide || rightSide) && ((platformMode && !objectIsPlayer) || !platformMode) && canMoveVer) {
                         if (upSide) {
                             if (centerY < center2Y && hitBox.y+hitBox.height-rect.y < 5) {
                                 rect.y += (5-(hitBox.y+hitBox.height-rect.y)) / 10;

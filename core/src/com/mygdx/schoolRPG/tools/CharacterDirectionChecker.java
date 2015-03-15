@@ -7,7 +7,7 @@ import com.badlogic.gdx.Input;
  * Created by Kraft on 15.03.2015.
  */
 public class CharacterDirectionChecker {
-    enum LookDirection {none, left, right, up, down}
+    public enum LookDirection {none, left, right, up, down}
     enum WalkDirection {none, left, right, up, down, left_back, right_back, up_back, down_back}
     public LookDirection lookDir = LookDirection.none;
     public WalkDirection walkDir = WalkDirection.none;

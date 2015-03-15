@@ -25,7 +25,7 @@ public class CharacterMaker {
     ArrayList<GlobalSequence> bodies, heads;
     Texture legs_stand_front, legs_stand_side, arms_front, arms_side;
     TextureRegion arms_front_reversed, arms_side_reversed, legs_stand_side_reversed;
-    CharacterDirectionChecker cdc;
+    public CharacterDirectionChecker cdc;
     int legsHeight = 10;
     int bodyHeight = 16;
     int armsLevel = 6;
