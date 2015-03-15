@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class World {
     String name;
     boolean platformMode = false;
     int width, height, areaWidth, areaHeight, tileWidth, tileHeight, playerWidth, playerHeight;
+    CharacterMaker characterMaker;
 
 
     public World(String folderPath, int w, int h, int startingAreaX, int startingAreaY) {
@@ -107,6 +109,7 @@ public class World {
     }
 
     public void load(AssetManager assets) {
+        characterMaker = new CharacterMaker(assets);
         if (tlw == null) {
             worldDir = Gdx.files.internal(folderPath);
             int curX,curY;
@@ -142,6 +145,7 @@ public class World {
     }
 
     public void initialiseResources(AssetManager assets) {
+        characterMaker.initialiseResources(assets);
         if (!initialised && !areasCreated) {
             for (FileHandle entry: worldDir.list()) {
                 if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
@@ -250,7 +254,7 @@ public class World {
     public void draw(SpriteBatch batch) {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY) && areas.get(areaIds.get(curAreaX).get(curAreaY)) != null) {
-                areas.get(areaIds.get(curAreaX).get(curAreaY)).draw(batch, 0, 0, true);
+                areas.get(areaIds.get(curAreaX).get(curAreaY)).draw(batch, 0, 0, true, characterMaker);
                 checkPlayerPosition();
             }
         } else {
@@ -265,20 +269,20 @@ public class World {
             if (oldAreaY == curAreaY) {
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY)).cameraY;
                 if (oldAreaX < curAreaX) {
-                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(areaTransitionX), 0, true);
-                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false);
+                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(areaTransitionX), 0, true, characterMaker);
+                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, characterMaker);
                 } else {
-                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(1.0f-areaTransitionX)+1, 0, false);
-                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-areaTransitionX), 0, true);
+                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(1.0f-areaTransitionX)+1, 0, false, characterMaker);
+                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-areaTransitionX), 0, true, characterMaker);
                 }
             } else {
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY)).cameraX;
                 if (oldAreaY < curAreaY) {
-                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true);
-                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-1.0f+areaTransitionY)-4, false);
+                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, characterMaker);
+                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-1.0f+areaTransitionY)-4, false, characterMaker);
                 } else {
-                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(1.0f-areaTransitionY)+4/* + area1.FLOOR_HEIGHT+2*/, false);
-                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-areaTransitionY), true);
+                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(1.0f-areaTransitionY)+4/* + area1.FLOOR_HEIGHT+2*/, false, characterMaker);
+                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-areaTransitionY), true, characterMaker);
                 }
             }
             areaTransitionX /= 1.1f;

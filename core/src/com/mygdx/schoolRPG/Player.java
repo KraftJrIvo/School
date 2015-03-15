@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.JoyStick;
 import com.mygdx.schoolRPG.tools.MultiTile;
 
@@ -38,22 +39,22 @@ public class Player extends HittableEntity {
 
     public void move() {
         if (!falling) {
-            if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) speedX -= 2;
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) speedX -= 2;
             else if (speedX < 0) speedX += 2;
-            if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) speedX += 2f;
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) speedX += 2;
             else if (speedX > 0) speedX -= 2;
-            if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) speedY += 1;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) speedY += 1;
             else if (speedY > 0) speedY -= 1;
-            if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) speedY -= 1;
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) speedY -= 1;
             else if (speedY < 0) speedY += 1;
         }
-        if (Math.abs(speedX) > 20) {
-            if (speedX < 0) speedX = -20;
-            else  speedX = 20;
+        if (Math.abs(speedX) > 16) {
+            if (speedX < 0) speedX = -16;
+            else  speedX = 16;
         }
-        if (Math.abs(speedY) > 14) {
-            if (speedY < 0) speedY = -14;
-            else speedY = 14;
+        if (Math.abs(speedY) > 10) {
+            if (speedY < 0) speedY = -10;
+            else speedY = 10;
         }
         oldX = hitBox.x;
         oldY = hitBox.y;
@@ -138,23 +139,23 @@ public class Player extends HittableEntity {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 setToJump = true;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W) && !jumping) {
+            if (Gdx.input.isKeyPressed(Input.Keys.W) && !jumping) {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.BACK);
                 setToJump = false;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S) && !jumping)  {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.S) && !jumping)  {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 setToJump = false;
             } else {
                 graphicY = y;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_LEFT);
                 } else {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.LEFT);
                     setToJump = false;
                 }
-            } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_RIGHT);
                 } else {
@@ -171,5 +172,18 @@ public class Player extends HittableEntity {
                 batch.draw(curPose, offsetX + graphicX , offsetY - graphicY + floorHeight - z, curPose.getRegionWidth(), curPose.getRegionHeight());
             }
         }
+    }
+
+    public void draw(SpriteBatch batch, CharacterMaker characterMaker, float offsetX, float offsetY, int tileWidth, int tileHeight) {
+        super.initialiseIfNeeded();
+        x = hitBox.x;
+        y = hitBox.y;
+        if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
+            graphicX = x;
+        }
+        if ((Math.abs(hitBox.y-oldY)>0.5f || Math.abs(speedY) > 1)) {
+            graphicY = y;
+        }
+        characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width/2, offsetY - graphicY + floorHeight - z, Math.abs(speedX/10), Math.abs(speedY/10));
     }
 }

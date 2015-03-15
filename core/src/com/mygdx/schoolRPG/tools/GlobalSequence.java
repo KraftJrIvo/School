@@ -5,16 +5,19 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class GlobalSequence {
 	String sName;
-	ThreadTexture[] bImages = null;
+    Texture texture;
+	TextureRegion[] bImages = null;
 	
-	public GlobalSequence(String sName) {
+	public GlobalSequence(AssetManager assets, String sName) {
 		this.sName = sName;
-		importSequence(sName);
+		importSequence(assets, sName);
 	}
 	
 	public int getLength() {
@@ -38,45 +41,32 @@ public class GlobalSequence {
 		return bImages[0].getTexture().getHeight();
 	}
 	
-	public Texture getFrame(int i) {
+	public TextureRegion getFrame(int i) {
 		if (bImages == null) {
 			return null;
 		}
 		if (i < 0 || i >= bImages.length) {
 			return null;
 		}
-		return bImages[i].getTexture();
+		return bImages[i];
 	}
 	
 	public String getName() {
 		return sName;
 	}
 
-	public void setSequence() {
-		for (ThreadTexture t:bImages) {
+	/*public void setSequence() {
+		for (TextureRegion t:bImages) {
 			t.setTexture();
 		}
-	}
+	}*/
 	
-	private void importSequence (String sName) {
-        FileHandle f = Gdx.files.internal("data/" + sName);
-		if (!f.exists() || !f.isDirectory()) {
-			return;
-		}
-		TreeMap<String, FileHandle> tm = new TreeMap<String, FileHandle>();
-		for (FileHandle file : f.list()) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			tm.put(file.name(), file);
-		}
-		Iterator<String> i = tm.keySet().iterator();
-		bImages = new ThreadTexture[tm.size()];
-		int c = 0;
-		while (i.hasNext()) {
-				String key = i.next();
-				FileHandle file = tm.get(key);
-				bImages[c++] = new ThreadTexture(file, true);
-		} 
+	private void importSequence (AssetManager assets, String sName) {
+		texture = assets.get(sName);
+        int imgCount = (int)Math.ceil(texture.getWidth()/texture.getHeight());
+		bImages = new TextureRegion[imgCount];
+		for (int i =0; i < imgCount; ++i) {
+            bImages[i] = new TextureRegion(texture, texture.getHeight()*i, 0, texture.getHeight(), texture.getHeight());
+        }
 	}
 }

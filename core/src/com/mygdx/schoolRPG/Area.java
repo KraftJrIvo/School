@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
+import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.mygdx.schoolRPG.tools.GlobalSequence;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +29,6 @@ public class Area {
     String name;
     ArrayList<ArrayList<Integer>> blocks;
     ArrayList<HittableEntity> objects;
-    Texture block, shadow, dung;
     int width, height;
     Player player;
     int playerTileX=0, playerTileY=0, playerTileDynX=0, playerTileDynY=0;
@@ -176,11 +178,7 @@ public class Area {
         if (world.worldDir.child("sprites/white.png").exists()) {
             white = new BlockMultiTile(world.folderPath+"/sprites/white.png", assets);
         }
-        //assets.load("arrow.png", Texture.class);
-        //assets.load("char.png", Texture.class);
-        //assets.load("char_back.png", Texture.class);
-        //assets.load("char_left.png", Texture.class);
-        //assets.load("char_right.png", Texture.class);
+
         loaded = true;
     }
 
@@ -208,6 +206,7 @@ public class Area {
                 }
             }*/
             objects.add(player);
+            //GlobalSequence gs = new GlobalSequence(assets, "chars/legs/walk_side.png");
         }
         initialised = true;
     }
@@ -469,7 +468,7 @@ public class Area {
 
    }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean drawPlayer) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean drawPlayer, CharacterMaker characterMaker) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.PLUS) && zoom < 5) zoom += 1;
         else if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS) && zoom > 1) zoom -= 1;
         Matrix4 transform = new Matrix4();
@@ -500,7 +499,7 @@ public class Area {
                             boolean down = i==height-1 || blocks.get(t).get(i+1)!=0;
                             boolean left = t==0 || blocks.get(t-1).get(i)!=0;
                             boolean right = t==width-1 || blocks.get(t+1).get(i)!=0;
-                             try {
+                            try {
                                 batch.draw(white.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, white.getWidth(), white.getHeight());
                             } catch (Exception e) {
                                 System.out.println();
@@ -556,7 +555,9 @@ public class Area {
                     if (i == objectTileY/* || (objects.get(z).falling && objectTileY < playerTileY && objects.get(z).y > player.y && i == playerTileY)*/ && (!objects.get(z).falling || objects.get(z).getClass() == Player.class)) {
                         if (objects.get(z).getClass() == Player.class) {
                             if (drawPlayer) {
-                                player.draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
+                                //player.draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
+                                player.draw(batch, characterMaker, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
+                                //characterMaker.draw(batch, 0, 100, 100);
                             }
                         } else {
                             objects.get(z).draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
@@ -577,6 +578,7 @@ public class Area {
                 }
 
             }
+
             //System.out.println(player.hitBox.y);
         } else {
             for (int i = -1; i <= height + 1; ++i) {
@@ -608,6 +610,7 @@ public class Area {
             }
         }
         //fps.log();
+        //characterMaker.draw(batch, 0, 100, 100);
         transform = new Matrix4();
         batch.setTransformMatrix(transform);
     }
