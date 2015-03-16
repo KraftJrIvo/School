@@ -292,13 +292,12 @@ public class Area {
         if (platformMode && he.pSpeed >= 0) {
             tileY++;
         }
+
         Rectangle oldRect = new Rectangle(he.hitBox);
         for (int z=0; z<objects.size(); ++z) {
             if (!objects.get(z).falling) {
                 if (platformMode) {
-                    //he.hitBox = objects.get(z).invalidateCollisions(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
                     he.hitBox = objects.get(z).pushOutSolidObjects(he, this, player.oldX, he.oldY);
-                    //he.hitBox = objects.get(z).invalidateCollisions(he.hitBox, this, player.oldX, player.oldY, true, isPlayer);
                     if (he.hitBox.y < oldRect.y && he.pSpeed > 0) {
                         he.pSpeed=0;
                     } else if (he.hitBox.y > oldRect.y && he.pSpeed < 0) {
@@ -405,6 +404,8 @@ public class Area {
         } else if (cameraY + Gdx.graphics.getHeight()/zoom/2+FLOOR_HEIGHT+2 > TILE_HEIGHT*(height-2)) {
             cameraY = TILE_HEIGHT*(height-2) - Gdx.graphics.getHeight()/zoom/2 - FLOOR_HEIGHT-2;
         }
+        Math.round(cameraX);
+        Math.round(cameraY);
     }
 
     public void invalidate() {
@@ -465,7 +466,22 @@ public class Area {
             }
         }
 
-
+        if (player.pusher) {
+            Player pushField = new Player(assets, null, player.hitBox.x, player.hitBox.y, player.hitBox.width, player.hitBox.height, 3, false);
+            pushField.speedX = -player.speedX*10;
+            pushField.speedY = -player.speedY*10;
+            for (int i=0; i<objects.size(); ++i) {
+                if (objects.get(i).getClass() == Player.class) {
+                    continue;
+                }
+                pushField.pushOutSolidObjects(objects.get(i), this, pushField.oldX, pushField.oldY);
+                //objects.get(i).canDown = true;
+                //objects.get(i).canUp = true;
+                //objects.get(i).canLeft = true;
+                //objects.get(i).canRight = true;
+            }
+            invalidateCollisions(pushField, pushField.oldX, pushField.oldY);
+        }
    }
 
     public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean drawPlayer, CharacterMaker characterMaker) {

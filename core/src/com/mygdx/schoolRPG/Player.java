@@ -29,7 +29,7 @@ public class Player extends HittableEntity {
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, null, x, y, width, height, floorHeight, movable);
         spritesPath = baseName;
-        poses = new PlayerMultiTile(spritesPath, assets);
+        if (spritesPath != null) poses = new PlayerMultiTile(spritesPath, assets);
     }
 
     public void move(JoyStick leftGameJoy) {
@@ -202,8 +202,10 @@ public class Player extends HittableEntity {
                 }
                 hitBox.width = 16;
                 graphicX = hitBox.x;
+                pusher = true;
+            } else {
+                pusher = false;
             }
-
             if (hitBox.height == 9) {
                 hitBox.height = 5;
                 hitBox.y += 2;
@@ -225,8 +227,11 @@ public class Player extends HittableEntity {
                     speedY = 3;
                 }
                 graphicY = hitBox.y;
+                pusher = true;
+            } else {
+                pusher = false;
             }
         }
-        System.out.println(hitBox.x);
+        //System.out.println(pusher);
     }
 }
