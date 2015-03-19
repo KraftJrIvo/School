@@ -62,6 +62,7 @@ public class HittableEntity extends Entity {
         //he.deltaY = he.hitBox.y;
         Rectangle rect = he.getRect();
         Rectangle oldRect = new Rectangle(he.hitBox);
+        Rectangle oldThisRect = new Rectangle(hitBox);
         boolean objectIsPlayer = (he.getClass() == Player.class);
         if (rect.x+rect.width > hitBox.x+0.2f && rect.x < hitBox.x+hitBox.width-0.2f) {
             overlapX = true;
@@ -140,7 +141,7 @@ public class HittableEntity extends Entity {
                         rect.y += diffY/2;
                         hitBox.y -= diffY/2;
                     }
-                    if (diffY != 0 && (downSide || upSide) && ((platformMode && !objectIsPlayer) || !platformMode) && canMoveHor){
+                    if (diffY != 0 && (downSide || upSide) && canMoveHor){
                         if (rightSide) {
                             if (centerX < center2X && hitBox.x + hitBox.width - rect.x < hitBox.getWidth()/4 && he.canRight) {
                                 rect.x += (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 10;
@@ -218,13 +219,15 @@ public class HittableEntity extends Entity {
                     //}
                 }
                 if (this.getClass() != Player.class) {
-                    if (diffX > 0) {
-                        he.canLeft = false;
-                        he.deadEndY = rect.y;
-                    }
-                    else if (diffX < 0) {
-                        he.canRight = false;
-                        he.deadEndY = rect.y;
+                    if (!platformMode) {
+                        if (diffX > 0) {
+                            he.canLeft = false;
+                            he.deadEndY = rect.y;
+                        }
+                        else if (diffX < 0) {
+                            he.canRight = false;
+                            he.deadEndY = rect.y;
+                        }
                     }
                     if (diffY > 0) {
                         he.canUp = false;
@@ -237,6 +240,8 @@ public class HittableEntity extends Entity {
                 }
             }
 
+            deltaX = deltaX || (hitBox.x - oldThisRect.x) != 0;
+            deltaY = deltaY || (hitBox.y - oldThisRect.y) != 0;
             he.deltaX = deltaX || (rect.x - oldRect.x) != 0;
             he.deltaY = deltaY || (rect.y - oldRect.y) != 0;
             if (he.deltaX != false) {
@@ -294,12 +299,12 @@ public class HittableEntity extends Entity {
         }*/
 
         if (deltaX == false) {
-            graphicX = Math.round(hitBox.x);
+            graphicX = (float)Math.floor(hitBox.x);
         } else {
             graphicX = hitBox.x;
         }
         if (deltaY == false) {
-            graphicY = Math.round(hitBox.y);
+            graphicY = (float)Math.floor(hitBox.y);
         } else {
             graphicY = hitBox.y;
         }
