@@ -22,13 +22,15 @@ public class Player extends HittableEntity {
     //Texture front, back, left, right;
     PlayerMultiTile poses;
     TextureRegion curPose;
-    int jumpTicks = 15;
+    int maxJumpTicks = 25;
+    int jumpTicks;
     boolean jumping = false, setToJump = false;
     boolean lastRight, lastDown;
 
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, null, x, y, width, height, floorHeight, movable);
         spritesPath = baseName;
+        jumpTicks = maxJumpTicks;
         if (spritesPath != null) poses = new PlayerMultiTile(spritesPath, assets);
     }
 
@@ -41,6 +43,10 @@ public class Player extends HittableEntity {
 
     public void move() {
         if (!falling) {
+            /*if (!canUp && speedY > 0) speedY = 0;
+            if (!canDown && speedY < 0) speedY = 0;
+            if (!canLeft && speedX < 0) speedX = 0;
+            if (!canRight && speedX > 0) speedX = 0;*/
             if (Gdx.input.isKeyPressed(Input.Keys.A)) speedX -= 2;
             else if (speedX < 0) speedX += 2;
             if (Gdx.input.isKeyPressed(Input.Keys.D)) speedX += 2;
@@ -81,15 +87,16 @@ public class Player extends HittableEntity {
             else  speedX = 20;
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
+
+        if (Gdx.input.isKeyPressed(Input.Keys.Z) || Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             if (pSpeed == 0 && !jumping) {
-                jumpTicks = 15;
+                jumpTicks = maxJumpTicks;
                 jumping = true;
             } else if (pSpeed > 0) {
                 jumpTicks = 0;
             }
             if (jumpTicks > 0) {
-                pSpeed = -25;
+                pSpeed = -35;
                 jumpTicks--;
             }
         } else {
@@ -111,6 +118,7 @@ public class Player extends HittableEntity {
     public void platformFall() {
         oldY = hitBox.y;
         super.platformFall();
+        canDown = true;
         speedY = pSpeed;
     }
 
@@ -146,23 +154,23 @@ public class Player extends HittableEntity {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 setToJump = true;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.W) && !jumping) {
+            if (Gdx.input.isKeyPressed(Input.Keys.UP) && !jumping) {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.BACK);
                 setToJump = false;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.S) && !jumping)  {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && !jumping)  {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 setToJump = false;
             } else {
                 graphicY = y;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_LEFT);
                 } else {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.LEFT);
                     setToJump = false;
                 }
-            } else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_RIGHT);
                 } else {

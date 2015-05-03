@@ -110,6 +110,7 @@ public class World {
 
     public void load(AssetManager assets) {
         characterMaker = new CharacterMaker(assets);
+        characterMaker.cdc.setLookingForward(true);
         if (tlw == null) {
             worldDir = Gdx.files.internal(folderPath);
             int curX,curY;

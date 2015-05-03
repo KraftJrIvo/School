@@ -57,7 +57,7 @@ public class Area {
             //playerHeight = 12;
             playerWidth = 16;
             playerHeight = 5;
-            playerFloor = FLOOR_HEIGHT;
+            playerFloor = 10;
         }
 
         //this.id = id;
@@ -79,7 +79,7 @@ public class Area {
                             playerTileX = i;
                             blocks.get(i).add(1);
                         } else if (curPixelColor.equals(Color.RED)) {
-                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/red.png", i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT)-1, TILE_WIDTH, TILE_HEIGHT, FLOOR_HEIGHT/4+1, true));
+                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/red.png", i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT), TILE_WIDTH, TILE_HEIGHT, FLOOR_HEIGHT/4+1, true));
                             blocks.get(i).add(1);
                         } else if (curPixelColor.equals(Color.BLUE)) {
                             objects.add(new HittableEntity(assets, world.folderPath+"/sprites/blue.png", i*TILE_WIDTH+TILE_WIDTH/2-3.5f, (t * TILE_HEIGHT), 6, 4, -TILE_HEIGHT/2, false));
@@ -366,8 +366,8 @@ public class Area {
         for (int i = 0; i < width; ++i) {
             for (int t = 0; t < height; ++t) {
                 if (blocks.get(t).get(i) == 1) {
-                    Rectangle tmp = new Rectangle(t * (TILE_WIDTH), i * TILE_HEIGHT - 6, TILE_WIDTH, TILE_HEIGHT-FLOOR_HEIGHT/2);
-                    Rectangle objRect = new Rectangle(object.hitBox.x+1, object.hitBox.y-1, object.hitBox.width-1, object.hitBox.height+1);
+                    Rectangle tmp = new Rectangle(t * (TILE_WIDTH), i * TILE_HEIGHT - 6, TILE_WIDTH, TILE_HEIGHT);
+                    Rectangle objRect = new Rectangle(object.hitBox.x+1, object.hitBox.y+1, object.hitBox.width-1, object.hitBox.height-1);
 
                     if (tmp.overlaps(objRect)) {
                         fall = false;
@@ -391,6 +391,15 @@ public class Area {
 
     };
 
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
     public void moveCamera(int k) {
         cameraX += (player.graphicX + player.hitBox.getWidth()/2 - cameraX)/k;
         cameraY += (player.graphicY + player.hitBox.getHeight()/2 - cameraY)/k;
@@ -400,12 +409,12 @@ public class Area {
             cameraX = TILE_WIDTH*(width) - Gdx.graphics.getWidth()/zoom/2;
         }
         if (cameraY - Gdx.graphics.getHeight()/zoom/2 + TILE_HEIGHT < 0) {
-            cameraY = Gdx.graphics.getHeight()/zoom/2 - TILE_HEIGHT;
+            cameraY = Gdx.graphics.getHeight()/zoom / 2 - TILE_HEIGHT;
         } else if (cameraY + Gdx.graphics.getHeight()/zoom/2+FLOOR_HEIGHT+2 > TILE_HEIGHT*(height-2)) {
             cameraY = TILE_HEIGHT*(height-2) - Gdx.graphics.getHeight()/zoom/2 - FLOOR_HEIGHT-2;
         }
-        Math.round(cameraX);
-        Math.round(cameraY);
+        cameraX = round(cameraX, 1);
+        cameraY = round(cameraY, 1);
     }
 
     public void invalidate() {
@@ -418,13 +427,13 @@ public class Area {
         }
 
         for (int i=0; i<objects.size(); ++i) {
+            float old = objects.get(i).hitBox.y;
             if (!platformMode) {
                 objects.get(i).fall();
             } else if (objects.get(i).getClass()!=Player.class) {
-                objects.get(i).platformFall();
+                //objects.get(i).platformFall();
                 objects.get(i).platformFall();
             }
-            float old = objects.get(i).hitBox.y;
             if (objects.get(i).movable && objects.get(i).getClass()!=Player.class && !objects.get(i).falling) {
                 invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
             }
@@ -436,13 +445,14 @@ public class Area {
         if (!platformMode) {
             player.fall();
         } else {
-            player.platformFall();
+            //player.platformFall();
             player.platformFall();
         }
 
         invalidateCollisions(player, player.oldX, player.oldY);
         playerTileX = (int)(player.hitBox.x/(TILE_WIDTH))+1;
         playerTileY = (int)((player.hitBox.y)/(TILE_HEIGHT))+1;
+
 
         for (int i=0; i<objects.size(); ++i) {
             if (objects.get(i).movable && objects.get(i).getClass() != Player.class && !objects.get(i).falling) {
