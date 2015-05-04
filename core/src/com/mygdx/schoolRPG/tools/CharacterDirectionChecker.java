@@ -22,6 +22,9 @@ public class CharacterDirectionChecker {
     }
 
     public void update() {
+
+        boolean look = true;
+
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             lookDir = LookDirection.up;
             walkDir = WalkDirection.up;
@@ -36,32 +39,34 @@ public class CharacterDirectionChecker {
             walkDir = WalkDirection.left;
         } else if (lookDir == LookDirection.none) {
             lookDir = LookDirection.down;
+        } else {
+            look = false;
         }
 
         stand = false;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            if (keepLookingForward) lookDir = LookDirection.right;
+            if (keepLookingForward && !look) lookDir = LookDirection.right;
             if (lookDir == LookDirection.left) {
                 walkDir = WalkDirection.right_back;
             } else {
                 walkDir = WalkDirection.right;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            if (keepLookingForward) lookDir = LookDirection.left;
+            if (keepLookingForward && !look) lookDir = LookDirection.left;
             if (lookDir == LookDirection.right) {
                 walkDir = WalkDirection.left_back;
             } else {
                 walkDir = WalkDirection.left;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            if (keepLookingForward) lookDir = LookDirection.up;
+            if (keepLookingForward && !look) lookDir = LookDirection.up;
             if (lookDir == LookDirection.down) {
                 walkDir = WalkDirection.up_back;
             } else {
                 walkDir = WalkDirection.up;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            if (keepLookingForward) lookDir = LookDirection.down;
+            if (keepLookingForward && !look) lookDir = LookDirection.down;
             if (lookDir == LookDirection.up) {
                 walkDir = WalkDirection.down_back;
             } else {

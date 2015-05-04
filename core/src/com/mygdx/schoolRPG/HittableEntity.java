@@ -122,8 +122,10 @@ public class HittableEntity extends Entity {
             boolean canMoveHor = ((diffX < 0 && canLeft) || (diffX > 0 && canRight)||diffX==0);
             boolean canMoveVer = ((diffY < 0 && canDown) || (diffY > 0 && canUp)||diffY==0);
 
-            if (Math.abs(diffX) > 5) diffX = 0;
-            if (Math.abs(diffY) > 6) diffY = 0;
+            if (he.getClass() != Player.class) {
+                if (Math.abs(diffX) > 5) diffX = 0;
+                if (Math.abs(diffY) > 6) diffY = 0;
+            }
 
             if (movable && he.movable && (canMoveHor || canMoveVer)) {
                 if (diffX != 0 && diffY != 0) {

@@ -22,7 +22,7 @@ public class Player extends HittableEntity {
     //Texture front, back, left, right;
     PlayerMultiTile poses;
     TextureRegion curPose;
-    int maxJumpTicks = 25;
+    int maxJumpTicks = 15;
     int jumpTicks;
     boolean jumping = false, setToJump = false;
     boolean lastRight, lastDown;
