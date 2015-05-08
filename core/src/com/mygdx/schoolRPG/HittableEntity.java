@@ -21,7 +21,10 @@ public class HittableEntity extends Entity {
     boolean falling;
     boolean canUp = true, canDown = true, canLeft = true, canRight = true;
     float deadEndX=0, deadEndY=0;
+    float deadEndObjectX = 0, deadEndObjectY = 0;
+    HittableEntity deadEndObjectLeft = null, deadEndObjectRight = null, deadEndObjectUp = null, deadEndObjectDown = null;
     boolean pusher = false;
+    int checksum = 0;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable) {
         super(assets, texPath, x, y);
@@ -73,6 +76,46 @@ public class HittableEntity extends Entity {
             overlapY = true;
         }
 
+        if (deadEndObjectLeft != null || deadEndObjectRight != null ||
+                deadEndObjectUp != null || deadEndObjectDown != null) {
+            if (deadEndObjectLeft != null && deadEndObjectLeft.movable) {
+                if (deadEndObjectLeft.canLeft) {
+                    canLeft = true;
+                    deadEndObjectLeft = null;
+                }
+            }
+            if (deadEndObjectRight != null && deadEndObjectRight.movable) {
+                if (deadEndObjectRight.canRight) {
+                    canRight = true;
+                    deadEndObjectRight = null;
+                }
+            }
+            if (deadEndObjectUp != null && deadEndObjectUp.movable) {
+                if (deadEndObjectUp.canUp) {
+                    canUp = true;
+                    deadEndObjectUp = null;
+                }
+            }
+            if (deadEndObjectDown != null && deadEndObjectDown.movable) {
+                if (deadEndObjectDown.canDown) {
+                    canDown = true;
+                    deadEndObjectDown = null;
+                } else if (hitBox.x + hitBox.width - deadEndObjectDown.hitBox.x <= hitBox.getWidth()/4
+                        || deadEndObjectDown.hitBox.x+deadEndObjectDown.hitBox.width-hitBox.x <= hitBox.getWidth()/4) {
+                    canDown = true;
+                }
+            }
+        }
+        /*if ((deadEndObject == null || (deadEndObjectX != deadEndObject.hitBox.x || deadEndObjectY != deadEndObject.hitBox.y))) {
+            deadEndObjectX = 0;
+            makeFree();
+        }*/ /*else if (deadEndObject != null && checksum != 0 && (deadEndObjectX != 0 && deadEndObjectY != 0)) {
+            if (deadEndObject.canLeft && checksum == 1 || deadEndObject.canRight && checksum == 2 ||
+                deadEndObject.canUp && checksum == 3 || deadEndObject.canDown && checksum == 4) {
+                makeFree();
+            }
+        }*/
+
         float diffX=0, diffY=0;
         if (overlapX && overlapY && hitBox.overlaps(rect) && hitBox != rect) {
             if (deadEndX != hitBox.x) {
@@ -85,6 +128,8 @@ public class HittableEntity extends Entity {
                 canRight = true;
                 //deadEndX = 0;
             }
+
+
             oldY2 = hitBox.y;
             if (!movable && !he.movable) {
                 //he.deltaX = 0;
@@ -141,13 +186,15 @@ public class HittableEntity extends Entity {
                 } else {
                     if (canMoveHor) {
                         if (he.getClass() != Player.class) {
-                            if (!canLeft && diffX > 0) {
+                            if (!canRight && diffX > 0) {
                                 rect.x += diffX;
                                 he.canLeft = false;
+                                he.canRight = true;
                                 he.deadEndY = rect.y;
-                            } else if (!canRight && diffX < 0) {
+                            } else if (!canLeft && diffX < 0) {
                                 rect.x += diffX;
                                 he.canRight = false;
+                                he.canLeft = true;
                                 he.deadEndY = rect.y;
                             }
                             else {
@@ -165,34 +212,34 @@ public class HittableEntity extends Entity {
                     }
                     if (diffY != 0 && (downSide || upSide) && canMoveHor){
                         if (rightSide) {
-                            if (centerX < center2X && hitBox.x + hitBox.width - rect.x < hitBox.getWidth()/4 && he.canRight) {
-                                rect.x += (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 10;
-                                hitBox.x -= (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 10;
+                            if (centerX <= center2X && hitBox.x + hitBox.width - rect.x <= hitBox.getWidth()/4 && he.canRight) {
+                                rect.x += 0.3f;
+                                hitBox.x -= 0.3f;
                             } else if (oldX != rect.x && objectIsPlayer && !platformMode) {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
                         }
                         if (leftSide) {
-                            if (centerX > center2X && rect.x + rect.width - hitBox.x < hitBox.getWidth()/4 && he.canLeft) {
-                                rect.x -= (hitBox.getWidth()/4 - (rect.x + rect.width - hitBox.x)) / 10;
-                                hitBox.x += (hitBox.getWidth()/4 - (rect.x + rect.width - hitBox.x)) / 10;
+                            if (centerX >= center2X && rect.x + rect.width - hitBox.x <= hitBox.getWidth()/4 && he.canLeft) {
+                                rect.x -= 0.3f;
+                                hitBox.x += 0.3f;
                             }else if (oldX != rect.x && objectIsPlayer && !platformMode) {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
                         }
                     } else if (diffX != 0 && (leftSide || rightSide) && canMoveVer) {
                         if (upSide) {
-                            if (centerY < center2Y && hitBox.y+hitBox.height-rect.y < hitBox.getHeight()/4) {
-                                rect.y += (hitBox.getHeight()/4-(hitBox.y+hitBox.height-rect.y)) / 20;
-                                hitBox.y -= (hitBox.getHeight()/4-(hitBox.y+hitBox.height-rect.y)) / 20;
+                            if (centerY <= center2Y && hitBox.y+hitBox.height-rect.y <= hitBox.getHeight()/4) {
+                                rect.y += 0.2f;
+                                hitBox.y -= 0.2f;
                             }else if (oldY != rect.y && objectIsPlayer && !platformMode && (canUp && (rect.y-oldY) < 0 || canDown && (rect.y-oldY) > 0)) {
                                 hitBox.y += (rect.y-oldY)/15;
                             }
                         }
                         if (downSide) {
-                            if (centerY > center2Y && rect.y + rect.height - hitBox.y < hitBox.getHeight()/4) {
-                                rect.y -= (hitBox.getHeight()/4 - (rect.y + rect.height - hitBox.y)) / 20;
-                                hitBox.y += (hitBox.getHeight()/4 - (rect.y + rect.height - hitBox.y)) / 20;
+                            if (centerY >= center2Y && rect.y + rect.height - hitBox.y <= hitBox.getHeight()/4) {
+                                rect.y -= 0.2f;
+                                hitBox.y += 0.2f;
                             } else if (oldY != rect.y && objectIsPlayer && !platformMode && (canUp && (rect.y-oldY) < 0 || canDown && (rect.y-oldY) > 0)) {
                                 hitBox.y += (rect.y - oldY) / 15;
                             }
@@ -213,22 +260,33 @@ public class HittableEntity extends Entity {
                 canMoveVer = movable&&((diffY < 0 && canDown) || (diffY > 0 && canUp)||diffY==0);
                 //if (this.getClass() != Player.class) {
                     //if (!platformMode) {
-                        if (diffX > 0 && (!canLeft||!movable)) {
+                        if (diffX < 0 && (!canLeft||!movable)) {
                             he.canLeft = false;
+                            he.canDown = true;
+                            he.canUp = true;
+                            he.canRight = true;
                             he.deadEndY = rect.y;
+                            setCheck(he, 1);
+                            //he.deadEndObject.canLeft = false;
                         }
-                        else if (diffX < 0 && (!canRight||!movable)) {
+                        else if (diffX > 0 && (!canRight||!movable)) {
                             he.canRight = false;
+                            he.canDown = true;
+                            he.canUp = true;
+                            he.canLeft = true;
                             he.deadEndY = rect.y;
+                            setCheck(he, 2);
+                            //he.deadEndObject.canRight = false;
                         }
                     //}
                     if (diffY > 0) {
                         he.canUp = false;
-                        he.deadEndX = rect.x;
                     }
                     else if (diffY < 0) {
                         he.canDown = false;
                         he.deadEndX = rect.x;
+                        setCheck(he, 4);
+                        //he.deadEndObject.canDown = false;
                     }
                 //}
                 if (diffX != 0 && diffY != 0) {
@@ -247,14 +305,12 @@ public class HittableEntity extends Entity {
                     //if (objectIsPlayer) {
                     if (!platformMode || !objectIsPlayer) {
                         if (diffY != 0 && (downSide || upSide) && !canMoveHor){
-                            if (rightSide && centerX < center2X && hitBox.x+hitBox.width-rect.x < hitBox.getWidth()/4) {
-                                if (!objectIsPlayer) he.hitBox.x += (hitBox.getWidth()/4-(hitBox.x+hitBox.width-rect.x)) / 10;
-                                else he.hitBox.x += 0.4f;
+                            if (rightSide && centerX <= center2X && hitBox.x+hitBox.width-rect.x <= hitBox.getWidth()/4) {
+                                he.hitBox.x += 0.4f;
                                 he.canUp = true;
                                 he.canDown = true;
-                            } else if (leftSide && centerX > center2X && rect.x+rect.width-hitBox.x < hitBox.getWidth()/4) {
-                                if (!objectIsPlayer) he.hitBox.x -= (hitBox.getWidth()/4-(rect.x+rect.width-hitBox.x)) / 10;
-                                else he.hitBox.x -= 0.4f;
+                            } else if (leftSide && centerX >= center2X && rect.x+rect.width-hitBox.x <= hitBox.getWidth()/4) {
+                                he.hitBox.x -= 0.4f;
                                 he.canUp = true;
                                 he.canDown = true;
                             }
@@ -266,12 +322,14 @@ public class HittableEntity extends Entity {
                                 else rect.x = hitBox.x - rect.width;
                             }*/
                         } else if (diffX != 0 && (leftSide || rightSide) && !canMoveVer) {
-                            if (upSide && centerY < center2Y && hitBox.y+hitBox.height-rect.y < hitBox.getHeight()/4) {
-                                if (!objectIsPlayer) rect.y += (hitBox.getHeight()/4-(hitBox.y+hitBox.height-rect.y)) / 10;
-                                else he.hitBox.y += 0.6f;
-                            } else if (downSide && centerY > center2Y && rect.y+rect.height-hitBox.y < hitBox.getHeight()/4) {
-                                if (!objectIsPlayer) rect.y -= (hitBox.getHeight()/4-(rect.y+rect.height-hitBox.y)) / 10;
-                                else he.hitBox.y -= 0.6f;
+                            if (upSide && centerY <= center2Y && hitBox.y+hitBox.height-rect.y <= hitBox.getHeight()/4) {
+                                he.hitBox.y += 0.6f;
+                                he.canLeft = true;
+                                he.canRight = true;
+                            } else if (downSide && centerY >= center2Y && rect.y+rect.height-hitBox.y <= hitBox.getHeight()/4) {if (!objectIsPlayer) rect.y -= (hitBox.getHeight()/4-(rect.y+rect.height-hitBox.y)) / 10;
+                                he.hitBox.y -= 0.6f;
+                                he.canLeft = true;
+                                he.canRight = true;
                             }
                         }
                     }
@@ -286,6 +344,17 @@ public class HittableEntity extends Entity {
             if (he.deltaX != false) {
                 System.out.println();
             }
+            //if (platformMode) {
+                /*if ((!canLeft || !canRight)){
+                    canDown = true;
+                    canUp = true;
+                }
+                if ((!canUp || !canDown)){
+                    canLeft = true;
+                    canRight = true;
+                }*/
+            //}
+
         }
         x = hitBox.x;
         y = hitBox.y;
@@ -295,6 +364,23 @@ public class HittableEntity extends Entity {
             hitBox.y = oldY2;
         }*/
         return rect;
+    }
+
+    private void makeFree() {
+        canDown = true;
+        canRight = true;
+        canLeft = true;
+        canUp = true;
+    }
+
+    private void setCheck(HittableEntity he, int dir) {
+        he.deadEndObjectX = hitBox.x;
+        he.deadEndObjectY = hitBox.y;
+        if (dir == 1) he.deadEndObjectLeft = this;
+        else if (dir == 2) he.deadEndObjectRight = this;
+        else if (dir == 3) he.deadEndObjectUp = this;
+        else if (dir == 4) he.deadEndObjectDown = this;
+        checksum = dir;
     }
 
     @Override
@@ -322,12 +408,15 @@ public class HittableEntity extends Entity {
         if (canDown || pSpeed < 0) {
             hitBox.y += pSpeed/10;
             if (pSpeed == 0) pSpeed += 1;
-            else pSpeed += 4;
+            else {
+                pSpeed += 4;
+            }
             if (pSpeed > 40) {
                 pSpeed = 40;
+                makeFree();
             }
         }
-        canDown = true;
+        //canDown = true;
     }
 
     @Override
@@ -354,9 +443,9 @@ public class HittableEntity extends Entity {
         deltaX = false;
         deltaY = false;
 
-        /*if (!canLeft) batch.setColor(new Color(1, 0, 0, 0.5f));
-        else if (!canRight) batch.setColor(new Color(0, 1, 0, 0.5f));
-        if (!canRight && !canLeft) batch.setColor(new Color(1, 1, 0, 0.5f));*/
+        /*if (!canDown) batch.setColor(new Color(1, 0, 1, 0.25f));
+        if (!canRight) batch.setColor(new Color(0, 1, 0, 0.25f));
+        if (!canLeft) batch.setColor(new Color(0, 0, 1, 0.25f));*/
 
         super.initialiseIfNeeded();
         if (tex != null) {
