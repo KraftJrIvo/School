@@ -14,6 +14,10 @@ public class BlockMultiTile extends MultiTile {
         super(path, assets, 3, 4);
     }
 
+    public BlockMultiTile(Texture tex) {
+        super(tex, 3, 4);
+    }
+
     public TextureRegion getTile(boolean up, boolean down, boolean left, boolean right) {
         if (up && down && left && right) {
             return getTile(2, 3, false, false);

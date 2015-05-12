@@ -25,9 +25,25 @@ public class MultiTile {
         assets.load(filePath, Texture.class);
     }
 
+    public MultiTile(Texture tex, int xCount, int yCount) {
+        this.xCount = xCount;
+        this.yCount = yCount;
+        tileSet = tex;
+        width = (int)(tileSet.getWidth()/xCount);
+        height = (int)(tileSet.getHeight()/yCount);
+        tiles = new ArrayList<ArrayList<TextureRegion>>();
+        for (int i=0; i<height; ++i) {
+            tiles.add(new ArrayList<TextureRegion>());
+            for (int t=0; t < width; ++t) {
+                tiles.get(i).add(new TextureRegion(tileSet, width*t, height*i, width, height));
+            }
+        }
+        initialised = true;
+    }
+
     public void initialiseIfNeeded(AssetManager assets) {
         if (!initialised) {
-            tileSet = assets.get(filePath);
+            if (tileSet == null) tileSet = assets.get(filePath);
             width = (int)(tileSet.getWidth()/xCount);
             height = (int)(tileSet.getHeight()/yCount);
             tiles = new ArrayList<ArrayList<TextureRegion>>();

@@ -413,7 +413,7 @@ public class HittableEntity extends Entity {
             }
             if (pSpeed > 40) {
                 pSpeed = 40;
-                makeFree();
+                //makeFree();
             }
         }
         //canDown = true;

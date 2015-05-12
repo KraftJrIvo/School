@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 
@@ -16,14 +17,14 @@ import java.util.ArrayList;
 public class World {
 //LOL
     ArrayList<Area> areas;
-    ArrayList<ArrayList<Integer>> areaIds;
+    ArrayList<ArrayList<ArrayList<Integer>>> areaIds;
     String folderPath, tlwPath;
     ArrayList<Pixmap> maps;
     File tlw;
     FileInputStream fis;
     public boolean initialised = false, loaded = false, areasCreated = false;
-    FileHandle worldDir;
-    int curAreaX = 0, curAreaY = 0, oldAreaX = 0, oldAreaY = 0;
+    FileHandle worldDir = null;
+    int curAreaX = 0, curAreaY = 0, curAreaZ = 0, oldAreaX = 0, oldAreaY = 0, oldAreaZ = 0;
     ArrayList<Integer> crds;
     //Area loadArea;
     float areaTransitionX = 0, areaTransitionY = 0;
@@ -31,81 +32,37 @@ public class World {
     boolean platformMode = false;
     int width, height, areaWidth, areaHeight, tileWidth, tileHeight, playerWidth, playerHeight;
     CharacterMaker characterMaker;
+    ArrayList<Texture> sprites;
+    ArrayList<BlockMultiTile> tiles;
+    int spritesCount = 0;
 
 
-    public World(String folderPath, int w, int h, int startingAreaX, int startingAreaY) {
+    public World(String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
         areas = new ArrayList<Area>();
         this.folderPath = folderPath;
         maps = new ArrayList<Pixmap>();
-        areaIds = new ArrayList<ArrayList<Integer>>(w);
-        for (int i = 0; i < w; i++) {
-            areaIds.add(new ArrayList<Integer>(h));
-            for (int t = 0; t < h; t++) {
-                areaIds.get(i).add(-1);
+        areaIds = new ArrayList<ArrayList<ArrayList<Integer>>>(size);
+        for (int i = 0; i < size; i++) {
+            areaIds.add(new ArrayList<ArrayList<Integer>>(size));
+            for (int t = 0; t < size; t++) {
+                areaIds.get(i).add(new ArrayList<Integer>(size));
+                for (int k = 0; k < size; k++) {
+                    areaIds.get(i).get(t).add(-1);
+                }
             }
         }
         curAreaX = startingAreaX;
         curAreaY = startingAreaY;
+        curAreaZ = startingAreaZ;
         //loadArea = new Area(0, null);
     }
 
-    public World(String tlwFilePath) {
+    public World(String worldPath) {
         areas = new ArrayList<Area>();
-        areaIds = new ArrayList<ArrayList<Integer>>();
-        tlwPath = tlwFilePath;
         //maps = new ArrayList<Pixmap>();
-        tlw = new File(tlwFilePath);
-        try {
-            fis = new FileInputStream(tlw);
-            int size = fis.read();
-            byte[] buff = new byte[size];
-            fis.read(buff);
-            name = new String(buff);
-            int tmp = fis.read();
-            if (tmp == 0) platformMode = false;
-            else platformMode = true;
-            width = fis.read();
-            height = fis.read();
-            areaWidth = fis.read();
-            areaHeight = fis.read();
-            tileWidth = fis.read();
-            tileHeight = fis.read();
-            playerWidth = fis.read();
-            playerHeight = fis.read();
-            for (int i = 0; i < width; i++) {
-                areaIds.add(new ArrayList<Integer>(height));
-                for (int t = 0; t < height; t++) {
-                    areaIds.get(i).add(-1);
-                }
-            }
-            int curCoordX = fis.read();
-            int curCoordY = fis.read();
-            //int endChecker = 0;
-            curAreaX = curCoordX;
-            curAreaY = curCoordY;
-            while (fis.available() != 1) {
+        folderPath = worldPath;
+        tlw = new File(worldPath+"/world.tlw");
 
-                buff = new byte[areaWidth*areaHeight*3];
-                fis.read(buff);
-                areas.add(new Area(this, buff, platformMode, tileWidth, tileHeight));
-                areaIds.get(curCoordX).set(curCoordY,areas.size()-1);
-                /*fInput.skip(width*height*3);
-                endChecker = fInput.read();
-                if (endChecker == 254) {
-                    return false;
-                } else {
-                    coordX = endChecker;
-                }
-                //coordX = fInput.read();
-                coordY = fInput.read();*/
-                curCoordX = fis.read();
-                curCoordY = fis.read();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void load(AssetManager assets) {
@@ -113,7 +70,7 @@ public class World {
         characterMaker.cdc.setLookingForward(true);
         if (tlw == null) {
             worldDir = Gdx.files.internal(folderPath);
-            int curX,curY;
+            int curX,curY,curZ=0;
             int count = 0;
             for (FileHandle entry: worldDir.list()) {
                 if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
@@ -136,11 +93,78 @@ public class World {
                     curX = -Integer.parseInt(entry.file().getName().substring(1,2));
                     curY = -Integer.parseInt(entry.file().getName().substring(4,5));
                 }
-                areaIds.get(curX).set(curY, count);
+                areaIds.get(curX).get(curY).set(curZ, count);
                 count++;
             }
         } else {
+            try {
+                fis = new FileInputStream(tlw);
+                int size = fis.read();
+                byte[] buff = new byte[size];
+                fis.read(buff);
+                name = new String(buff);
+                int tmp = fis.read();
+                if (tmp == 0) platformMode = false;
+                else platformMode = true;
+                width = fis.read();
+                height = fis.read();
+                areaIds = new ArrayList<ArrayList<ArrayList<Integer>>>();
+                for (int i = 0; i < width; i++) {
+                    areaIds.add(new ArrayList<ArrayList<Integer>>());
+                    for (int t = 0; t < width; t++) {
+                        areaIds.get(i).add(new ArrayList<Integer>());
+                        for (int k = 0; k < height; k++) {
+                            areaIds.get(i).get(t).add(-1);
+                        }
+                    }
+                }
+                areaWidth = fis.read();
+                areaHeight = fis.read();
+                tileWidth = fis.read();
+                tileHeight = fis.read();
 
+                int curCoordX = fis.read();
+                int curCoordY = fis.read();
+                int curCoordZ = fis.read();
+                //int endChecker = 0;
+                curAreaX = curCoordX;
+                curAreaY = curCoordY;
+                curAreaZ = curCoordZ;
+                while (fis.available() > 1) {
+
+                    buff = new byte[areaWidth*areaHeight*4];
+                    fis.read(buff);
+                    areas.add(new Area(this, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode));
+                    areaIds.get(curCoordX).get(curCoordY).set(curCoordZ, areas.size() - 1);
+                    //fis.skip(areaWidth*areaHeight*4);
+                    if (fis.available() > 0) {
+                        curCoordX = fis.read();
+                        curCoordY = fis.read();
+                        curCoordZ = fis.read();
+                    } else {
+                        break;
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            worldDir = Gdx.files.internal(folderPath);
+            for (FileHandle entry: worldDir.list()) {
+                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("world.tlw")){
+                    continue;
+                }
+                assets.load(entry.path(), Texture.class);
+                spritesCount++;
+            }
+            worldDir = Gdx.files.internal(folderPath+"/tiles");
+            for (FileHandle entry: worldDir.list()) {
+                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                    continue;
+                }
+                assets.load(entry.path(), Texture.class);
+            }
         }
         loaded = true;
     }
@@ -148,81 +172,100 @@ public class World {
     public void initialiseResources(AssetManager assets) {
         characterMaker.initialiseResources(assets);
         if (!initialised && !areasCreated) {
-            for (FileHandle entry: worldDir.list()) {
-                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
-                    continue;
+            if (tlw == null) {
+                for (FileHandle entry: worldDir.list()) {
+                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                        continue;
+                    }
+                    maps.add(assets.get(entry.path(), Pixmap.class));
+                    if (worldDir.name().substring(0, 2).equals("p_")) {
+                        areas.add(new Area(assets, this, maps.get(maps.size()-1), true, 16, 16));
+                    } else {
+                        areas.add(new Area(assets, this, maps.get(maps.size()-1), false, 32, 16));
+                    }
                 }
-                maps.add(assets.get(entry.path(), Pixmap.class));
-                if (worldDir.name().substring(0, 2).equals("p_")) {
-                    areas.add(new Area(assets, this, maps.get(maps.size()-1), true, 16, 16));
-                } else {
-                    areas.add(new Area(assets, this, maps.get(maps.size()-1), false, 32, 16));
-                }
-            }
             /*for (int i=0; i<maps.size(); ++i) {
 
                 //areas.get(i).initialiseResources(assets);
             }*/
-            maps.clear();
-            areasCreated = true;
+                maps.clear();
+                areasCreated = true;
+            } else {
+                sprites = new ArrayList<Texture>();
+                worldDir = Gdx.files.internal(folderPath);
+                for (FileHandle entry: worldDir.list()) {
+                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("world.tlw")){
+                        continue;
+                    }
+                    sprites.add(assets.get(entry.path(), Texture.class));
+                }
+                tiles = new ArrayList<BlockMultiTile>();
+                worldDir = Gdx.files.internal(folderPath+"/tiles");
+                for (FileHandle entry: worldDir.list()) {
+                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                        continue;
+                    }
+                    tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
+                }
+            }
         }
         //System.out.println(areas.size() + " " + areaIds.size());
-        if (areas.get(areaIds.get(curAreaX).get(curAreaY)).initialised) {
+        if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
-        } else if (assets.update() && areas.get(areaIds.get(curAreaX).get(curAreaY)).loaded) {
-            areas.get(areaIds.get(curAreaX).get(curAreaY)).initialiseResources(assets, worldDir.path());
+        } else if (assets.update() && areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).loaded) {
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialiseResources(assets, this);
         } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY)).load(assets, this);
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).load(assets, this);
         }
     }
 
     private void checkPlayerPosition() {
-       if (areas.get(areaIds.get(curAreaX).get(curAreaY)).player.x < -areas.get(areaIds.get(curAreaX).get(curAreaY)).player.hitBox.getWidth()) {
+       if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.x < -areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.hitBox.getWidth()) {
            changeArea(-1, 0);
-       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY)).player.x > areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_WIDTH*(areas.get(areaIds.get(curAreaX).get(curAreaY)).width)-5) {
+       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.x > areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).TILE_WIDTH*(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).width)-5) {
            changeArea(1, 0);
-       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY)).player.y+areas.get(areaIds.get(curAreaX).get(curAreaY)).player.hitBox.getHeight() < -areas.get(areaIds.get(curAreaX).get(curAreaY)).player.hitBox.getHeight()/2) {
+       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.y+areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.hitBox.getHeight() < -areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.hitBox.getHeight()/2) {
            changeArea(0, 1);
-       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY)).player.y > areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_HEIGHT*(areas.get(areaIds.get(curAreaX).get(curAreaY)).height-1)) {
+       } else if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.y > areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).TILE_HEIGHT*(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).height-1)) {
            changeArea(0, -1);
        }
     }
 
     private void changeArea(int offX, int offY) {
-        if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && areaIds.get(curAreaX + offX).get(curAreaY+offY) != -1) {
+        if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1) {
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.x = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.x - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_WIDTH*offX;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.y = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.y - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_HEIGHT*offY;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).resetCamera();
 
-            areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).playerTileX = areas.get(areaIds.get(curAreaX).get(curAreaY)).playerTileX-(areas.get(areaIds.get(curAreaX).get(curAreaY)).width-1)*offX;
-            areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).playerTileY = areas.get(areaIds.get(curAreaX).get(curAreaY)).playerTileY+(areas.get(areaIds.get(curAreaX).get(curAreaY)).height-1)*offY;
+            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).playerTileX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileX-(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).width-1)*offX;
+            areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ)).playerTileY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileY+(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).height-1)*offY;
 
             float pos = 0;
             int tileX, tileY;
             int speed=0;
             if (offY == 0) {
-                pos = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.hitBox.y;
+                pos = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.hitBox.y;
                 if (offX > 0) {
                     tileX = -1;
                 } else {
                     tileX = 1;
                 }
                 tileY = 0;
-                speed = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.speedX;
+                speed = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.speedX;
                 areaTransitionX = 1.0f;
             } else {
-                pos = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.hitBox.x;
+                pos = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.hitBox.x;
                 if (offY > 0) {
                     tileY = -1;
                 } else {
                     tileY = 1;
                 }
                 tileX = 0;
-                speed = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.speedY;
+                speed = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.speedY;
                 areaTransitionY = 1.0f;
             }
 
-            areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).respawnPlayer(worldDir.path(), tileX, tileY, pos, speed);
+            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).respawnPlayer(worldDir.path(), tileX, tileY, pos, speed);
             if (offY != 0) {
 
             } else {
@@ -237,7 +280,7 @@ public class World {
             initialised = false;
 
         } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY)).respawnPlayer(null, 0, 0, 0, 0);
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, 0, 0, 0, 0);
         }
         /*if (id < areas.size()) {
             curArea = id;
@@ -248,42 +291,42 @@ public class World {
 
     public void invalidate() {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
-            areas.get(areaIds.get(curAreaX).get(curAreaY)).invalidate();
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate();
         }
     }
 
     public void draw(SpriteBatch batch) {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
-            if (areas.size() > areaIds.get(curAreaX).get(curAreaY) && areas.get(areaIds.get(curAreaX).get(curAreaY)) != null) {
-                areas.get(areaIds.get(curAreaX).get(curAreaY)).draw(batch, 0, 0, true, characterMaker);
+            if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)) != null) {
+                areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).draw(batch, this, 0, 0, true, characterMaker);
                 checkPlayerPosition();
             }
         } else {
             Area area1, area2;
             if (oldAreaX < curAreaX || oldAreaY > curAreaY) {
-                area1 = areas.get(areaIds.get(oldAreaX).get(oldAreaY));
-                area2 = areas.get(areaIds.get(curAreaX).get(curAreaY));
+                area1 = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ));
+                area2 = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             } else {
-                area2 = areas.get(areaIds.get(oldAreaX).get(oldAreaY));
-                area1 = areas.get(areaIds.get(curAreaX).get(curAreaY));
+                area2 = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ));
+                area1 = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             }
             if (oldAreaY == curAreaY) {
-                areas.get(areaIds.get(oldAreaX).get(oldAreaY)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY)).cameraY;
+                areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraY;
                 if (oldAreaX < curAreaX) {
-                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(areaTransitionX), 0, true, characterMaker);
-                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, characterMaker);
+                    area2.draw(batch, this, Gdx.graphics.getWidth()/area2.zoom*(areaTransitionX), 0, true, characterMaker);
+                    area1.draw(batch, this, Gdx.graphics.getWidth()/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, characterMaker);
                 } else {
-                    area2.draw(batch, Gdx.graphics.getWidth()/area2.zoom*(1.0f-areaTransitionX)+1, 0, false, characterMaker);
-                    area1.draw(batch, Gdx.graphics.getWidth()/area1.zoom*(-areaTransitionX), 0, true, characterMaker);
+                    area2.draw(batch, this, Gdx.graphics.getWidth()/area2.zoom*(1.0f-areaTransitionX)+1, 0, false, characterMaker);
+                    area1.draw(batch, this, Gdx.graphics.getWidth()/area1.zoom*(-areaTransitionX), 0, true, characterMaker);
                 }
             } else {
-                areas.get(areaIds.get(oldAreaX).get(oldAreaY)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY)).cameraX;
+                areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraX;
                 if (oldAreaY < curAreaY) {
-                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, characterMaker);
-                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-1.0f+areaTransitionY)-4, false, characterMaker);
+                    area1.draw(batch, this, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, characterMaker);
+                    area2.draw(batch, this, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-1.0f+areaTransitionY)-4, false, characterMaker);
                 } else {
-                    area1.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(1.0f-areaTransitionY)+4/* + area1.FLOOR_HEIGHT+2*/, false, characterMaker);
-                    area2.draw(batch, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-areaTransitionY), true, characterMaker);
+                    area1.draw(batch, this, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area1.zoom*(1.0f-areaTransitionY)+4/* + area1.FLOOR_HEIGHT+2*/, false, characterMaker);
+                    area2.draw(batch, this, 0, (Gdx.graphics.getHeight()+2*area1.TILE_HEIGHT+area1.FLOOR_HEIGHT+2)/area2.zoom*(-areaTransitionY), true, characterMaker);
                 }
             }
             areaTransitionX /= 1.1f;
