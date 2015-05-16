@@ -70,4 +70,8 @@ public class BlockMultiTile extends MultiTile {
         }
         return getTile(0, 0, false, false);
     }
+
+    public TextureRegion getSingleTile() {
+        return getTile(0, 0, false, false);
+    }
 }

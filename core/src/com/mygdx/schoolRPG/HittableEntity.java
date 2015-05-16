@@ -4,6 +4,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
@@ -14,7 +15,7 @@ public class HittableEntity extends Entity {
     Rectangle hitBox;
     boolean movable;
     boolean leftSide, rightSide, downSide, upSide;
-    float oldX, oldY, floorHeight, graphicX, graphicY, oldY2;
+    float oldX, oldY, graphicX, graphicY, oldY2;
     boolean deltaX=false, deltaY=false;
     float z = 0, zSpeed = 0;
     int pSpeed = 0;
@@ -27,7 +28,35 @@ public class HittableEntity extends Entity {
     int checksum = 0;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable) {
-        super(assets, texPath, x, y);
+        super(assets, texPath, x, y, height-1, floorHeight);
+        this.floorHeight = floorHeight;
+        hitBox = new Rectangle(x, y, width, height);
+        this.movable = movable;
+        leftSide = rightSide = downSide = upSide = true;
+        //this.width = width;
+        //this.height = height;
+        oldX = hitBox.x;
+        oldY = -1000;//hitBox.y;
+        graphicX = hitBox.x;
+        graphicY = hitBox.y;
+    }
+
+    public HittableEntity(AssetManager assets, TextureRegion tex, float x, float y, float width, float height, float floorHeight, boolean movable) {
+        super(assets, tex, x, y, height-1, floorHeight);
+        this.floorHeight = floorHeight;
+        hitBox = new Rectangle(x, y, width, height);
+        this.movable = movable;
+        leftSide = rightSide = downSide = upSide = true;
+        //this.width = width;
+        //this.height = height;
+        oldX = hitBox.x;
+        oldY = -1000;//hitBox.y;
+        graphicX = hitBox.x;
+        graphicY = hitBox.y;
+    }
+
+    public HittableEntity(AssetManager assets, Texture tex, float x, float y, float width, float height, float floorHeight, boolean movable) {
+        super(assets, tex, x, y, height-1, floorHeight);
         this.floorHeight = floorHeight;
         hitBox = new Rectangle(x, y, width, height);
         this.movable = movable;
@@ -57,9 +86,9 @@ public class HittableEntity extends Entity {
         hitBox = rect;
     }
 
-    @Override
     public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
 
+        type = 1;
         boolean overlapX = false, overlapY = false;
         boolean platformMode = area.platformMode;
        //he.deltaX = he.hitBox.x;
@@ -215,6 +244,7 @@ public class HittableEntity extends Entity {
                             if (centerX <= center2X && hitBox.x + hitBox.width - rect.x <= hitBox.getWidth()/4 && he.canRight) {
                                 rect.x += 0.3f;
                                 hitBox.x -= 0.3f;
+                                canLeft = true;
                             } else if (oldX != rect.x && objectIsPlayer && !platformMode) {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
@@ -223,6 +253,7 @@ public class HittableEntity extends Entity {
                             if (centerX >= center2X && rect.x + rect.width - hitBox.x <= hitBox.getWidth()/4 && he.canLeft) {
                                 rect.x -= 0.3f;
                                 hitBox.x += 0.3f;
+                                canRight = true;
                             }else if (oldX != rect.x && objectIsPlayer && !platformMode) {
                                 hitBox.x += (rect.x-oldX)/22;
                             }
@@ -281,6 +312,8 @@ public class HittableEntity extends Entity {
                     //}
                     if (diffY > 0) {
                         he.canUp = false;
+                        he.deadEndX = rect.x;
+                        setCheck(he, 3);
                     }
                     else if (diffY < 0) {
                         he.canDown = false;
@@ -309,10 +342,12 @@ public class HittableEntity extends Entity {
                                 he.hitBox.x += 0.4f;
                                 he.canUp = true;
                                 he.canDown = true;
+
                             } else if (leftSide && centerX >= center2X && rect.x+rect.width-hitBox.x <= hitBox.getWidth()/4) {
                                 he.hitBox.x -= 0.4f;
                                 he.canUp = true;
                                 he.canDown = true;
+
                             }
                             /*if (rightSide && centerX < center2X && hitBox.x + hitBox.width - rect.x < hitBox.getWidth()/4) {
                                 if (rect.x + (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 5 < hitBox.x+hitBox.width) rect.x += (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 20;
@@ -412,9 +447,13 @@ public class HittableEntity extends Entity {
                 pSpeed += 4;
             }
             if (pSpeed > 40) {
+                canLeft = true;
+                canRight = true;
                 pSpeed = 40;
                 //makeFree();
             }
+        } else {
+            pSpeed = 0;
         }
         //canDown = true;
     }
@@ -425,7 +464,7 @@ public class HittableEntity extends Entity {
         oldY = y;
         x = hitBox.x;
         y = hitBox.y;
-
+        h = hitBox.y+hitBox.height/2;
         /*if (Math.abs(hitBox.x-oldX)>0.4f) {
             graphicX = x;
         }*/
@@ -443,15 +482,15 @@ public class HittableEntity extends Entity {
         deltaX = false;
         deltaY = false;
 
-        /*if (!canDown) batch.setColor(new Color(1, 0, 1, 0.25f));
+       /* if (!canDown) batch.setColor(new Color(1, 0, 1, 0.25f));
         if (!canRight) batch.setColor(new Color(0, 1, 0, 0.25f));
         if (!canLeft) batch.setColor(new Color(0, 0, 1, 0.25f));*/
 
         super.initialiseIfNeeded();
         if (tex != null) {
             batch.draw(tex, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z, tex.getWidth(), tex.getHeight());
-        } else {
-            batch.draw(texDef, offsetX+graphicX+hitBox.getWidth()/2-texDef.getWidth()/2, offsetY - graphicY-floorHeight-z, texDef.getWidth(), texDef.getHeight());
+        } else if (texR != null) {
+            batch.draw(texR, offsetX+graphicX+hitBox.getWidth()/2-texR.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, texR.getRegionWidth(), texR.getRegionHeight());
         }
 
         //batch.setColor(Color.WHITE);

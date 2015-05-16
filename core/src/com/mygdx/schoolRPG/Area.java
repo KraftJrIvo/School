@@ -29,7 +29,8 @@ public class Area {
     //int id, nextId;
     String name;
     ArrayList<ArrayList<ArrayList<Integer>>> blocks;
-    ArrayList<HittableEntity> objects;
+    ArrayList<Entity> objects;
+    //ArrayList<HittableEntity> scenery;
     int width, height;
     Player player;
     int playerTileX=0, playerTileY=0, playerTileDynX=0, playerTileDynY=0;
@@ -64,7 +65,8 @@ public class Area {
         //this.id = id;
         //nextId = id;
         blocks = new ArrayList<ArrayList<ArrayList<Integer>>>();
-        objects = new ArrayList<HittableEntity>();
+        objects = new ArrayList<Entity>();
+        //scenery = new ArrayList<HittableEntity>();
         camera = new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         if (map != null) {
             width = map.getWidth();
@@ -92,7 +94,7 @@ public class Area {
                             blocks.get(1).get(i).add(0);
                             blocks.get(2).get(i).add(1);
                         } else if (curPixelColor.equals(Color.BLUE)) {
-                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/blue.png", i*TILE_WIDTH+TILE_WIDTH/2-2.5f, (t * TILE_HEIGHT), 5, 4, -TILE_HEIGHT/2, false));
+                            objects.add(new HittableEntity(assets, world.folderPath+"/sprites/blue.png", i*TILE_WIDTH+TILE_WIDTH/4, (t* TILE_HEIGHT-FLOOR_HEIGHT), 5, 4, -FLOOR_HEIGHT/2+1, false));
                             blocks.get(0).get(i).add(1);
                             blocks.get(1).get(i).add(0);
                             blocks.get(2).get(i).add(1);
@@ -131,8 +133,8 @@ public class Area {
                             blocks.get(2).get(i).add(0);
                         }
                     } else {
-                        blocks.get(0).get(i).add(0);
-                        blocks.get(1).get(i).add(0);
+                        blocks.get(0).get(i).add(-1);
+                        blocks.get(1).get(i).add(-1);
                         blocks.get(2).get(i).add(0);
                     }
                 }
@@ -153,7 +155,8 @@ public class Area {
             playerFloor = 10;
         }
         blocks = new ArrayList<ArrayList<ArrayList<Integer>>>();
-        objects = new ArrayList<HittableEntity>();
+        objects = new ArrayList<Entity>();
+        //scenery = new ArrayList<HittableEntity>();
         camera = new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.width = width;
         this.height = height;
@@ -161,21 +164,52 @@ public class Area {
         blocks.add(new ArrayList<ArrayList<Integer>>());
         blocks.add(new ArrayList<ArrayList<Integer>>());
         blocks.add(new ArrayList<ArrayList<Integer>>());
+
+        blocks.add(new ArrayList<ArrayList<Integer>>());
+        blocks.add(new ArrayList<ArrayList<Integer>>());
         if (map != null) {
+            for (int i = 0; i < height; ++i) {
+                blocks.get(2).add(new ArrayList<Integer>());
+                for (int t = 0; t < width; ++t) {
+                    blocks.get(2).get(i).add(0);
+                }
+            }
             for (int k = 0; k < 2; ++k) {
                 for (int i = 0; i < height; ++i) {
-
-                        for (int t = 0; t < width; ++t) {
-                            blocks.get(k).add(new ArrayList<Integer>());
-                            if (k == 0) blocks.get(2).add(new ArrayList<Integer>());
+                    for (int t = 0; t < width; ++t) {
+                        if (i == 0)blocks.get(k).add(new ArrayList<Integer>());
                         if ((int)map[c] == 255 || (int)map[c] == -1) {
-                            blocks.get(k).get(t).add(0);
-                            blocks.get(2).get(t).add(0);
+                            blocks.get(k).get(t).add(-1);
                         } else {
                             blocks.get(k).get(t).add((int)map[c]);
-                            if (k == 0) blocks.get(2).get(t).add(1);
-                            else {
-                                blocks.get(2).get(t).add(2);
+                            if (k == 0) {
+                                blocks.get(2).get(t).set(i, 1);
+                            } else {
+                                blocks.get(2).get(t).set(i, 2);
+                            }
+                        }
+                        c++;
+                    }
+                }
+            }
+            for (int k = 3; k < 5; ++k) {
+                for (int i = 0; i < height; ++i) {
+
+                    for (int t = 0; t < width; ++t) {
+                        if (i == 0)blocks.get(k).add(new ArrayList<Integer>());
+
+                        int type = (int)map[c];
+                        blocks.get(k).get(t).add(type);
+                        if (k == 4) {
+                            if (type == -1) {
+                                blocks.get(2).get(t).set(i, 0);
+                            } else if (type == 0) {
+                                playerTileX = t;
+                                playerTileY = i;
+                            } else if (type == 1) {
+                                if (blocks.get(0).get(t).get(i) == -1) blocks.get(2).get(t).set(i, 1);
+                            } else if (type == 2) {
+                                if (blocks.get(1).get(t).get(i) == -1) blocks.get(2).get(t).set(i, 2);
                             }
                         }
                         c++;
@@ -183,8 +217,7 @@ public class Area {
                 }
             }
         }
-        playerTileY = 8;
-        playerTileX = 8;
+
 
     }
 
@@ -226,7 +259,49 @@ public class Area {
                 for (int i = 0; i < world.tiles.size(); ++i) {
                     world.tiles.get(i).initialiseIfNeeded(assets);
                 }
+                for (int i = 0; i < height; ++i) {
+                    for (int t = 0; t < width; ++t) {
+                        int type = blocks.get(4).get(t).get(i);
+                        int img = blocks.get(3).get(t).get(i);
+                        /*if (type == 1) {
+                            if(type < world.sprites.size()){
+                                objects.add(new Entity(assets, world.sprites.get(type), i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT), 0));
+                            } else {
+                                objects.add(new Entity(assets, world.tiles.get(type - world.spritesCount).getSingleTile(), i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT), 0));
+                            }
+                        } else if (type == 2) {
+                            if(type < world.sprites.size()){
+                                objects.add(new Entity(assets, world.sprites.get(type), i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT), 0));
+                            } else {
+                                objects.add(new Entity(assets, world.tiles.get(type - world.spritesCount).getSingleTile(), i*TILE_WIDTH, (t * TILE_HEIGHT - FLOOR_HEIGHT), 0));
+                            }
+                        } else*/ if (type == 3) {
+                            if(img < world.sprites.size()){
+                                objects.add(new Entity(assets, world.sprites.get(img), t*TILE_WIDTH+TILE_WIDTH/2-world.sprites.get(img).getWidth()/2, ((i)* TILE_HEIGHT-TILE_HEIGHT/2), 0, 0));
+                            } else {
+                                objects.add(new Entity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t*TILE_WIDTH+TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, ((i)* TILE_HEIGHT-TILE_HEIGHT/2), 0, 0));
+                            }
+                        } else if (type == 4) {
+                            if(img < world.sprites.size()){
+                                objects.add(new HittableEntity(assets, world.sprites.get(img), t*TILE_WIDTH + TILE_WIDTH/2-world.sprites.get(img).getWidth()/2, (i * TILE_HEIGHT - TILE_HEIGHT/2), world.sprites.get(img).getWidth(), world.sprites.get(img).getWidth()/2, 0, false));
+                            } else {
+                                objects.add(new HittableEntity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t*TILE_WIDTH + TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, (i * TILE_HEIGHT - TILE_HEIGHT/2),
+                                        world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth(), world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, 0, false));
+                            }
+                        } else if (type == 5) {
+                            if(img < world.sprites.size()){
+                                objects.add(new HittableEntity(assets, world.sprites.get(img), t*TILE_WIDTH + TILE_WIDTH/2-world.sprites.get(img).getWidth()/2, (i * TILE_HEIGHT - TILE_HEIGHT/2), world.sprites.get(img).getWidth(), world.sprites.get(img).getWidth()/2, 0, true));
+                            } else {
+                                objects.add(new HittableEntity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t*TILE_WIDTH + TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, (i * TILE_HEIGHT - TILE_HEIGHT/2),
+                                        world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth(), world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, 0, true));
+                            }
+                        }
+                    }
+                }
             }
+
+            //objects.add(new Entity(assets, assets.get("worlds/tlw_test/yellow.png", Texture.class), 100, 400, 0));
+
             if (player == null) {
                 if (platformMode) {
                     player = new Player(assets, world.worldDir+"/sprites/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true);
@@ -332,16 +407,17 @@ public class Area {
 
         Rectangle oldRect = new Rectangle(he.hitBox);
         for (int z=0; z<objects.size(); ++z) {
-            if (!objects.get(z).falling) {
+            if (objects.get(z).getClass() == Entity.class) continue;
+            if (!((HittableEntity)objects.get(z)).falling) {
                 if (platformMode) {
-                    he.hitBox = objects.get(z).pushOutSolidObjects(he, this, player.oldX, he.oldY);
+                    he.hitBox = ((HittableEntity)objects.get(z)).pushOutSolidObjects(he, this, player.oldX, he.oldY);
                     if (he.hitBox.y < oldRect.y && he.pSpeed > 0) {
                         he.pSpeed=0;
                     } else if (he.hitBox.y > oldRect.y && he.pSpeed < 0) {
                         he.pSpeed=1;
                     }
                 } else {
-                    he.hitBox = objects.get(z).pushOutSolidObjects(he, this, player.oldX, player.oldY);
+                    he.hitBox = ((HittableEntity)objects.get(z)).pushOutSolidObjects(he, this, player.oldX, player.oldY);
                 }
             }
         }
@@ -350,7 +426,7 @@ public class Area {
             for (int t = tileX-1; t <= tileX+1; ++t) {
                 if (t < 0 || t >= blocks.get(2).size() || i < 0 || i >= blocks.get(2).size()) break;
                 if (blocks.get(2).get(t).get(i) == 2/* || blocks.get(t).get(i) == 0*/) {
-                    HittableEntity tmp = new HittableEntity(assets, null, t*(TILE_WIDTH), i* TILE_HEIGHT -6, TILE_WIDTH, TILE_HEIGHT, 3, false);
+                    HittableEntity tmp = new HittableEntity(assets, (String)null, t*(TILE_WIDTH), i* TILE_HEIGHT -6, TILE_WIDTH, TILE_HEIGHT, 3, false);
                     boolean left = t > 0 && blocks.get(2).get(t - 1).get(i) != 2/* && blocks.get(t-1).get(i) != 0*/;
                     boolean right = t < blocks.get(2).size()-1 && blocks.get(2).get(t + 1).get(i) != 2/* && blocks.get(t+1).get(i) != 0*/;
                     boolean up = i < blocks.get(2).get(i).size()-1 && blocks.get(2).get(t).get(i+1) != 2/* && blocks.get(t).get(i+1) != 0*/;
@@ -417,17 +493,6 @@ public class Area {
         if (fall) object.falling = true;
     }
 
-
-    public static Comparator<Entity> ObjectsComparator
-            = new Comparator<Entity>() {
-
-        public int compare(Entity e1, Entity e2) {
-
-            return (int)(e1.y - e2.y);
-        }
-
-    };
-
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
@@ -440,14 +505,16 @@ public class Area {
     public void moveCamera(int k) {
         cameraX += (player.graphicX + player.hitBox.getWidth()/2 - cameraX)/k;
         cameraY += (player.graphicY + player.hitBox.getHeight()/2 - cameraY)/k;
-        if (TILE_WIDTH*(width) > camera.getWidth()) {
+        if (TILE_WIDTH*(width)*zoom > camera.getWidth()) {
             if (cameraX - Gdx.graphics.getWidth()/zoom/2 < 1) {
                 cameraX = Gdx.graphics.getWidth()/zoom/2+1;
             } else if (cameraX + Gdx.graphics.getWidth()/zoom/2 > TILE_WIDTH*(width)) {
                 cameraX = TILE_WIDTH*(width) - Gdx.graphics.getWidth()/zoom/2;
             }
         }
-        if (TILE_HEIGHT*(height) > camera.getHeight()) {
+        float a = TILE_HEIGHT*(height)*zoom;
+        float b = camera.getHeight();
+        if (TILE_HEIGHT*(height-2)*zoom > camera.getHeight()) {
             if (cameraY - Gdx.graphics.getHeight() / zoom / 2 + TILE_HEIGHT < 0) {
                 cameraY = Gdx.graphics.getHeight() / zoom / 2 - TILE_HEIGHT;
             } else if (cameraY + Gdx.graphics.getHeight() / zoom / 2 + FLOOR_HEIGHT + 2 > TILE_HEIGHT * (height - 2)) {
@@ -459,27 +526,28 @@ public class Area {
     }
 
     public void invalidate() {
-        if (player.z < 0.5f) {
+        //if (player.z < 0.5f) {
             if (!platformMode) {
                 player.move();
             } else {
                 player.platformMove();
             }
-        }
+        //}
 
         for (int i=0; i<objects.size(); ++i) {
-            float old = objects.get(i).hitBox.y;
+            if (objects.get(i).getClass() == Entity.class) continue;
+            float old = ((HittableEntity)objects.get(i)).hitBox.y;
             if (!platformMode) {
                 objects.get(i).fall();
             } else if (objects.get(i).getClass()!=Player.class) {
                 //objects.get(i).platformFall();
                 objects.get(i).platformFall();
             }
-            if (objects.get(i).movable && objects.get(i).getClass()!=Player.class && !objects.get(i).falling) {
-                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            if (((HittableEntity)objects.get(i)).movable && objects.get(i).getClass()!=Player.class && !((HittableEntity)objects.get(i)).falling) {
+                invalidateCollisions((HittableEntity)objects.get(i), ((HittableEntity)objects.get(i)).oldX, ((HittableEntity)objects.get(i)).oldY);
             }
-            if (objects.get(i).hitBox.y < old) {
-                objects.get(i).pSpeed = 0;
+            if (((HittableEntity)objects.get(i)).hitBox.y < old) {
+                ((HittableEntity)objects.get(i)).pSpeed = 0;
             }
         }
 
@@ -496,18 +564,24 @@ public class Area {
 
 
         for (int i=0; i<objects.size(); ++i) {
-            if (objects.get(i).movable && objects.get(i).getClass() != Player.class && !objects.get(i).falling) {
-                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            //System.out.println(objects.get(i).y);
+            if (objects.get(i).getClass() == Player.class) System.out.println(objects.get(i).y+" p");
+            else System.out.println(objects.get(i).y);
+            if (objects.get(i).getClass() == Entity.class) continue;
+            if (((HittableEntity)objects.get(i)).movable && objects.get(i).getClass() != Player.class && !((HittableEntity)objects.get(i)).falling) {
+                invalidateCollisions((HittableEntity)objects.get(i), ((HittableEntity)objects.get(i)).oldX, ((HittableEntity)objects.get(i)).oldY);
             }
         }
+        System.out.println("---------------------------");
 
         for (int i=objects.size()-1; i>=0; --i) {
-            if (objects.get(i).movable && (objects.get(i).getClass()!=Player.class || platformMode) && !objects.get(i).falling) {
-                invalidateCollisions(objects.get(i), objects.get(i).oldX, objects.get(i).oldY);
+            if (objects.get(i).getClass() == Entity.class) continue;
+            if (((HittableEntity)objects.get(i)).movable && (objects.get(i).getClass()!=Player.class || platformMode) && !((HittableEntity)objects.get(i)).falling) {
+                invalidateCollisions((HittableEntity)objects.get(i), ((HittableEntity)objects.get(i)).oldX, ((HittableEntity)objects.get(i)).oldY);
             }
             if (!platformMode) {
-                checkFall(objects.get(i));
-                if (objects.get(i).z > cameraY + Gdx.graphics.getHeight()) {
+                checkFall((HittableEntity)objects.get(i));
+                if (((HittableEntity)objects.get(i)).z > cameraY + Gdx.graphics.getHeight()) {
                     if (objects.get(i).getClass() != Player.class) {
                         objects.remove(i);
                     } else {
@@ -522,10 +596,11 @@ public class Area {
             pushField.speedX = -player.speedX*10;
             pushField.speedY = -player.speedY*10;
             for (int i=0; i<objects.size(); ++i) {
+                if (objects.get(i).getClass() == Entity.class) continue;
                 if (objects.get(i).getClass() == Player.class) {
                     continue;
                 }
-                pushField.pushOutSolidObjects(objects.get(i), this, pushField.oldX, pushField.oldY);
+                pushField.pushOutSolidObjects((HittableEntity)objects.get(i), this, pushField.oldX, pushField.oldY);
                 //objects.get(i).canDown = true;
                 //objects.get(i).canUp = true;
                 //objects.get(i).canLeft = true;
@@ -555,13 +630,13 @@ public class Area {
         offsetX += -cameraX + Gdx.graphics.getWidth()/2;
         offsetY += cameraY + Gdx.graphics.getHeight()/2;
 
-        Collections.sort(objects, ObjectsComparator);
+        Collections.sort(objects);
         if (!platformMode) {
             for (int i = -1; i <= height + 1; ++i) {
                 for (int t = 0; t < width; ++t) {
                     if (i >= 0 && i < height) {
 
-                        if (blocks.get(0).get(t).get(i) > 0) {
+                        if (blocks.get(0).get(t).get(i) >= 0) {
                             drawLayer(batch, world, 0, offsetX, offsetY, i, t);
                         }
 
@@ -572,38 +647,50 @@ public class Area {
 
                 }
                 for (int z = 0; z < objects.size(); ++z) {
-                    if (objects.get(z).falling && objects.get(z).getClass() != Player.class) {
-                        int objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT));
-                        int objectTileX = (int) ((objects.get(z).getRect().x + objects.get(z).getRect().getWidth() / 2) / (TILE_WIDTH));
-                        if (i == objectTileY + 1) {
-                            //System.out.println(blocks.get(objectTileX).get(i - 1) + " " + blocks.get(objectTileX).get(i) + " " + blocks.get(objectTileX).get(i + 1));
-                            //System.out.println(blocks.get(objectTileX + 1).get(i - 1) + " " + blocks.get(objectTileX + 1).get(i) + " " + blocks.get(objectTileX + 1).get(i + 1));
-                            boolean up = i==2 || blocks.get(2).get(objectTileX).get(i - 1)==2;
-                            boolean w_up = i==2 || blocks.get(2).get(objectTileX).get(i - 1)!=0;
-                            boolean down = i==height+1 || blocks.get(2).get(objectTileX).get(i+1)==2;
-                            boolean w_down = i==height+1 || blocks.get(2).get(objectTileX).get(i+1)!=0;
-                            boolean left = objectTileX==0 || blocks.get(2).get(objectTileX - 1).get(i)==2;
-                            boolean w_left = objectTileX==0 || blocks.get(2).get(objectTileX - 1).get(i)!=0;
-                            boolean right = objectTileX==width-1 || blocks.get(2).get(objectTileX + 1).get(i)==2;
-                            boolean w_right = objectTileX==width-1 || blocks.get(2).get(objectTileX + 1).get(i)!=0;
-                            objects.get(z).draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
+                    //if (objects.get(z).getClass() == Entity.class) continue;
+                    if (objects.get(z).getClass() == Entity.class || ((HittableEntity)objects.get(z)).falling && objects.get(z).getClass() != Player.class) {
+                        int objectTileY=0;
+                        int objectTileX=0;
+                        if (objects.get(z).getClass() != Entity.class) {
+                            objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT));
+                            objectTileX = (int) ((objects.get(z).getRect().x + objects.get(z).getRect().getWidth() / 2) / (TILE_WIDTH));
+                            if (i == objectTileY + 1) {
+                                //System.out.println(blocks.get(objectTileX).get(i - 1) + " " + blocks.get(objectTileX).get(i) + " " + blocks.get(objectTileX).get(i + 1));
+                                //System.out.println(blocks.get(objectTileX + 1).get(i - 1) + " " + blocks.get(objectTileX + 1).get(i) + " " + blocks.get(objectTileX + 1).get(i + 1));
+                                boolean up = i==2 || blocks.get(2).get(objectTileX).get(i - 1)==2;
+                                boolean w_up = i==2 || blocks.get(2).get(objectTileX).get(i - 1)!=0;
+                                boolean down = i==height+1 || blocks.get(2).get(objectTileX).get(i+1)==2;
+                                boolean w_down = i==height+1 || blocks.get(2).get(objectTileX).get(i+1)!=0;
+                                boolean left = objectTileX==0 || blocks.get(2).get(objectTileX - 1).get(i)==2;
+                                boolean w_left = objectTileX==0 || blocks.get(2).get(objectTileX - 1).get(i)!=0;
+                                boolean right = objectTileX==width-1 || blocks.get(2).get(objectTileX + 1).get(i)==2;
+                                boolean w_right = objectTileX==width-1 || blocks.get(2).get(objectTileX + 1).get(i)!=0;
+                                objects.get(z).draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
 
-                            if (i > 0 && blocks.get(2).get(objectTileX).get(i) == 2) {
-                                batch.draw(black.getTile(up, down, left, right), offsetX + objectTileX * (TILE_WIDTH), offsetY - (i) * TILE_HEIGHT + 4, black.getWidth(), black.getHeight());
-                            } else if (i > 0 && blocks.get(2).get(objectTileX).get(i) == 1) {
-                                batch.draw(white.getTile(w_up, w_down, w_left, w_right), offsetX + objectTileX * (TILE_WIDTH), offsetY - (i) * TILE_HEIGHT, white.getWidth(), white.getHeight());
+                                if (white != null) {
+                                    if (i > 0 && blocks.get(2).get(objectTileX).get(i) == 2) {
+                                        batch.draw(black.getTile(up, down, left, right), offsetX + objectTileX * (TILE_WIDTH), offsetY - (i) * TILE_HEIGHT + 4, black.getWidth(), black.getHeight());
+                                    } else if (i > 0 && blocks.get(2).get(objectTileX).get(i) == 1) {
+                                        batch.draw(white.getTile(w_up, w_down, w_left, w_right), offsetX + objectTileX * (TILE_WIDTH), offsetY - (i) * TILE_HEIGHT, white.getWidth(), white.getHeight());
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 for (int z = 0; z < objects.size(); ++z) {
-                    float objectTileY;
-                    if (!objects.get(z).falling) {
-                        objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT)) + 1;
+                    float objectTileY=0;
+                    //if (objects.get(z).getClass() == Entity.class) continue;
+                    if (objects.get(z).getClass() == Entity.class || !((HittableEntity)objects.get(z)).falling) {
+                        if (objects.get(z).getClass() != Entity.class) {
+                            objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT)) + 1;
+                        } else {
+                            objectTileY = (int) ((objects.get(z).y) / (TILE_HEIGHT))+2;
+                        }
                     } else {
                         objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT));
                     }
-                    if (i == objectTileY/* || (objects.get(z).falling && objectTileY < playerTileY && objects.get(z).y > player.y && i == playerTileY)*/ && (!objects.get(z).falling || objects.get(z).getClass() == Player.class)) {
+                    if (i == objectTileY/* || (objects.get(z).falling && objectTileY < playerTileY && objects.get(z).y > player.y && i == playerTileY)*/ &&  (objects.get(z).getClass() == Entity.class || (!((HittableEntity)objects.get(z)).falling || objects.get(z).getClass() == Player.class))) {
                         if (objects.get(z).getClass() == Player.class) {
                             if (drawPlayer) {
                                 //player.draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
@@ -617,10 +704,13 @@ public class Area {
 
                 }
                 for (int z = 0; z < objects.size(); ++z) {
-                    if (objects.get(z).falling)
+                    //if (objects.get(z).getClass() == Entity.class) continue;
+                    //if (objects.get(z).getClass() == Entity.class || ((HittableEntity)objects.get(z)).falling)
                         //System.out.println(objects.get(z).hitBox.y - objects.get(z).hitBox.height + " " + player.hitBox.y);
-                    if (objects.get(z).falling && objects.get(z).getClass() != Player.class && objects.get(z).hitBox.y - objects.get(z).hitBox.height / 2 >= player.hitBox.y) {
-                        float objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT) + 1);
+                    if (objects.get(z).getClass() != Entity.class && ((HittableEntity)objects.get(z)).falling && objects.get(z).getClass() != Player.class && ((HittableEntity)objects.get(z)).hitBox.y - ((HittableEntity)objects.get(z)).hitBox.height / 2 >= player.hitBox.y) {
+                        float objectTileY = 0;
+                        if (objects.get(z).getClass() != Entity.class) objectTileY = (int) ((objects.get(z).getRect().y + FLOOR_HEIGHT) / (TILE_HEIGHT) + 1);
+                        else objectTileY = (int) ((objects.get(z).y + FLOOR_HEIGHT) / (TILE_HEIGHT) + 1);
                         if (i == objectTileY) {
                             objects.get(z).draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT));
                         }
@@ -668,6 +758,7 @@ public class Area {
 
     private void drawLayer(SpriteBatch batch, World world, int layer, float offsetX, float offsetY, int i, int t) {
         int type = blocks.get(layer).get(t).get(i);
+        if (type == -1) return;
         boolean up = i==0 || blocks.get(layer).get(t).get(i - 1)==type;
         boolean down = i==height-1 || blocks.get(layer).get(t).get(i+1)==type;
         boolean left = t==0 || blocks.get(layer).get(t - 1).get(i)==type;
@@ -679,12 +770,18 @@ public class Area {
                 if (layer == 0) batch.draw(white.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, white.getWidth(), white.getHeight());
                 else batch.draw(black.getTile(up, down, left, right), offsetX + t * (TILE_WIDTH), offsetY - (i) * TILE_HEIGHT + 4, black.getWidth(), black.getHeight());
             } else {
-                TextureRegion img = world.tiles.get(blocks.get(layer).get(t).get(i)-world.spritesCount).getTile(up, down, left, right);
-                if (blocks.get(layer).get(t).get(i) >= world.spritesCount) batch.draw(img, offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, img.getRegionWidth(), img.getRegionHeight());
-                else batch.draw(world.sprites.get(blocks.get(layer).get(t).get(i)), offsetX + t * (TILE_WIDTH), offsetY - i * TILE_HEIGHT, white.getWidth(), white.getHeight());
+                if (blocks.get(layer).get(t).get(i) >= world.spritesCount) {
+                    TextureRegion img = world.tiles.get(blocks.get(layer).get(t).get(i)-world.spritesCount).getTile(up, down, left, right);
+                    if (layer == 0)batch.draw(img, offsetX + t * (TILE_WIDTH) + TILE_WIDTH/2 - img.getRegionWidth()/2, offsetY - i * TILE_HEIGHT-img.getRegionHeight()+TILE_HEIGHT, img.getRegionWidth(), img.getRegionHeight());
+                    else batch.draw(img, offsetX + t * (TILE_WIDTH) + TILE_WIDTH/2 - img.getRegionWidth()/2, offsetY - i * TILE_HEIGHT, img.getRegionWidth(), img.getRegionHeight());
+                } else {
+                    Texture img = world.sprites.get(blocks.get(layer).get(t).get(i));
+                    if (layer == 0) batch.draw(img, offsetX + t * (TILE_WIDTH) + TILE_WIDTH/2 - img.getWidth()/2, offsetY - i * TILE_HEIGHT-img.getHeight()+TILE_HEIGHT, img.getWidth(), img.getHeight());
+                    else  batch.draw(img, offsetX + t * (TILE_WIDTH) + TILE_WIDTH/2 - img.getWidth()/2, offsetY - i * TILE_HEIGHT, img.getWidth(), img.getHeight());
+                }
             }
         } catch (Exception e) {
-         //   System.out.println(e);
+            System.out.println(e);
         }
     }
 

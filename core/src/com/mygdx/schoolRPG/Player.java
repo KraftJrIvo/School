@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.tools.CharacterDirectionChecker;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.JoyStick;
@@ -28,10 +29,14 @@ public class Player extends HittableEntity {
     boolean lastRight, lastDown;
 
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable) {
-        super(assets, null, x, y, width, height, floorHeight, movable);
+        super(assets, (String)null, x, y, width, height, floorHeight, movable);
+        //wh = 10;
+        type = 2;
         spritesPath = baseName;
         jumpTicks = maxJumpTicks;
         if (spritesPath != null) poses = new PlayerMultiTile(spritesPath, assets);
+
+
     }
 
     public void move(JoyStick leftGameJoy) {
@@ -42,20 +47,20 @@ public class Player extends HittableEntity {
     }
 
     public void move() {
-        if (!falling) {
+        //if (!falling) {
             /*if (!canUp && speedY > 0) speedY = 0;
             if (!canDown && speedY < 0) speedY = 0;
             if (!canLeft && speedX < 0) speedX = 0;
             if (!canRight && speedX > 0) speedX = 0;*/
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) speedX -= 2;
+            if (Gdx.input.isKeyPressed(Input.Keys.A) && !falling) speedX -= 2;
             else if (speedX < 0) speedX += 2;
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) speedX += 2;
+            if (Gdx.input.isKeyPressed(Input.Keys.D) && !falling) speedX += 2;
             else if (speedX > 0) speedX -= 2;
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) speedY += 1;
+            if (Gdx.input.isKeyPressed(Input.Keys.W) && !falling) speedY += 1;
             else if (speedY > 0) speedY -= 1;
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) speedY -= 1;
+            if (Gdx.input.isKeyPressed(Input.Keys.S) && !falling) speedY -= 1;
             else if (speedY < 0) speedY += 1;
-        }
+        //}
         if (Math.abs(speedX) > 16) {
             if (speedX < 0) speedX = -16;
             else  speedX = 16;
@@ -78,6 +83,7 @@ public class Player extends HittableEntity {
 
 
     public void platformMove() {
+        type = 2;
         if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) speedX -= 2;
         else if (speedX < 0) speedX += 2;
         if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) speedX += 2f;
@@ -132,12 +138,20 @@ public class Player extends HittableEntity {
         }
     }
 
+    Rectangle getTexRect() {
+        return new Rectangle(hitBox.x, hitBox.y, hitBox.width, 0);
+        //return null;
+    }
+
     @Override
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight) {
         super.initialiseIfNeeded();
         poses.initialiseIfNeeded(assets);
         x = hitBox.x;
         y = hitBox.y;
+        if (hitBox.width == 16)h = hitBox.y-hitBox.height-3;
+        else h = hitBox.y-hitBox.height-1;
+
         if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
             graphicX = x;
         }
@@ -193,6 +207,9 @@ public class Player extends HittableEntity {
         super.initialiseIfNeeded();
         x = hitBox.x;
         y = hitBox.y;
+        if (hitBox.width == 16)h = hitBox.y-8;
+        else h = hitBox.y-12;
+
         if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
             graphicX = x;
         }
@@ -210,6 +227,7 @@ public class Player extends HittableEntity {
                 }
                 hitBox.width = 16;
                 graphicX = hitBox.x;
+                //h = hitBox.y-hitBox.height-3;
                 pusher = true;
             } else {
                 pusher = false;
@@ -224,6 +242,7 @@ public class Player extends HittableEntity {
                 hitBox.x += 4;
                 //floorHeight -= 2;
                 hitBox.width = 8;
+                //h = hitBox.y-hitBox.height-1;
                 graphicX = hitBox.x;
             }
             if (hitBox.height == 5) {
