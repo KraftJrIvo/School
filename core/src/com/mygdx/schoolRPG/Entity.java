@@ -20,6 +20,11 @@ public class Entity implements Comparable {
     AssetManager assets;
     int type;
     float floorHeight;
+    boolean floor = false;
+
+    void setFloor(boolean b) {
+        floor = b;
+    }
 
     public Entity(AssetManager assets, String texPath, float x, float y, float h, float floorHeight) {
         this.texPath = texPath;
@@ -73,9 +78,13 @@ public class Entity implements Comparable {
         }
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
         initialiseIfNeeded();
-        h = y;
+        if (!floor) {
+            h = y;
+        } else {
+            h = 999999;
+        }
         if (tex != null) {
             batch.draw(tex, offsetX+x, offsetY - y-floorHeight, tex.getWidth(), tex.getHeight());
         } else if (texR != null) {

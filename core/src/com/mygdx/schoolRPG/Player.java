@@ -144,13 +144,18 @@ public class Player extends HittableEntity {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
         super.initialiseIfNeeded();
         poses.initialiseIfNeeded(assets);
         x = hitBox.x;
         y = hitBox.y;
-        if (hitBox.width == 16)h = hitBox.y-hitBox.height-3;
-        else h = hitBox.y-hitBox.height-1;
+
+        if (!floor) {
+            if (hitBox.width == 16)h = hitBox.y-hitBox.height-12;
+            else h = hitBox.y-hitBox.height-8;
+        } else {
+            h = 999999;
+        }
 
         if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
             graphicX = x;
@@ -207,8 +212,12 @@ public class Player extends HittableEntity {
         super.initialiseIfNeeded();
         x = hitBox.x;
         y = hitBox.y;
-        if (hitBox.width == 16)h = hitBox.y-8;
-        else h = hitBox.y-12;
+        //if (hitBox.width == 16)h = hitBox.y-8;
+        if (!floor) {
+            h = hitBox.y-6;
+        } else {
+            h = 999999;
+        }
 
         if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
             graphicX = x;
@@ -216,10 +225,16 @@ public class Player extends HittableEntity {
         if ((Math.abs(hitBox.y-oldY)>0.5f || Math.abs(speedY) > 1)) {
             graphicY = y;
         }
+        //System.out.println(speedX + " " + speedY);
         characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width/2, offsetY - graphicY - hitBox.height/2 + floorHeight - z, Math.abs(speedX/10), Math.abs(speedY / 10));
         if (characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.up || characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.down) {
             if (hitBox.width == 8) {
-                hitBox.x -= 4;
+                if (Math.abs(speedX) < 5 && (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.D))) {
+                    if (Gdx.input.isKeyPressed(Input.Keys.A)) hitBox.x += 2;
+                    else if (Gdx.input.isKeyPressed(Input.Keys.D)) hitBox.x -= 8;
+                } else {
+                    hitBox.x -= 4;
+                }
                 if (lastRight) {
                     speedX = 4;
                 } else {
@@ -247,7 +262,12 @@ public class Player extends HittableEntity {
             }
             if (hitBox.height == 5) {
                 hitBox.height = 9;
-                hitBox.y -= 2;
+                if (Math.abs(speedY) < 3 && (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.S))) {
+                    if (Gdx.input.isKeyPressed(Input.Keys.W)) hitBox.y += 2;
+                    else if (Gdx.input.isKeyPressed(Input.Keys.S)) hitBox.y -= 4;
+                } else {
+                    hitBox.y -= 2;
+                }
                 if (lastDown) {
                     speedY = -3;
                 } else {

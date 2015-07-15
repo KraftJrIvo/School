@@ -11,7 +11,7 @@ public class AnimationSequence {
 	Coords pos;
 	float scale = 1.0f;
 	GlobalSequence gs = null;
-	private int currentFrame = 0;
+	public int currentFrame = 0;
 	long startTime;
 	long animationTime;
     int firstFrame;
