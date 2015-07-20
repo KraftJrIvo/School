@@ -747,6 +747,7 @@ public class Area {
                 if (((HittableEntity)objects.get(i)).z > cameraY + Gdx.graphics.getHeight()) {
                     if (objects.get(i).getClass() != Player.class) {
                         fallingObjects.remove(objects.get(i));
+                        solids.remove(objects.get(i));
                         objects.remove(i);
                     } else {
                         respawnPlayer(null, assets, 0, 0, 0, 0, null);
