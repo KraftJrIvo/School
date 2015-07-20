@@ -1,10 +1,12 @@
 package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
 
 
 /**
@@ -12,15 +14,21 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class Entity implements Comparable {
 
-    float x, y, h;
+    float x, y, z=0, h, r = 0;
+    float zSpeed = 0;
     Texture tex, texDef;
     TextureRegion texR;
+    AnimationSequence anim;
     String texPath;
     boolean initialised = false;
     AssetManager assets;
     int type;
     float floorHeight;
     boolean floor = false;
+    float alpha = 1.0f;
+    float scale = 1.0f;
+    boolean centered = false, falling = false;
+    float fallY = 0;
 
     void setFloor(boolean b) {
         floor = b;
@@ -61,6 +69,18 @@ public class Entity implements Comparable {
         //hitBox = new Rectangle(0,0,0,0);
     }
 
+    public Entity(AssetManager assets, AnimationSequence anim, float x, float y, float h, float floorHeight) {
+        //this.texPath = texPath;
+        this.anim = anim;
+        this.x = x;
+        this.y = y;
+        this.h = h;
+        this.assets = assets;
+        initialised = true;
+        this.floorHeight = floorHeight;
+        //hitBox = new Rectangle(0,0,0,0);
+    }
+
     public void initialiseIfNeeded() {
         if (initialised) return;
         if (texPath != null) {
@@ -83,25 +103,46 @@ public class Entity implements Comparable {
         if (!floor) {
             h = y;
         } else {
-            h = 999999;
+            h = -999999;
         }
-        if (tex != null) {
-            batch.draw(tex, offsetX+x, offsetY - y-floorHeight, tex.getWidth(), tex.getHeight());
+        batch.setColor(new Color(1, 1, 1, alpha));
+        if (anim != null) {
+            float yy;
+            if (floor) yy = offsetY - y-floorHeight + z - anim.getFirstFrame().getRegionHeight()*scale/2;
+            else yy = offsetY - y-floorHeight + z;
+            float xx = offsetX+x;
+            if (centered) xx = offsetX+x - anim.getFirstFrame().getRegionWidth()*scale/2;
+            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()*scale, anim.getFirstFrame().getRegionHeight()*scale);
+        } else if (tex != null) {
+            float yy;
+            if (floor) yy = offsetY - y-floorHeight + z - tex.getHeight()*scale/2;
+            else yy = offsetY - y-floorHeight + z;
+            float xx = offsetX+x;
+            if (centered) xx = offsetX+ x - tex.getWidth()*scale/2;
+            batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
         } else if (texR != null) {
-            batch.draw(texR, offsetX+x, offsetY - y-floorHeight, texR.getRegionWidth(), texR.getRegionHeight());
+            float yy;
+            if (floor) yy = offsetY - y-floorHeight + z - texR.getRegionHeight()*scale/2;
+            else yy = offsetY - y-floorHeight + z;
+            float xx = offsetX+x;
+            if (centered) xx = offsetX+x - texR.getRegionWidth()*scale/2;
+            batch.draw(texR, xx, yy, texR.getRegionWidth()*scale, texR.getRegionHeight()*scale);
         }
+        batch.setColor(new Color(1, 1, 1, 1));
     }
 
     Rectangle getRect() {
-        if (tex != null) return new Rectangle(x, y, tex.getWidth(), tex.getHeight());
+        if (anim != null) return new Rectangle(x, y, anim.getFirstFrame().getRegionWidth(), anim.getFirstFrame().getRegionHeight());
+        else if (tex != null) return new Rectangle(x, y, tex.getWidth(), tex.getHeight());
         return new Rectangle(x, y, texR.getRegionWidth(), texR.getRegionHeight());
     }
 
 
     Rectangle getTexRect() {
+        if (anim != null) return new Rectangle(x, y, anim.getFirstFrame().getRegionWidth(), anim.getFirstFrame().getRegionHeight());
         if (tex != null) return new Rectangle(x, y, tex.getWidth(), tex.getHeight());
         if (texR!=null) return new Rectangle(x, y, texR.getRegionWidth(), texR.getRegionHeight());
-        return null;
+        return new Rectangle(x, y, 10, 10);
     }
 
     void setRect(Rectangle rect) {
@@ -120,18 +161,18 @@ public class Entity implements Comparable {
         return he.getRect();
     }*/
 
-    public void fall() {}
+
+    public void fall() {
+
+    }
+
     public void platformFall() {}
 
     @Override
     public int compareTo(Object o) {
-        if (o.getClass() == Entity.class || o.getClass() == HittableEntity.class || o.getClass() == Player.class) {
-            Entity e = (Entity)o;
-            //int compareY = (int)(e.y+e.getTexRect().height+e.floorHeight);
-            //return (int)(compareY-this.y-this.h);
-            //return (int)(this.y+getTexRect().height+floorHeight-compareY);
-            return (int)(h - (e.h));
-        }
+        Entity e = (Entity)o;
+        if (h < e.h) return -1;
+        if (h > e.h) return 1;
         return 0;
     }
 }

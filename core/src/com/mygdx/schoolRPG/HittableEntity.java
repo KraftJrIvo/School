@@ -20,9 +20,7 @@ public class HittableEntity extends Entity {
     boolean leftSide, rightSide, downSide, upSide;
     float oldX, oldY, graphicX, graphicY, oldY2;
     boolean deltaX=false, deltaY=false;
-    float z = 0, zSpeed = 0;
     int pSpeed = 0;
-    boolean falling;
     boolean canUp = true, canDown = true, canLeft = true, canRight = true;
     float deadEndX=0, deadEndY=0;
     float deadEndObjectX = 0, deadEndObjectY = 0;
@@ -81,6 +79,7 @@ public class HittableEntity extends Entity {
 
     @Override
     Rectangle getRect() {
+
         return hitBox;
     }
 
@@ -89,7 +88,12 @@ public class HittableEntity extends Entity {
         hitBox = rect;
     }
 
-
+    public void fall() {
+        if (falling) {
+            z += zSpeed;
+            zSpeed += 0.3f;
+        }
+    }
 
     public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
 
@@ -124,25 +128,25 @@ public class HittableEntity extends Entity {
         if (deadEndObjectLeft != null || deadEndObjectRight != null ||
                 deadEndObjectUp != null || deadEndObjectDown != null) {
             if (deadEndObjectLeft != null && deadEndObjectLeft.movable) {
-                if (deadEndObjectLeft.canLeft) {
+                if (deadEndObjectLeft.canLeft || deadEndObjectLeft.falling) {
                     canLeft = true;
                     deadEndObjectLeft = null;
                 }
             }
             if (deadEndObjectRight != null && deadEndObjectRight.movable) {
-                if (deadEndObjectRight.canRight) {
+                if (deadEndObjectRight.canRight || deadEndObjectRight.falling) {
                     canRight = true;
                     deadEndObjectRight = null;
                 }
             }
             if (deadEndObjectUp != null && deadEndObjectUp.movable) {
-                if (deadEndObjectUp.canUp) {
+                if (deadEndObjectUp.canUp || deadEndObjectUp.falling) {
                     canUp = true;
                     deadEndObjectUp = null;
                 }
             }
             if (deadEndObjectDown != null && deadEndObjectDown.movable) {
-                if (deadEndObjectDown.canDown) {
+                if (deadEndObjectDown.canDown || deadEndObjectDown.falling) {
                     canDown = true;
                     deadEndObjectDown = null;
                 } else if (hitBox.x + hitBox.width - deadEndObjectDown.hitBox.x <= hitBox.getWidth()/4
@@ -223,6 +227,39 @@ public class HittableEntity extends Entity {
                 }
             //}
 
+            if (objectIsPlayer) {
+                /*if (((Player)he).pushCount >= 0) {
+                    ((Player)he).pushCount = 3;
+                } else {*/
+
+                if (diffX < 0) {
+                    ((Player)he).pushRight = true;
+                    ((Player)he).pushLeft = false;
+                } else if (diffX > 0) {
+                    ((Player)he).pushRight = false;
+                    ((Player)he).pushLeft = true;
+                } else {
+                    ((Player)he).pushRight = false;
+                    ((Player)he).pushLeft = false;
+                }
+                if (diffY > 0) {
+                    ((Player)he).pushUp = true;
+                    ((Player)he).pushDown = false;
+                } else if (diffY < 0) {
+                    ((Player)he).pushUp = false;
+                    ((Player)he).pushDown = true;
+                } else {
+                    ((Player)he).pushUp = false;
+                    ((Player)he).pushDown = false;
+                }
+                if (movable && ((Player)he).pushCount > -1) {
+                    ((Player)he).pushCount=3;
+                } else {
+                    ((Player)he).pushCount++;
+                }
+                //}
+
+            }
 
             if (movable && he.movable && (canMoveHor || canMoveVer)) {
                 if (diffX != 0 && diffY != 0) {
@@ -498,12 +535,7 @@ public class HittableEntity extends Entity {
         }
     }*/
 
-    public void fall() {
-        if (falling) {
-            z += zSpeed;
-            zSpeed += 0.3f;
-        }
-    }
+
 
     public void platformFall() {
         if (!movable) return;
@@ -569,4 +601,12 @@ public class HittableEntity extends Entity {
 
         //batch.setColor(Color.WHITE);
     }
+
+    /*@Override
+    public Rectangle getTexRect() {
+        Rectangle r = super.getTexRect();
+        r.x += super.getTexRect().width/2;
+        return r;
+    }*/
+
 }

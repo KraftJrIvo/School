@@ -73,6 +73,10 @@ public class World {
 
         this.assets = assets;
 
+        assets.load("particles/test/1.png", Texture.class);
+        assets.load("particles/test/2.png", Texture.class);
+        assets.load("particles/shadow.png", Texture.class);
+
         assets.load(folderPath + "/bg.png", Texture.class);
 
         if (tlw == null) {
@@ -222,7 +226,7 @@ public class World {
         if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
         } else if (assets.update() && areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).loaded) {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialiseResources(assets, this);
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialiseResources(assets, this, characterMaker);
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).load(assets, this);
         }
@@ -274,7 +278,7 @@ public class World {
                 areaTransitionY = 1.0f;
             }
 
-            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed);
+            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed, characterMaker);
             if (offY != 0) {
 
             } else {
@@ -287,9 +291,9 @@ public class World {
             curAreaX+=offX;
             curAreaY+=offY;
             initialised = false;
-
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.invalidatePose(true, true);
         } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0);
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
         }
         /*if (id < areas.size()) {
             curArea = id;
@@ -348,8 +352,18 @@ public class World {
             }
             areaTransitionX /= 1.1f;
             areaTransitionY /= 1.1f;
-            if (Math.abs(areaTransitionX) < 0.001f) areaTransitionX = 0;
-            if (Math.abs(areaTransitionY) < 0.001f) areaTransitionY = 0;
+            if (Math.abs(areaTransitionX) < 0.001f) {
+                areaTransitionX = 0;
+                if (areaTransitionY == 0) {
+                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                }
+            }
+            if (Math.abs(areaTransitionY) < 0.001f) {
+                areaTransitionY = 0;
+                if (areaTransitionX == 0) {
+                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                }
+            }
             //System.out.println(areaTransitionX);
         }
     }

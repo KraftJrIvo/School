@@ -21,72 +21,79 @@ public class CharacterDirectionChecker {
         keepLookingForward = b;
     }
 
-    public void update() {
+    public boolean update() {
 
         boolean look = true;
+        WalkDirection newWalkDir = walkDir;
+        LookDirection newLookDir = lookDir;
 
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            lookDir = LookDirection.up;
-            walkDir = WalkDirection.up;
+            newLookDir = LookDirection.up;
+            newWalkDir = WalkDirection.up;
         } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            lookDir = LookDirection.down;
-            walkDir = WalkDirection.down;
+            newLookDir = LookDirection.down;
+            newWalkDir = WalkDirection.down;
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            lookDir = LookDirection.right;
-            walkDir = WalkDirection.right;
+            newLookDir = LookDirection.right;
+            newWalkDir = WalkDirection.right;
         } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            lookDir = LookDirection.left;
-            walkDir = WalkDirection.left;
-        } else if (lookDir == LookDirection.none) {
-            lookDir = LookDirection.down;
+            newLookDir = LookDirection.left;
+            newWalkDir = WalkDirection.left;
+        } else if (newLookDir == LookDirection.none) {
+            newLookDir = LookDirection.down;
         } else {
             look = false;
         }
 
         stand = false;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            if (keepLookingForward && !look) lookDir = LookDirection.right;
-            if (lookDir == LookDirection.left) {
-                walkDir = WalkDirection.right_back;
+            if (keepLookingForward && !look) newLookDir = LookDirection.right;
+            if (newLookDir == LookDirection.left) {
+                newWalkDir = WalkDirection.right_back;
             } else {
-                walkDir = WalkDirection.right;
+                newWalkDir = WalkDirection.right;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            if (keepLookingForward && !look) lookDir = LookDirection.left;
-            if (lookDir == LookDirection.right) {
-                walkDir = WalkDirection.left_back;
+            if (keepLookingForward && !look) newLookDir = LookDirection.left;
+            if (newLookDir == LookDirection.right) {
+                newWalkDir = WalkDirection.left_back;
             } else {
-                walkDir = WalkDirection.left;
+                newWalkDir = WalkDirection.left;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            if (keepLookingForward && !look) lookDir = LookDirection.up;
-            if (lookDir == LookDirection.down) {
-                walkDir = WalkDirection.up_back;
+            if (keepLookingForward && !look) newLookDir = LookDirection.up;
+            if (newLookDir == LookDirection.down) {
+                newWalkDir = WalkDirection.up_back;
             } else {
-                walkDir = WalkDirection.up;
+                newWalkDir = WalkDirection.up;
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            if (keepLookingForward && !look) lookDir = LookDirection.down;
-            if (lookDir == LookDirection.up) {
-                walkDir = WalkDirection.down_back;
+            if (keepLookingForward && !look) newLookDir = LookDirection.down;
+            if (newLookDir == LookDirection.up) {
+                newWalkDir = WalkDirection.down_back;
             } else {
-                walkDir = WalkDirection.down;
+                newWalkDir = WalkDirection.down;
             }
-        }  else if (walkDir == WalkDirection.none) {
-            walkDir = WalkDirection.down;
+        }  else if (newWalkDir == WalkDirection.none) {
+            newWalkDir = WalkDirection.down;
         } else {
-            if (lookDir == LookDirection.left) {
-                walkDir = WalkDirection.left;
-            } else if (lookDir == LookDirection.right) {
-                walkDir = WalkDirection.right;
-            } else if (lookDir == LookDirection.up) {
-                walkDir = WalkDirection.up;
-            } else if (lookDir == LookDirection.down) {
-                walkDir = WalkDirection.down;
+            if (newLookDir == LookDirection.left) {
+                newWalkDir = WalkDirection.left;
+            } else if (newLookDir == LookDirection.right) {
+                newWalkDir = WalkDirection.right;
+            } else if (newLookDir == LookDirection.up) {
+                newWalkDir = WalkDirection.up;
+            } else if (newLookDir == LookDirection.down) {
+                newWalkDir = WalkDirection.down;
             }
             stand = true;
         }
+        boolean ret = (walkDir != newWalkDir || lookDir != newLookDir || stand);
 
+        walkDir = newWalkDir;
+        lookDir = newLookDir;
+
+        return ret;
     }
 
 }
