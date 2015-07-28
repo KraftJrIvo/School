@@ -27,9 +27,10 @@ public class HittableEntity extends Entity {
     HittableEntity deadEndObjectLeft = null, deadEndObjectRight = null, deadEndObjectUp = null, deadEndObjectDown = null;
     boolean pusher = false;
     int checksum = 0;
+    float platformOffset = 0;
 
-    public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable) {
-        super(assets, texPath, x, y, height-1, floorHeight);
+    public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
+        super(assets, texPath, x, y, height-1, floorHeight, angle);
         this.floorHeight = floorHeight;
         hitBox = new Rectangle(x, y, width, height);
         this.movable = movable;
@@ -42,8 +43,8 @@ public class HittableEntity extends Entity {
         graphicY = hitBox.y;
     }
 
-    public HittableEntity(AssetManager assets, TextureRegion tex, float x, float y, float width, float height, float floorHeight, boolean movable) {
-        super(assets, tex, x, y, height-1, floorHeight);
+    public HittableEntity(AssetManager assets, TextureRegion tex, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
+        super(assets, tex, x, y, height-1, floorHeight, angle);
         this.floorHeight = floorHeight;
         hitBox = new Rectangle(x, y, width, height);
         this.movable = movable;
@@ -56,8 +57,8 @@ public class HittableEntity extends Entity {
         graphicY = hitBox.y;
     }
 
-    public HittableEntity(AssetManager assets, Texture tex, float x, float y, float width, float height, float floorHeight, boolean movable) {
-        super(assets, tex, x, y, height-1, floorHeight);
+    public HittableEntity(AssetManager assets, Texture tex, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
+        super(assets, tex, x, y, height-1, floorHeight, angle);
         this.floorHeight = floorHeight;
         hitBox = new Rectangle(x, y, width, height);
         this.movable = movable;
@@ -155,6 +156,11 @@ public class HittableEntity extends Entity {
                 }
             }
         }
+        /*if (platformMode && deadEndObjectDown != null && deadEndObjectDown.movable) {
+            if (!deadEndObjectDown.canDown) {
+                hitBox.x = deadEndObjectX + platformOffset;
+            }
+        }*/
         /*if ((deadEndObject == null || (deadEndObjectX != deadEndObject.hitBox.x || deadEndObjectY != deadEndObject.hitBox.y))) {
             deadEndObjectX = 0;
             makeFree();
@@ -218,13 +224,16 @@ public class HittableEntity extends Entity {
 
 
 
-            //if (he.getClass() != Player.class) {
-                if (Math.abs(diffX) > 5) {
-                    diffX = 0;
-                }
-                if (Math.abs(diffY) > 6) {
-                    diffY = 0;
-                }
+            /*if (this.getClass() != Player.class && platformMode && Math.abs(diffY) > 3) {
+                diffY = 0;
+            }*/
+            if (Math.abs(diffX) > 5) {
+                diffX = 0;
+            }
+
+            if (Math.abs(diffY) > 6) {
+                diffY = 0;
+            }
             //}
 
             if (objectIsPlayer) {
@@ -407,7 +416,11 @@ public class HittableEntity extends Entity {
                         if (objectIsPlayer && !platformMode) {
                             ((Player)he).speedY=0;
                         }
-                        rect.y += diffY;
+                        if ((!objectIsPlayer || Math.abs(diffY) <= 3) || !platformMode) {
+                            rect.y += diffY;
+                        } else {
+                            rect.x += diffX;
+                        }
                     }
                 } else if ((diffX != 0 || diffY != 0) && (!canMoveHor || !canMoveVer)) {
                     if (!canMoveHor && diffX != 0) {
@@ -517,7 +530,10 @@ public class HittableEntity extends Entity {
         if (dir == 1) he.deadEndObjectLeft = this;
         else if (dir == 2) he.deadEndObjectRight = this;
         else if (dir == 3) he.deadEndObjectUp = this;
-        else if (dir == 4) he.deadEndObjectDown = this;
+        else if (dir == 4) {
+            he.deadEndObjectDown = this;
+            //he.platformOffset = he.deadEndObjectDown.x -  hitBox.x;
+        }
         checksum = dir;
     }
 
@@ -551,7 +567,7 @@ public class HittableEntity extends Entity {
                 pSpeed = 40;
                 //makeFree();
             }
-        } else {
+        } else if (this.getClass() != Player.class) {
             pSpeed = 0;
         }
         //canDown = true;
@@ -591,12 +607,31 @@ public class HittableEntity extends Entity {
         if (!canLeft) batch.setColor(new Color(0, 0, 1, 0.25f));*/
 
         super.initialiseIfNeeded();
+        float anglee = 0;
+        if (angle == 1) {
+            anglee = -90;
+        } else if (angle == 2) {
+            anglee = -180;
+        } else if (angle == 3) {
+            anglee = -270;
+        }
         if (tex != null) {
             if (!platformMode) batch.draw(tex, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z, tex.getWidth(), tex.getHeight());
-            else batch.draw(tex, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, tex.getWidth(), tex.getHeight());
+            else {
+                //batch.draw(tex, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, tex.getWidth(), tex.getHeight());
+                if (angle%2 == 1) {
+                    batch.draw(tex, offsetX+hitBox.x+tex.getWidth()/2, offsetY - hitBox.y-2-hitBox.height+tileHeight-tex.getWidth()/2, tex.getWidth()/2, tex.getHeight()/2, tex.getWidth()*scale, tex.getHeight()*scale, 1.0f, 1.0f, anglee, 0, 0, tex.getWidth(), tex.getHeight(), false, false);
+                } else {
+                    batch.draw(tex, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, tex.getWidth()/2, tex.getHeight()/2, tex.getWidth()*scale, tex.getHeight()*scale, 1.0f, 1.0f, anglee, 0, 0, tex.getWidth(), tex.getHeight(), false, false);
+                }
+            }
         } else if (texR != null) {
             if (!platformMode) batch.draw(texR, offsetX+graphicX+hitBox.getWidth()/2-texR.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, texR.getRegionWidth(), texR.getRegionHeight());
-            else batch.draw(texR, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, texR.getRegionWidth(), texR.getRegionHeight());
+            else {
+                batch.draw(texR, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, texR.getRegionWidth()/2, texR.getRegionHeight()/2,
+                        texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
+                //batch.draw(texR, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, texR.getRegionWidth(), texR.getRegionHeight());
+            }
         }
 
         //batch.setColor(Color.WHITE);

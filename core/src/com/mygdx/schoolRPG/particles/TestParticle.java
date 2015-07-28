@@ -20,10 +20,10 @@ public class TestParticle extends ParticleProperties {
         animSeq1 = new AnimationSequence(assets, "particles/test/1.png", 5, true);
         animSeq2 = new AnimationSequence(assets, "particles/test/2.png", 5, true);
         r = 4;
-        minYSpeed=-1.0f;
-        maxYSpeed=1.0f;
         minXSpeed=-1.0f;
         maxXSpeed=1.0f;
+        minYSpeed=-1.0f;
+        maxYSpeed=1.0f;
         minZSpeed=1.0f;
         maxZSpeed=3.0f;
         XStep=0.1f;
@@ -33,5 +33,6 @@ public class TestParticle extends ParticleProperties {
         scalingStep=0.01f;
         bounces=9999;
         floor = true;
+        bouncing = true;
     }
 }

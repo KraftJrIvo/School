@@ -16,7 +16,7 @@ public class ParticleProperties {
     public float XStep=1, YStep=1, ZStep=1;
     public float alphaStep=0, scalingStep=1;
     public int bounces=0;
-    public boolean floor = false;
+    public boolean floor = false, bouncing = false, front = false;
     public ParticleProperties() {
     }
 }

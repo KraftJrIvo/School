@@ -15,10 +15,11 @@ public class Particle extends Entity {
     int curBounces;
     ParticleProperties pp;
     boolean fallen;
+    boolean platformMode;
     //Texture shadow;
 
-    public Particle(AssetManager assets, ParticleProperties pp) {
-        super(assets, (Texture)null, pp.spawnX, pp.spawnY, pp.h, pp.floorHeight);
+    public Particle(AssetManager assets, ParticleProperties pp, boolean platformMode) {
+        super(assets, (Texture)null, pp.spawnX, pp.spawnY, pp.h, pp.floorHeight, 0);
         this.pp = pp;
         if (pp.animSeq1 != null) {
             anim = pp.animSeq1;
@@ -28,53 +29,64 @@ public class Particle extends Entity {
             texR = pp.texReg1;
         }
         XSpeed = (float)Math.random()*(pp.maxXSpeed-pp.minXSpeed)+pp.minXSpeed;
-        YSpeed = (float)Math.random()*(pp.maxYSpeed-pp.minYSpeed)+pp.minYSpeed;
+        if (!platformMode) YSpeed = (float)Math.random()*(pp.maxYSpeed-pp.minYSpeed)+pp.minYSpeed;
+        else YSpeed = (float)Math.random()*(-pp.maxZSpeed+pp.minYSpeed)-pp.minYSpeed;
         ZSpeed = (float)Math.random()*(pp.maxZSpeed-pp.minZSpeed)+pp.minZSpeed;
         scale = 1.0f;
         curBounces = pp.bounces;
         fallen = false;
         centered = true;
         r = pp.r;
+        this.platformMode = platformMode;
+        if (platformMode) z = 0;
+    }
 
+    public void bounce(boolean floor) {
+        if (!pp.bouncing) return;
+        if (floor) {
+            YSpeed = pp.minYSpeed;
+        } else {
+            YSpeed = -YSpeed;
+        }
+        /*if (YSpeed > pp.maxYSpeed && YSpeed > pp.minYSpeed) YSpeed = pp.maxYSpeed;
+        else if (YSpeed < pp.minYSpeed) YSpeed = pp.minYSpeed;*/
     }
     
     @Override
     public void fall() {
         if (!fallen) {
             x += XSpeed;
-            y += YSpeed;
+            if (!platformMode) {
+                y += YSpeed;
+                if (z < ZSpeed && ZSpeed < 0 && !falling) z = 0;
+                else z += ZSpeed;
+                ZSpeed-=pp.ZStep;
+                if (falling) curBounces = 0;
 
-            if (z < ZSpeed && ZSpeed < 0 && !falling) z = 0;
-            else z += ZSpeed;
-
-            //if (Math.abs(XSpeed) < pp.XStep) XSpeed = 0;
-            //else if (XSpeed != 0) XSpeed-=pp.XStep*((Math.abs(XSpeed)/XSpeed));
-
-            //if (Math.abs(YSpeed) < pp.YStep) YSpeed = 0;
-            //else if (YSpeed != 0) YSpeed-=pp.YStep*(Math.abs(YSpeed)/YSpeed);
-
-            ZSpeed-=pp.ZStep;
-
-            if (falling) curBounces = 0;
-
-            if (z == 0 && !falling) {
-                curBounces--;
-                if (curBounces <= 0) {
-                    fallen = true;
-                    floor = pp.floor;
-                    if (pp.animSeq2 != null) {
-                        anim = pp.animSeq2;
-                    } else if (pp.tex2 != null) {
-                        tex = pp.tex2;
-                    } else if (pp.texReg2 != null) {
-                        texR = pp.texReg2;
+                if (z == 0 && !falling && pp.bouncing) {
+                    curBounces--;
+                    if (curBounces <= 0) {
+                        fallen = true;
+                        floor = pp.floor;
+                        if (pp.animSeq2 != null) {
+                            anim = pp.animSeq2;
+                        } else if (pp.tex2 != null) {
+                            tex = pp.tex2;
+                        } else if (pp.texReg2 != null) {
+                            texR = pp.texReg2;
+                        }
+                    } else {
+                        ZSpeed = (float)Math.random()*(pp.maxZSpeed/2-pp.minZSpeed)+pp.minZSpeed;
                     }
-                } else {
-                    ZSpeed = (float)Math.random()*(pp.maxZSpeed/2-pp.minZSpeed)+pp.minZSpeed;
                 }
+            } else {
+                /*if (y < YSpeed && YSpeed < 0 && !falling) y = 0;
+                else*/ y += YSpeed;
+                YSpeed+=pp.YStep;
             }
+
         }
-        if (curBounces == 0 && fallen) {
+        if ((curBounces == 0 && fallen && pp.bouncing) || (platformMode && curBounces==0)) {
             alpha -= pp.alphaStep;
             if (alpha < 0) alpha = 0;
             scale += pp.scalingStep;

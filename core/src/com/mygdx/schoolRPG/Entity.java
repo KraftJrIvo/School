@@ -29,12 +29,13 @@ public class Entity implements Comparable {
     float scale = 1.0f;
     boolean centered = false, falling = false;
     float fallY = 0;
+    int angle = 0;
 
     void setFloor(boolean b) {
         floor = b;
     }
 
-    public Entity(AssetManager assets, String texPath, float x, float y, float h, float floorHeight) {
+    public Entity(AssetManager assets, String texPath, float x, float y, float h, float floorHeight, int angle) {
         this.texPath = texPath;
         this.x = x;
         this.y = y;
@@ -42,10 +43,11 @@ public class Entity implements Comparable {
         type = 0;
         this.h = h;
         this.floorHeight = floorHeight;
+        this.angle = angle;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
-    public Entity(AssetManager assets, TextureRegion tex, float x, float y, float h, float floorHeight) {
+    public Entity(AssetManager assets, TextureRegion tex, float x, float y, float h, float floorHeight, int angle) {
         //this.texPath = texPath;
         this.texR = tex;
         this.x = x;
@@ -54,10 +56,12 @@ public class Entity implements Comparable {
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
+        this.angle = angle;
+        //if (angle == 2 && tex.getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
-    public Entity(AssetManager assets, Texture tex, float x, float y, float h, float floorHeight) {
+    public Entity(AssetManager assets, Texture tex, float x, float y, float h, float floorHeight, int angle) {
         //this.texPath = texPath;
         this.tex = tex;
         this.x = x;
@@ -66,10 +70,12 @@ public class Entity implements Comparable {
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
+        this.angle = angle;
+        //if (angle == 2 && tex.getHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
-    public Entity(AssetManager assets, AnimationSequence anim, float x, float y, float h, float floorHeight) {
+    public Entity(AssetManager assets, AnimationSequence anim, float x, float y, float h, float floorHeight, int angle) {
         //this.texPath = texPath;
         this.anim = anim;
         this.x = x;
@@ -78,6 +84,8 @@ public class Entity implements Comparable {
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
+        this.angle = angle;
+        //if (angle == 2 && anim.getFirstFrame().getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
@@ -106,27 +114,39 @@ public class Entity implements Comparable {
             h = -999999;
         }
         batch.setColor(new Color(1, 1, 1, alpha));
+        float anglee = 0;
+        if (angle == 1) {
+            anglee = -90;
+        } else if (angle == 2) {
+            anglee = -180;
+        } else if (angle == 3) {
+            anglee = -270;
+        }
         if (anim != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - anim.getFirstFrame().getRegionHeight()*scale/2;
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+x - anim.getFirstFrame().getRegionWidth()*scale/2;
-            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()*scale, anim.getFirstFrame().getRegionHeight()*scale);
+
+            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()/2, 0,
+                    anim.getFirstFrame().getRegionWidth()*scale, anim.getFirstFrame().getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
         } else if (tex != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - tex.getHeight()*scale/2;
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+ x - tex.getWidth()*scale/2;
-            batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
+            //batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
+            batch.draw(tex, xx, yy, tex.getWidth()/2, 0, tex.getWidth()*scale, tex.getHeight()*scale, 1.0f, 1.0f, anglee, 0, 0, tex.getWidth(), tex.getHeight(), false, false);
         } else if (texR != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - texR.getRegionHeight()*scale/2;
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+x - texR.getRegionWidth()*scale/2;
-            batch.draw(texR, xx, yy, texR.getRegionWidth()*scale, texR.getRegionHeight()*scale);
+            batch.draw(texR, xx, yy, texR.getRegionWidth()/2, 0,
+                    texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
         }
         batch.setColor(new Color(1, 1, 1, 1));
     }

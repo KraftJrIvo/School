@@ -15,7 +15,9 @@ import java.util.ArrayList;
  * Created by user on 06.08.2014.
  */
 public class World {
-//LOL
+    public static final int SCREEN_HEIGHT = 500;
+    public static final int SCREEN_WIDTH = 1000;
+    //LOL
     ArrayList<Area> areas;
     ArrayList<ArrayList<ArrayList<Integer>>> areaIds;
     String folderPath, tlwPath;
@@ -74,6 +76,10 @@ public class World {
         this.assets = assets;
 
         assets.load("particles/test/1.png", Texture.class);
+        assets.load("particles/skull/1.png", Texture.class);
+        assets.load("particles/body/1.png", Texture.class);
+        assets.load("particles/bone/1.png", Texture.class);
+        assets.load("particles/blood/1.png", Texture.class);
         assets.load("particles/test/2.png", Texture.class);
         assets.load("particles/shadow.png", Texture.class);
 
@@ -143,7 +149,7 @@ public class World {
                 curAreaZ = curCoordZ;
                 while (fis.available() > 1) {
 
-                    buff = new byte[areaWidth*areaHeight*4];
+                    buff = new byte[areaWidth*areaHeight*7];
                     fis.read(buff);
                     areas.add(new Area(this, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode));
                     areaIds.get(curCoordX).get(curCoordY).set(curCoordZ, areas.size() - 1);
@@ -183,7 +189,11 @@ public class World {
     public void initialiseResources(AssetManager assets) {
         characterMaker.initialiseResources(assets);
         bg = assets.get(folderPath+"/bg.png", Texture.class);
-
+        if (platformMode) {
+            assets.load(folderPath+"/tiles/sprites/chargo.png", Texture.class);
+            assets.load(folderPath+"/tiles/sprites/save1.png", Texture.class);
+            assets.load(folderPath+"/tiles/sprites/save2.png", Texture.class);
+        }
         if (!initialised && !areasCreated) {
             if (tlw == null) {
                 for (FileHandle entry: worldDir.list()) {
@@ -246,6 +256,8 @@ public class World {
 
     private void changeArea(int offX, int offY) {
         if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1) {
+
+            //areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).resetCheckPoints();
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.x = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.x - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_WIDTH*offX;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.y = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.y - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_HEIGHT*offY;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).resetCamera();
@@ -278,7 +290,7 @@ public class World {
                 areaTransitionY = 1.0f;
             }
 
-            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed, characterMaker);
+            areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed, characterMaker, true);
             if (offY != 0) {
 
             } else {
@@ -293,7 +305,7 @@ public class World {
             initialised = false;
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.invalidatePose(true, true);
         } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker, false);
         }
         /*if (id < areas.size()) {
             curArea = id;
@@ -326,11 +338,11 @@ public class World {
             if (oldAreaY == curAreaY) {
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraY;
                 if (oldAreaX < curAreaX) {
-                    area2.draw(batch, this, Gdx.graphics.getWidth()/area2.zoom*(areaTransitionX), 0, true, true, characterMaker);
-                    area1.draw(batch, this, Gdx.graphics.getWidth()/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, false, characterMaker);
+                    area2.draw(batch, this, SCREEN_WIDTH /area2.zoom*(areaTransitionX), 0, true, true, characterMaker);
+                    area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, false, characterMaker);
                 } else {
-                    area2.draw(batch, this, Gdx.graphics.getWidth()/area2.zoom*(1.0f-areaTransitionX)+1, 0, false, true, characterMaker);
-                    area1.draw(batch, this, Gdx.graphics.getWidth()/area1.zoom*(-areaTransitionX), 0, true, false, characterMaker);
+                    area2.draw(batch, this, SCREEN_WIDTH/area2.zoom*(1.0f-areaTransitionX)+1, 0, false, true, characterMaker);
+                    area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-areaTransitionX), 0, true, false, characterMaker);
                 }
             } else {
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(curAreaZ)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraX;
@@ -343,11 +355,11 @@ public class World {
                     off2 = 0;
                 }
                 if (oldAreaY < curAreaY) {
-                    area1.draw(batch, this, 0, (Gdx.graphics.getHeight()+off*area1.TILE_HEIGHT+add)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, true, characterMaker);
-                    area2.draw(batch, this, 0, (Gdx.graphics.getHeight()+off*area1.TILE_HEIGHT+add)/area2.zoom*(-1.0f+areaTransitionY)-off2, false, false, characterMaker);
+                    area1.draw(batch, this, 0, (SCREEN_HEIGHT +off*area1.TILE_HEIGHT+add)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, true, characterMaker);
+                    area2.draw(batch, this, 0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area2.zoom*(-1.0f+areaTransitionY)-off2, false, false, characterMaker);
                 } else {
-                    area1.draw(batch, this, 0, (Gdx.graphics.getHeight()+off*area1.TILE_HEIGHT+add)/area1.zoom*(1.0f-areaTransitionY)+off2/* + area1.FLOOR_HEIGHT+2*/, false, true, characterMaker);
-                    area2.draw(batch, this, 0, (Gdx.graphics.getHeight()+off*area1.TILE_HEIGHT+add)/area2.zoom*(-areaTransitionY), true, false, characterMaker);
+                    area1.draw(batch, this, 0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area1.zoom*(1.0f-areaTransitionY)+off2/* + area1.FLOOR_HEIGHT+2*/, false, true, characterMaker);
+                    area2.draw(batch, this, 0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area2.zoom*(-areaTransitionY), true, false, characterMaker);
                 }
             }
             areaTransitionX /= 1.1f;
@@ -356,12 +368,14 @@ public class World {
                 areaTransitionX = 0;
                 if (areaTransitionY == 0) {
                     areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
                 }
             }
             if (Math.abs(areaTransitionY) < 0.001f) {
                 areaTransitionY = 0;
                 if (areaTransitionX == 0) {
                     areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
                 }
             }
             //System.out.println(areaTransitionX);
