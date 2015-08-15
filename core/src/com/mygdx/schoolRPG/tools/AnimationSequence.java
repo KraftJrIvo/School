@@ -11,7 +11,8 @@ public class AnimationSequence {
 	Coords pos;
 	float scale = 1.0f;
 	GlobalSequence gs = null;
-	public int currentFrame = 0;
+	public int currentFrame=0;
+	int seed;
 	long startTime;
 	long animationTime;
     int firstFrame;
@@ -21,6 +22,7 @@ public class AnimationSequence {
 		this.looping = looping;
 		pos = new Coords();
 		gs = new GlobalSequence(assets, sName);
+		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 
     public void changeMode(int fps, boolean looping) {
@@ -34,6 +36,7 @@ public class AnimationSequence {
 		this.looping = looping;
 		pos = new Coords();
 		this.gs = gs;
+		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 
 	public void draw(SpriteBatch sb, int x, int y, int width, int height) {
@@ -70,13 +73,13 @@ public class AnimationSequence {
 		long delta = System.currentTimeMillis() - startTime;
 		
 		if (!looping && delta >= animationTime) {
-			currentFrame = gs.getLength() - 1;
+			currentFrame = (gs.getLength() - 1 + seed)%(gs.getLength());
 		} else {
 			double doubleDelta = (double)delta/1000.0;
-			currentFrame = (int)((long)(doubleDelta * (double)fps) % gs.getLength());
+			currentFrame = (int)((long)(doubleDelta * (double)fps) % gs.getLength() + seed)%(gs.getLength());
 		}
         if (reversed) {
-            currentFrame = gs.getLength() - currentFrame-1;
+            currentFrame = (gs.getLength() - currentFrame-1 + seed)%(gs.getLength());
             //if (currentFrame)
         }
 		return gs.getFrame(currentFrame);

@@ -6,6 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.io.*;
@@ -36,7 +37,8 @@ public class World {
     CharacterMaker characterMaker;
     ArrayList<Texture> sprites;
     ArrayList<BlockMultiTile> tiles;
-    int spritesCount = 0;
+    ArrayList<AnimationSequence> animations;
+    int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
     AssetManager assets;
 
@@ -135,10 +137,11 @@ public class World {
                         }
                     }
                 }
-                areaWidth = fis.read();
-                areaHeight = fis.read();
+
                 tileWidth = fis.read();
                 tileHeight = fis.read();
+                areaWidth = fis.read();
+                areaHeight = fis.read();
 
                 int curCoordX = fis.read();
                 int curCoordY = fis.read();
@@ -155,6 +158,8 @@ public class World {
                     areaIds.get(curCoordX).get(curCoordY).set(curCoordZ, areas.size() - 1);
                     //fis.skip(areaWidth*areaHeight*4);
                     if (fis.available() > 0) {
+                        areaWidth = fis.read();
+                        areaHeight = fis.read();
                         curCoordX = fis.read();
                         curCoordY = fis.read();
                         curCoordZ = fis.read();
@@ -181,7 +186,16 @@ public class World {
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
+                tilesetsCount++;
             }
+            worldDir = Gdx.files.internal(folderPath+"/anim");
+            for (FileHandle entry: worldDir.list()) {
+                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                    continue;
+                }
+                assets.load(entry.path(), Texture.class);
+            }
+            worldDir = Gdx.files.internal(folderPath);
         }
         loaded = true;
     }
@@ -190,9 +204,9 @@ public class World {
         characterMaker.initialiseResources(assets);
         bg = assets.get(folderPath+"/bg.png", Texture.class);
         if (platformMode) {
-            assets.load(folderPath+"/tiles/sprites/chargo.png", Texture.class);
-            assets.load(folderPath+"/tiles/sprites/save1.png", Texture.class);
-            assets.load(folderPath+"/tiles/sprites/save2.png", Texture.class);
+            assets.load(folderPath+"/sprites/chargo.png", Texture.class);
+            assets.load(folderPath+"/sprites/save1.png", Texture.class);
+            assets.load(folderPath+"/sprites/save2.png", Texture.class);
         }
         if (!initialised && !areasCreated) {
             if (tlw == null) {
@@ -230,6 +244,15 @@ public class World {
                     }
                     tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
                 }
+                animations = new ArrayList<AnimationSequence>();
+                worldDir = Gdx.files.internal(folderPath+"/anim");
+                for (FileHandle entry: worldDir.list()) {
+                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                        continue;
+                    }
+                    animations.add(new AnimationSequence(assets, entry.path(), 12, true));
+                }
+                worldDir = Gdx.files.internal(folderPath);
             }
         }
         //System.out.println(areas.size() + " " + areaIds.size());

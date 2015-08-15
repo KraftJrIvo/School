@@ -814,8 +814,8 @@ public class Area {
     public void checkFall(HittableEntity object) {
         if (object.falling) return;
         boolean fall = true;
-        for (int i = 0; i < width; ++i) {
-            for (int t = 0; t < height; ++t) {
+        for (int i = 0; i < height; ++i) {
+            for (int t = 0; t < width; ++t) {
                 if (blocks.get(2).get(t).get(i) == 1) {
                     Rectangle tmp = new Rectangle(t * (TILE_WIDTH), i * TILE_HEIGHT - 6, TILE_WIDTH, TILE_HEIGHT);
                     Rectangle objRect = new Rectangle(object.hitBox.x, object.hitBox.y+1, object.hitBox.width, object.hitBox.height-1);

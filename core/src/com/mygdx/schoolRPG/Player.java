@@ -51,6 +51,7 @@ public class Player extends HittableEntity {
     }
 
     public void blockControls() {
+
         controlsBlocked = true;
     }
 
@@ -174,9 +175,11 @@ public class Player extends HittableEntity {
             additionalJumpTicks = 0;
         }
 
-        oldX = hitBox.x;
-        oldY = hitBox.y;
-        hitBox.x += (float)speedX/10.0f;
+        if (!controlsBlocked) {
+            oldX = hitBox.x;
+            oldY = hitBox.y;
+            hitBox.x += (float)speedX/10.0f;
+        }
         //hitBox.y -= (float)speedY/10.0f;
         if (controlsBlocked && (!Gdx.input.isKeyPressed(Input.Keys.A) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)) && !Gdx.input.isKeyPressed(Input.Keys.D) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             controlsBlocked = false;
