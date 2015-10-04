@@ -30,6 +30,7 @@ public class Player extends HittableEntity {
     AnimationSequence chargo;
     boolean controlsBlocked = false;
 
+
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
         //wh = 10;
@@ -115,11 +116,29 @@ public class Player extends HittableEntity {
         else if (speedX < 0) speedX += 2;
         if (!controlsBlocked && (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))) speedX += 2f;
         else if (speedX > 0) speedX -= 2;
-        if (Math.abs(speedX) > 20) {
-            if (speedX < 0) speedX = -20;
-            else  speedX = 20;
+        if (!inWater && !inGoo) {
+            if (Math.abs(speedX) > 20) {
+                if (speedX < 0) speedX = -20;
+                else  speedX = 20;
+            }
+        } else if (inGoo) {
+            if (Math.abs(speedX) > 8) {
+                if (speedX < 0) speedX = -8;
+                else  speedX = 8;
+            }
+        } else {
+            if (Math.abs(speedX) > 16) {
+                if (speedX < 0) speedX = -16;
+                else  speedX = 16;
+            }
         }
 
+        if (inWater || inGoo) {
+            jumping = false;
+        }
+
+        int jumpStep = 35;
+        if (inGoo) jumpStep = 14;
 
         if (!controlsBlocked && Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             if (!jumping) {
@@ -142,11 +161,11 @@ public class Player extends HittableEntity {
                 }
             }
             if (additionalJumpTicks > 0 && startedAdditionalJump) {
-                pSpeed = -35;
+                pSpeed = -jumpStep;
                 additionalJumpTicks--;
             }
             if (jumpTicks > 0) {
-                pSpeed = -35;
+                pSpeed = -jumpStep;
                 jumpTicks--;
             }
         } else {
@@ -193,6 +212,8 @@ public class Player extends HittableEntity {
         canDown = true;
         speedY = pSpeed;
     }
+
+
 
     @Override
     public void dropShadow(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, Texture shadow) {

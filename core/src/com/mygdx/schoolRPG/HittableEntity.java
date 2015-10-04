@@ -1,5 +1,7 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -28,6 +30,7 @@ public class HittableEntity extends Entity {
     boolean pusher = false;
     int checksum = 0;
     float platformOffset = 0;
+    boolean isPlatform = false;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
         super(assets, texPath, x, y, height-1, floorHeight, angle);
@@ -240,6 +243,9 @@ public class HittableEntity extends Entity {
                 /*if (((Player)he).pushCount >= 0) {
                     ((Player)he).pushCount = 3;
                 } else {*/
+                if (platformMode && isPlatform && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                    return rect;
+                }
 
                 if (diffX < 0) {
                     ((Player)he).pushRight = true;
@@ -397,6 +403,9 @@ public class HittableEntity extends Entity {
                         setCheck(he, 3);
                     }
                     else if (diffY < 0) {
+                        if (platformMode && isPlatform && objectIsPlayer && ((Player)he).pSpeed < 0) {
+                            return rect;
+                        }
                         he.canDown = false;
                         he.deadEndX = rect.x;
                         if (objectIsPlayer && !platformMode) {
@@ -561,16 +570,30 @@ public class HittableEntity extends Entity {
             else {
                 pSpeed += 4;
             }
-            if (pSpeed > 40) {
-                canLeft = true;
-                canRight = true;
-                pSpeed = 40;
-                //makeFree();
+            if (!inWater && !inGoo) {
+                if (pSpeed > 40) {
+                    pSpeed = 40;
+                }
+            } else if (inGoo) {
+                if (pSpeed > 10) {
+                    pSpeed = 10;
+                }
+            } else {
+                if (pSpeed > 20) {
+                    pSpeed = 20;
+                }
             }
+            canLeft = true;
+            canRight = true;
         } else if (this.getClass() != Player.class) {
             pSpeed = 0;
         }
         //canDown = true;
+    }
+
+    @Override
+    public float getPreviousY() {
+        return hitBox.y - pSpeed/10;
     }
 
     @Override

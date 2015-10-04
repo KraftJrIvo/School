@@ -30,9 +30,15 @@ public class Entity implements Comparable {
     boolean centered = false, falling = false;
     float fallY = 0;
     int angle = 0;
+    boolean inWater = false, inGoo = false;
 
     void setFloor(boolean b) {
         floor = b;
+        if (!floor) {
+            h = y;
+        } else {
+            h = -999999;
+        }
     }
 
     public Entity(AssetManager assets, String texPath, float x, float y, float h, float floorHeight, int angle) {
@@ -44,6 +50,7 @@ public class Entity implements Comparable {
         this.h = h;
         this.floorHeight = floorHeight;
         this.angle = angle;
+        h = y;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
@@ -57,6 +64,7 @@ public class Entity implements Comparable {
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
+        h = y;
         //if (angle == 2 && tex.getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -71,6 +79,7 @@ public class Entity implements Comparable {
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
+        h = y;
         //if (angle == 2 && tex.getHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -85,6 +94,7 @@ public class Entity implements Comparable {
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
+
         //if (angle == 2 && anim.getFirstFrame().getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -108,11 +118,6 @@ public class Entity implements Comparable {
 
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
         initialiseIfNeeded();
-        if (!floor) {
-            h = y;
-        } else {
-            h = -999999;
-        }
         batch.setColor(new Color(1, 1, 1, alpha));
         float anglee = 0;
         if (angle == 1) {
@@ -187,6 +192,10 @@ public class Entity implements Comparable {
     }
 
     public void platformFall() {}
+
+    public float getPreviousY() {
+        return y;
+    }
 
     @Override
     public int compareTo(Object o) {

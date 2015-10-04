@@ -39,14 +39,45 @@ public class Particle extends Entity {
         r = pp.r;
         this.platformMode = platformMode;
         if (platformMode) z = 0;
+        this.h = 9999999;
     }
 
-    public void bounce(boolean floor) {
+    public void bounce(boolean floor, boolean side) {
         if (!pp.bouncing) return;
-        if (floor) {
+        curBounces--;
+        if (curBounces <= 0) {
+            if (!fallen && platformMode) {
+                if (side && Math.abs(XSpeed) > Math.abs(YSpeed)) {
+                    if (XSpeed > 0) angle = 3;
+                    else angle = 1;
+                } else {
+                    if (YSpeed > 0) angle = 0;
+                    else angle = 2;
+                }
+            }
+
+
+            fallen = true;
+            floor = pp.floor;
+
+            if (pp.animSeq2 != null) {
+                anim = pp.animSeq2;
+            } else if (pp.tex2 != null) {
+                tex = pp.tex2;
+                anim = null;
+            } else if (pp.texReg2 != null) {
+                texR = pp.texReg2;
+                tex = null;
+                anim = null;
+            }
+        } else if (floor) {
             YSpeed = pp.minYSpeed;
         } else {
-            YSpeed = -YSpeed;
+            if (side) {
+                XSpeed = -XSpeed;
+            } else {
+                YSpeed = -YSpeed;
+            }
         }
         /*if (YSpeed > pp.maxYSpeed && YSpeed > pp.minYSpeed) YSpeed = pp.maxYSpeed;
         else if (YSpeed < pp.minYSpeed) YSpeed = pp.minYSpeed;*/
@@ -63,33 +94,42 @@ public class Particle extends Entity {
                 ZSpeed-=pp.ZStep;
                 if (falling) curBounces = 0;
 
-                if (z == 0 && !falling && pp.bouncing) {
-                    curBounces--;
-                    if (curBounces <= 0) {
-                        fallen = true;
-                        floor = pp.floor;
-                        if (pp.animSeq2 != null) {
-                            anim = pp.animSeq2;
-                        } else if (pp.tex2 != null) {
-                            tex = pp.tex2;
-                        } else if (pp.texReg2 != null) {
-                            texR = pp.texReg2;
+                if (!platformMode) {
+                    if (z == 0 && !falling && pp.bouncing) {
+                        curBounces--;
+                        if (curBounces <= 0) {
+                            fallen = true;
+                            floor = pp.floor;
+                            if (pp.animSeq2 != null) {
+                                anim = pp.animSeq2;
+                            } else if (pp.tex2 != null) {
+                                tex = pp.tex2;
+                            } else if (pp.texReg2 != null) {
+                                texR = pp.texReg2;
+                            }
+                        } else {
+                            ZSpeed = (float)Math.random()*(pp.maxZSpeed/2-pp.minZSpeed)+pp.minZSpeed;
                         }
-                    } else {
-                        ZSpeed = (float)Math.random()*(pp.maxZSpeed/2-pp.minZSpeed)+pp.minZSpeed;
                     }
                 }
             } else {
                 /*if (y < YSpeed && YSpeed < 0 && !falling) y = 0;
                 else*/ y += YSpeed;
                 YSpeed+=pp.YStep;
+
             }
 
         }
-        if ((curBounces == 0 && fallen && pp.bouncing) || (platformMode && curBounces==0)) {
+        if ((curBounces == 0 && fallen && pp.bouncing) || (platformMode && curBounces<=0)) {
             alpha -= pp.alphaStep;
             if (alpha < 0) alpha = 0;
             scale += pp.scalingStep;
         }
     }
+
+    @Override
+    public float getPreviousY() {
+        return y - YSpeed;
+    }
+
 }

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Class-Path: lwjgl-platform-2.9.1-natives-windows.jar jlayer-1.0.1-gdx.
+ jar lwjgl-2.9.1.jar lwjgl-platform-2.9.1-natives-osx.jar gdx-backend-
+ lwjgl-1.5.0.jar jinput-platform-2.0.5-natives-osx.jar jorbis-0.0.17.j
+ ar jinput-platform-2.0.5-natives-windows.jar lwjgl_util-2.9.1.jar gdx
+ -backend-android-1.5.0.jar gdx-platform-1.5.0-natives-desktop.jar jut
+ ils-1.0.0.jar lwjgl-platform-2.9.1-natives-linux.jar jinput-2.0.5.jar
+  gdx-1.5.0.jar jinput-platform-2.0.5-natives-linux.jar
+Main-Class: com.mygdx.schoolRPG.desktop.DesktopLauncher
+

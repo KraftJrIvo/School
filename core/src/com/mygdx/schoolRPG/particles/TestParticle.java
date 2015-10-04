@@ -24,14 +24,14 @@ public class TestParticle extends ParticleProperties {
         maxXSpeed=1.0f;
         minYSpeed=-1.0f;
         maxYSpeed=1.0f;
-        minZSpeed=1.0f;
-        maxZSpeed=3.0f;
+        minZSpeed=0.5f;
+        maxZSpeed=2.0f;
         XStep=0.1f;
         YStep=0.1f;
         ZStep=0.1f;
         alphaStep=0.01f;
         scalingStep=0.01f;
-        bounces=9999;
+        bounces=10;
         floor = true;
         bouncing = true;
     }

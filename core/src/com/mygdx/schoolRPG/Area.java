@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.particles.*;
@@ -16,6 +17,7 @@ import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.GlobalSequence;
 
+import java.awt.*;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,8 +41,9 @@ public class Area {
     ArrayList<HittableEntity> solids;
     ArrayList<Particle> particles;
     ArrayList<CheckPoint> checkPoints;
+    ArrayList<LiquidSurface> liquidSurfaces;
     //ArrayList<HittableEntity> scenery;
-    int width, height;
+    int width, height, x, y, z, w, h;
     Player player;
     int playerTileX=0, playerTileY=0, playerTileDynX=0, playerTileDynY=0;
     double cameraX=0, cameraY=0;
@@ -55,6 +58,7 @@ public class Area {
     float lastSpawnPos;
     Texture shadow;
     boolean saved = false;
+    Graphics g;
     //int solidObjectsCount = 0;
 
     public Area(AssetManager assets, World world, Pixmap map, boolean platformMode, int tileWidth, int tileHeight) {
@@ -154,9 +158,14 @@ public class Area {
         }
     }
 
-    public Area(World world, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode) {
+    public Area(World world, int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode) {
         TILE_WIDTH = tileWidth;
         TILE_HEIGHT = tileHeight;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.h = h;
         this.platformMode = platformMode;
         if (platformMode) {
             playerWidth = 8;
@@ -170,6 +179,7 @@ public class Area {
         objects = new ArrayList<Entity>();
         obstacles = new ArrayList<DeathZone>();
         checkPoints = new ArrayList<CheckPoint>();
+        liquidSurfaces = new ArrayList<LiquidSurface>();
         //scenery = new ArrayList<HittableEntity>();
         camera = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         this.width = width;
@@ -304,10 +314,16 @@ public class Area {
                             }
                         }*/
 
-                        if (img == -1 && type != 10) continue;
+                        if (img == -1 && type != 10 && type != 11 && (type < 20 || type > 25)) continue;
                         float x = 0;
-                        if (type != 10) {
-                            x = t*TILE_WIDTH+TILE_WIDTH/2-world.sprites.get(img).getWidth()/2 + blocks.get(6).get(t).get(i);
+                        if (type != 10 && type != 11 && (type < 20 || type > 25)) {
+                            if(img < world.sprites.size()){
+                                x = t*TILE_WIDTH+TILE_WIDTH/2-world.sprites.get(img).getWidth()/2 + blocks.get(6).get(t).get(i);
+                            } else if (img < world.spritesCount + world.tilesetsCount) {
+                                x = t*TILE_WIDTH+TILE_WIDTH/2-world.tiles.get(img-world.spritesCount).getSingleTile().getRegionWidth()/2 + blocks.get(6).get(t).get(i);
+                            } else {
+                                x = t*TILE_WIDTH+TILE_WIDTH/2-world.animations.get(img-world.spritesCount-world.tilesetsCount).getFirstFrame().getRegionWidth()/2 + blocks.get(6).get(t).get(i);
+                            }
                             if (platformMode) {
                                 if (blocks.get(5).get(t).get(i) == 1) {
                                     x = t*TILE_WIDTH-world.sprites.get(img).getWidth()/2;
@@ -317,6 +333,8 @@ public class Area {
 
                                 //x+=1;
                             }
+                        } else {
+                            x = t*TILE_WIDTH;
                         }
 
                         if (type == 1) {
@@ -370,8 +388,10 @@ public class Area {
                                 y+=blocks.get(7).get(t).get(i);
 
                                 objects.add(new Entity(assets, world.sprites.get(img), x, y, 0, 0, blocks.get(5).get(t).get(i)));
-                            } else {
+                            } else if (img < world.spritesCount + world.tilesetsCount) {
                                 objects.add(new Entity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t*TILE_WIDTH+TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)));
+                            } else {
+                                objects.add(new Entity(assets, world.animations.get(img - world.spritesCount - world.tilesetsCount), t*TILE_WIDTH+TILE_WIDTH/2-world.animations.get(img - world.spritesCount - world.tilesetsCount).getFirstFrame().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)));
                             }
                         }  else if (type == 6) {
                             float y = (i)* TILE_HEIGHT-TILE_HEIGHT/2;
@@ -565,6 +585,104 @@ public class Area {
                                 objects.add(new HittableEntity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t*TILE_WIDTH + TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, y,
                                         width, height, TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/4-2, true, blocks.get(5).get(t).get(i)));
                             }
+                        } else if (type == 11) {
+                            float y = (i * TILE_HEIGHT - TILE_HEIGHT/2);
+                            float width = TILE_WIDTH;
+                            float height = TILE_HEIGHT;
+                            float floorHeight = 0;
+                            if (img != -1) {
+                                if (platformMode) {
+                                    if(img < world.sprites.size()){
+                                        width = world.sprites.get(img).getWidth();
+                                        height = world.sprites.get(img).getHeight();
+                                    } else {
+                                        width = world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth();
+                                        height = world.tiles.get(img - world.spritesCount).getSingleTile().getRegionHeight();
+                                    }
+                                    y -= (height-TILE_HEIGHT)-2;
+                                } else {
+                                    if(img < world.sprites.size()){
+                                        width = world.sprites.get(img).getWidth();
+                                        height = world.sprites.get(img).getWidth()/2;
+                                        floorHeight = world.sprites.get(img).getWidth()/4-2;
+                                    } else {
+                                        //?y+=2;
+                                        width = world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth();
+                                        height = world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2;
+                                        floorHeight = world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/4-2;
+                                    }
+                                }
+                            }
+                            if(img < world.sprites.size()){
+                                if (platformMode) {
+                                    if (blocks.get(5).get(t).get(i) == 2) {
+                                        y=i * TILE_HEIGHT- TILE_HEIGHT/2;
+                                        if (height%2 == 0) y+= 2;
+                                        else y += 1;
+                                    } else if (blocks.get(5).get(t).get(i)%2 == 1) {
+                                        float tmp = width;
+                                        width = height;
+                                        height = tmp;
+                                        y-= width/2 - (width - height)*2 - height/2 + TILE_HEIGHT/2;
+                                    }
+                                    y+=blocks.get(7).get(t).get(i);
+                                }
+                                float xx;
+                                if (img != -1) xx = t*TILE_WIDTH + TILE_WIDTH/2-world.sprites.get(img).getWidth()/2 + blocks.get(6).get(t).get(i);
+                                else xx = t*TILE_WIDTH;
+                                if (platformMode && img != -1) {
+                                    if (blocks.get(5).get(t).get(i) == 1) {
+                                        xx-=TILE_WIDTH/2-(world.sprites.get(img).getHeight()/2-world.sprites.get(img).getWidth()/2);
+                                        //xx = t*TILE_WIDTH+(world.sprites.get(img).getHeight()/2-world.sprites.get(img).getWidth()/2) + blocks.get(6).get(t).get(i);//-world.sprites.get(img).getWidth()/2;
+                                    } else if (blocks.get(5).get(t).get(i) == 3) {
+                                        xx-=(world.sprites.get(img).getHeight()/2-world.sprites.get(img).getWidth()/2);//xx += TILE_WIDTH/2-world.sprites.get(img).getWidth()/2;
+                                    }
+                                }
+                                if (img != -1) {
+                                    objects.add(new Entity(assets, world.sprites.get(img), xx, y+(height-TILE_HEIGHT)+2, 0, 0, blocks.get(5).get(t).get(i)));
+                                } else y+=2;
+                                HittableEntity he = new HittableEntity(assets, (Texture)null, xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i));
+                                he.setSides(false, false, true, false);
+                                he.isPlatform = true;
+                                //he.setFloor(true);
+                                objects.add(he);
+                            } else {
+                                if (img != -1) {
+                                    objects.add(new Entity(assets, world.tiles.get(img - world.spritesCount).getSingleTile(), t * TILE_WIDTH + TILE_WIDTH / 2 - world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth() / 2, y+2, 0, 0, blocks.get(5).get(t).get(i)));
+                                } else y+=2;
+                                HittableEntity he = new HittableEntity(assets, (TextureRegion)null, t*TILE_WIDTH + TILE_WIDTH/2-world.tiles.get(img - world.spritesCount).getSingleTile().getRegionWidth()/2, y,
+                                        width, height, floorHeight, false, blocks.get(5).get(t).get(i));
+                                he.setSides(false, false, true, false);
+                                he.isPlatform = true;
+                                //he.setFloor(true);
+                                objects.add(he);
+                            }
+                        } else if ((type >= 20 && type <= 25) && (t == 0 || blocks.get(4).get(t-1).get(i) != type)) {
+                            int surfacesCount = 0;
+                            while (blocks.get(4).get(t+surfacesCount).get(i) == type) {
+                                surfacesCount++;
+                            }
+                            LiquidSurface ls;
+                            //if (blocks.get(4).get(t).get(i-1) != 20) ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, 0.025f, 0.035f, 0.025f);
+                            if (blocks.get(4).get(t).get(i-1) != type) {
+                                if (type == 20) {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.WATER, false);
+                                } else if (type == 21) {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.GOO, false);
+                                } else {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.NONE, false);
+                                }
+                            }
+                            else {
+                                if (type == 20) {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.WATER, true);
+                                } else if (type == 21) {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.GOO, true);
+                                } else {
+                                    ls = new LiquidSurface(assets, t*TILE_WIDTH, i*TILE_HEIGHT, surfacesCount, TILE_WIDTH, LiquidSurface.LiquidType.NONE, true);
+                                }
+                            }
+                            liquidSurfaces.add(ls);
                         }
                     }
                 }
@@ -604,6 +722,33 @@ public class Area {
         }
         shadow = assets.get("particles/shadow.png");
         initialised = true;
+    }
+
+    public void respawnPlayerZ(String worldDir, AssetManager assets, int tileX, int tileY, float pos, int speed, CharacterMaker characterMaker, boolean setResp) {
+        if (player == null) {
+            if (platformMode) {
+                player = new Player(assets, worldDir+"/sprites/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+            } else {
+                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+            }
+        }
+        player.hitBox.x = tileX;
+        player.hitBox.y = tileY;
+        player.speedX = 0;
+        player.speedY = 0;
+        player.pSpeed = 0;
+        player.x = player.hitBox.x;
+        player.y = player.hitBox.y;
+        player.graphicX = player.hitBox.x;
+        player.graphicY = player.hitBox.y;
+        player.falling = false;
+        player.z = 0;
+        player.zSpeed = 0;
+        if (worldDir != null) {
+            cameraX = player.graphicX + player.hitBox.getWidth()/2 - cameraX;
+            cameraY = player.graphicY + player.hitBox.getHeight()/2 - cameraY;
+            moveCamera(1);
+        }
     }
 
     public void respawnPlayer(String worldDir, AssetManager assets, int tileX, int tileY, float pos, int speed, CharacterMaker characterMaker, boolean setResp) {
@@ -690,17 +835,18 @@ public class Area {
                     Rectangle collisionRect = new Rectangle(t*(TILE_WIDTH), i* TILE_HEIGHT -6 - 10, TILE_WIDTH, TILE_HEIGHT);
                     if (p.curBounces > 0) {
                         if (((collisionRect.contains(p.x-p.r, p.y) && p.XSpeed < 0) || (collisionRect.contains(p.x+p.r, p.y) && p.XSpeed > 0))) {
-                            p.XSpeed = -p.XSpeed;
+                            p.bounce(false, true);
                         }
                         if (!platformMode) {
                             if (((collisionRect.contains(p.x, p.y+p.r) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y-p.r) && p.YSpeed < 0))) {
                                 p.YSpeed = -p.YSpeed;
+                                //p.curBounces--;
                             }
                         } else {
                             if (((collisionRect.contains(p.x, p.y-p.r) && p.YSpeed < 0))) {
-                                p.bounce(false);
+                                p.bounce(false, false);
                             } else if (collisionRect.contains(p.x, p.y+p.r) && p.YSpeed > 0) {
-                                p.bounce(true);
+                                p.bounce(true, false);
                             }
                         }
                     }
@@ -713,11 +859,13 @@ public class Area {
                 collisionRect.y-=10;
                 //collisionRect.height+=10;
                 if (p.curBounces > 0) {
-                    if (((collisionRect.contains(p.x-3, p.y) && p.XSpeed < 0) || (collisionRect.contains(p.x+3, p.y) && p.XSpeed > 0))) {
-                        p.XSpeed = -p.XSpeed;
+                    if (((collisionRect.contains(p.x-p.r, p.y) && p.XSpeed < 0) || (collisionRect.contains(p.x+p.r, p.y) && p.XSpeed > 0))) {
+                        if (platformMode) p.bounce(false, true);
+                        else p.XSpeed = -p.XSpeed;
                     }
-                    if (((collisionRect.contains(p.x, p.y+3) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y-3) && p.YSpeed < 0))) {
-                        p.YSpeed = -p.YSpeed;
+                    if (((collisionRect.contains(p.x, p.y+p.r*2) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y) && p.YSpeed < 0))) {
+                        if (platformMode) p.bounce(false, false);
+                        else p.YSpeed = -p.YSpeed;
                     }
                 }
             }
@@ -764,10 +912,10 @@ public class Area {
                 if (t < 0 || t >= blocks.get(2).size() || i < 0 || i >= blocks.get(2).get(0).size()) break;
                 if (blocks.get(2).get(t).get(i) == 2/* || blocks.get(t).get(i) == 0*/) {
                     HittableEntity tmp = new HittableEntity(assets, (String)null, t*(TILE_WIDTH), i* TILE_HEIGHT -6, TILE_WIDTH, TILE_HEIGHT, 3, false, 0);
-                    boolean left = t > 0 && blocks.get(2).get(t - 1).get(i) != 2/* && blocks.get(t-1).get(i) != 0*/;
-                    boolean right = t < blocks.get(2).size()-1 && blocks.get(2).get(t + 1).get(i) != 2/* && blocks.get(t+1).get(i) != 0*/;
-                    boolean up = i < blocks.get(2).get(i).size()-1 && blocks.get(2).get(t).get(i+1) != 2/* && blocks.get(t).get(i+1) != 0*/;
-                    boolean down = i > 0 && blocks.get(2).get(t).get(i-1) != 2/* && blocks.get(t).get(i-1) != 0*/;
+                    boolean left = t == 0 || blocks.get(2).get(t - 1).get(i) != 2/* && blocks.get(t-1).get(i) != 0*/;
+                    boolean right = (t >= width-1 || blocks.get(2).get(t + 1).get(i) != 2)/* && blocks.get(t+1).get(i) != 0*/;
+                    boolean up = (i >= height-1 || blocks.get(2).get(t).get(i+1) != 2)/* && blocks.get(t).get(i+1) != 0*/;
+                    boolean down = i == 0 || blocks.get(2).get(t).get(i-1) != 2/* && blocks.get(t).get(i-1) != 0*/;
                     tmp.setSides(left, right, down, up);
                     if (isPlayer) {
                         he.hitBox = tmp.pushOutSolidObjects(he, this, player.oldX, player.oldY);
@@ -811,6 +959,32 @@ public class Area {
         return;
     }
 
+    public void invalidateLiquids() {
+
+        for (int i = 0; i < objects.size(); ++i) {
+            boolean inWater = false;
+            boolean inGoo = false;
+            for (int t = 0; t < liquidSurfaces.size(); ++t) {
+                float k = objects.get(i).getTexRect().x + objects.get(i).getTexRect().width/2;
+                if (k < liquidSurfaces.get(t).getRect().x + liquidSurfaces.get(t).getRect().width && k > liquidSurfaces.get(t).getRect().x) {
+                    if (objects.get(i).getTexRect().y < liquidSurfaces.get(t).getRect().y && objects.get(i).getTexRect().y > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
+                        if (liquidSurfaces.get(t).type == LiquidSurface.LiquidType.GOO) inGoo = true;
+                        else inWater = true;
+                        if (!objects.get(i).inWater && !objects.get(i).inGoo) {
+                            liquidSurfaces.get(t).splash(k, 6);
+                        }
+                        break;
+                    } else if (objects.get(i).getPreviousY() < liquidSurfaces.get(t).getRect().y && objects.get(i).getPreviousY() > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
+                        liquidSurfaces.get(t).splash(k, -6);
+                    }
+                }
+            }
+            objects.get(i).inWater = inWater;
+            objects.get(i).inGoo = inGoo;
+        }
+    }
+
+
     public void checkFall(HittableEntity object) {
         if (object.falling) return;
         boolean fall = true;
@@ -838,8 +1012,8 @@ public class Area {
     public void checkFall(Entity e) {
         if (e.falling) return;
         boolean fall = true;
-        for (int i = 0; i < width; ++i) {
-            for (int t = 0; t < height; ++t) {
+        for (int i = 0; i < height; ++i) {
+            for (int t = 0; t < width; ++t) {
                 if (blocks.get(2).get(t).get(i) == 1 || blocks.get(2).get(t).get(i) == 2) {
                     Rectangle tmp = new Rectangle(t * (TILE_WIDTH)-e.r, (i-1) * TILE_HEIGHT-2, TILE_WIDTH+e.r*2, TILE_HEIGHT+2+e.r);
                     if (tmp.contains(e.x, e.y) || e.z > 0) {
@@ -1005,7 +1179,7 @@ public class Area {
                         solids.remove(objects.get(i));
                         objects.remove(i);
                     } else {
-                        respawnPlayer(null, assets, 0, 0, 0, 0, null, false);
+                        //respawnPlayer(null, assets, 0, 0, 0, 0, null, false);
                     }
                 }
             }
@@ -1044,6 +1218,12 @@ public class Area {
                 objects.add(prt);*/
             }
         }
+        if (liquidSurfaces != null) {
+            invalidateLiquids();
+            for (int i = 0; i < liquidSurfaces.size(); i++) {
+                liquidSurfaces.get(i).invalidate();
+            }
+        }
         if (checkPoints == null) return;
         for (int i = 0; i < checkPoints.size(); i++) {
             if (!checkPoints.get(i).on && checkPoints.get(i).collide(player.hitBox)) {
@@ -1075,7 +1255,7 @@ public class Area {
     }
 
 
-    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, boolean drawBG, CharacterMaker characterMaker) {
+    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, World world, float offsetX, float offsetY, boolean drawPlayer, boolean drawBG, CharacterMaker characterMaker) {
 
         if (drawBG) {
             batch.draw(world.bg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1102,6 +1282,8 @@ public class Area {
 
 
         if (Gdx.input.isTouched()) {
+            //ParticleProperties pp = new WaterSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
+            //ParticleProperties pp = new GooSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
             ParticleProperties pp = new TestParticle(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
             Particle prt = new Particle(assets, pp, platformMode);
             particles.add(prt);
@@ -1146,7 +1328,7 @@ public class Area {
                             int objectTileY = (int) ((particles.get(z).y) / (TILE_HEIGHT))+2;
 
                             if (i == objectTileY && t == objectTileX) {
-                                if (particles.get(z).falling) continue;
+                                if (particles.get(z).falling || particles.get(z).fallen) continue;
                                 float w = particles.get(z).getTexRect().getWidth()/1.5f+particles.get(z).z/3;
                                 batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.35f-particles.get(z).z/50));
                                 batch.draw(shadow, offsetX + particles.get(z).x - w/2, offsetY - (particles.get(z).y + w/2), w, w);
@@ -1342,6 +1524,11 @@ public class Area {
                     objects.get(z).draw(batch, offsetX, offsetY, (int) (TILE_WIDTH), (int) (TILE_HEIGHT), platformMode);
                 }
             }
+            //batch.end();
+            for (int i = 0; i < liquidSurfaces.size(); i++) {
+                liquidSurfaces.get(i).draw(batch, offsetX, offsetY);
+            }
+            //batch.begin();
 
         }
         //fps.log();
@@ -1410,4 +1597,23 @@ public class Area {
         }
     }
 
+    public int chekZPath() {
+        for (int i = 0; i < height; ++i) {
+            for (int t = 0; t < width; ++t) {
+                if (blocks.get(4).get(t).get(i) == 15) {
+                    Rectangle rect = new Rectangle(TILE_WIDTH*t, TILE_HEIGHT*i, TILE_WIDTH, TILE_HEIGHT);
+                    if (player.hitBox.overlaps(rect)) {
+                        return 1;
+                    }
+                }
+                else if (blocks.get(4).get(t).get(i) == 16) {
+                    Rectangle rect = new Rectangle(TILE_WIDTH*t, TILE_HEIGHT*i, TILE_WIDTH, TILE_HEIGHT);
+                    if (player.hitBox.overlaps(rect)) {
+                        return -1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
 }

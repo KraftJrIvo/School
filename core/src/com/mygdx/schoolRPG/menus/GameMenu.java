@@ -42,7 +42,7 @@ public class GameMenu extends Menu {
         worlds = new ArrayList<World>();
         worlds.add(new World("worlds/test", 5, 1, 1, 0));
         worlds.add(new World("worlds/forest"));
-        worlds.add(new World("worlds/platform"));
+        worlds.add(new World("worlds/platform_new"));
         worlds.add(new World("worlds/p_test3", 5, 0, 0, 0));
     }
 
