@@ -39,7 +39,7 @@ public class Particle extends Entity {
         r = pp.r;
         this.platformMode = platformMode;
         if (platformMode) z = 0;
-        this.h = 9999999;
+        this.h = y;
     }
 
     public void bounce(boolean floor, boolean side) {
@@ -86,6 +86,9 @@ public class Particle extends Entity {
     @Override
     public void fall() {
         if (!fallen) {
+            if (!falling) {
+                h = y;
+            }
             x += XSpeed;
             if (!platformMode) {
                 y += YSpeed;
@@ -119,6 +122,8 @@ public class Particle extends Entity {
 
             }
 
+        } else {
+            h = y;// + 10;
         }
         if ((curBounces == 0 && fallen && pp.bouncing) || (platformMode && curBounces<=0)) {
             alpha -= pp.alphaStep;

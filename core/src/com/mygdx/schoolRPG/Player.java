@@ -144,7 +144,14 @@ public class Player extends HittableEntity {
             if (!jumping) {
                 jumpTicks = maxJumpTicks;
                 jumping = true;
-                additionalJumps = additionalJumpsCount;
+                //System.out.println(pSpeed);
+                if (pSpeed > 13) {
+                    if (additionalJumpsCount > 0) {
+                        additionalJumps = additionalJumpsCount-1;
+                    }
+                } else {
+                    additionalJumps = additionalJumpsCount;
+                }
                 additionalJumpTicks = maxAdditionalJumpTicks;
                 canUp = true;
             }
@@ -269,10 +276,10 @@ public class Player extends HittableEntity {
         poses.initialiseIfNeeded(assets);
         x = hitBox.x;
         y = hitBox.y;
-
+        //h = y-hitBox.height;
         if (!floor) {
-            if (hitBox.width == 16)h = hitBox.y-hitBox.height-12;
-            else h = hitBox.y-hitBox.height-8;
+            //if (hitBox.width == 16)h = hitBox.y-hitBox.height-12;
+            //else h = hitBox.y-hitBox.height-8;
         } else {
             h = 999999;
         }
@@ -349,7 +356,7 @@ public class Player extends HittableEntity {
         y = hitBox.y;
         //if (hitBox.width == 16)h = hitBox.y-8;
         if (!floor) {
-            h = hitBox.y-6;
+            h = hitBox.y-hitBox.height;//-6;
         } else {
             h = 999999;
         }
@@ -363,7 +370,7 @@ public class Player extends HittableEntity {
         //System.out.println(speedX + " " + speedY);
         //System.out.println(hitBox.x + " " + hitBox.y);
 
-        characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height / 2 + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)));
+        characterMaker.draw(batch, 0, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)));
         /*if (characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.up || characterMaker.cdc.lookDir == CharacterDirectionChecker.LookDirection.down) {
             if (hitBox.width == 8) {
                 if (Math.abs(speedX) < 5 && (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.D))) {
