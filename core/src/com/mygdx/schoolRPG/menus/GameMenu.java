@@ -40,7 +40,7 @@ public class GameMenu extends Menu {
             rightJoyRect = new Rectangle(Gdx.graphics.getWidth() * 6 / 7 - JOYBASESIZE / 2, Gdx.graphics.getHeight() / 5 - JOYBASESIZE / 2, JOYBASESIZE, JOYBASESIZE);
         }
         worlds = new ArrayList<World>();
-        worlds.add(new World("worlds/test", 5, 1, 1, 0));
+        worlds.add(new World("worlds/ultimatetest1"));
         worlds.add(new World("worlds/forest"));
         worlds.add(new World("worlds/platform_new"));
         worlds.add(new World("worlds/p_test3", 5, 0, 0, 0));
