@@ -13,7 +13,7 @@ import java.util.ArrayList;
 /**
  * Created by Kraft on 25.08.2015.
  */
-public class LiquidSurface {
+public class LiquidSurface extends Entity{
 
     private float x, y;
     private int width;
@@ -27,6 +27,7 @@ public class LiquidSurface {
     enum LiquidType { NONE, WATER, GOO};
 
     public LiquidSurface(AssetManager assets, float x, float y, int width, int tileWidth, LiquidType type, boolean full) {
+        super(assets, (Texture)null, x, y, y, 0, 0);
         this.x = x;
         this.y = y;
         this.width = tileWidth*width;

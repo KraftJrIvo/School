@@ -47,10 +47,9 @@ public class Entity implements Comparable {
         this.y = y;
         this.assets = assets;
         type = 0;
-        this.h = h;
         this.floorHeight = floorHeight;
         this.angle = angle;
-        h = y;
+        this.h = y;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
@@ -59,12 +58,11 @@ public class Entity implements Comparable {
         this.texR = tex;
         this.x = x;
         this.y = y;
-        this.h = h;
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
-        h = y;
+        this.h = y;
         //if (angle == 2 && tex.getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -74,12 +72,11 @@ public class Entity implements Comparable {
         this.tex = tex;
         this.x = x;
         this.y = y;
-        this.h = h;
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
-        h = y;
+        this.h = y;
         //if (angle == 2 && tex.getHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -89,12 +86,11 @@ public class Entity implements Comparable {
         this.anim = anim;
         this.x = x;
         this.y = y;
-        this.h = h;
         this.assets = assets;
         initialised = true;
         this.floorHeight = floorHeight;
         this.angle = angle;
-
+        this.h = y;
         //if (angle == 2 && anim.getFirstFrame().getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -121,20 +117,21 @@ public class Entity implements Comparable {
         batch.setColor(new Color(1, 1, 1, alpha));
         float anglee = 0;
         if (angle == 1) {
-            anglee = -90;
+            anglee -= 90;
         } else if (angle == 2) {
-            anglee = -180;
+            anglee -= 180;
         } else if (angle == 3) {
-            anglee = -270;
+            anglee -= 270;
         }
         if (anim != null) {
+            anglee -= 90;
             float yy;
-            if (floor) yy = offsetY - y-floorHeight + z - anim.getFirstFrame().getRegionHeight()*scale/2;
+            if (floor) yy = offsetY - y-floorHeight + z + anim.getFirstFrame().getRegionHeight()*scale/2 - anim.getFirstFrame().getRegionHeight();
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+x - anim.getFirstFrame().getRegionWidth()*scale/2;
 
-            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()/2, 0,
+            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth() /2, anim.getFirstFrame().getRegionHeight()/2,
                     anim.getFirstFrame().getRegionWidth()*scale, anim.getFirstFrame().getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
         } else if (tex != null) {
             float yy;
