@@ -43,7 +43,6 @@ public class GameMenu extends Menu {
         worlds.add(new World("worlds/ultimatetest1"));
         worlds.add(new World("worlds/forest"));
         worlds.add(new World("worlds/platform_new"));
-        worlds.add(new World("worlds/p_test3", 5, 0, 0, 0));
     }
 
     @Override

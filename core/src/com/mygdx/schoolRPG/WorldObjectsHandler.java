@@ -784,8 +784,8 @@ public class WorldObjectsHandler {
         try {
             //
             //type = blocks.get(0).get(t).get(i)-world.spritesCount;
-            if (blocks.get(layer).get(t).get(i) >= world.spritesCount) {
-                TextureRegion img = world.tiles.get(blocks.get(layer).get(t).get(i)-world.spritesCount).getTile(up, down, left, right);
+            if (world.tileTypes.get(blocks.get(layer).get(t).get(i)) != 0/*blocks.get(layer).get(t).get(i) >= world.spritesCount*/) {
+                TextureRegion img = world.tiles.get(world.tileIndices.get(blocks.get(layer).get(t).get(i))/*blocks.get(layer).get(t).get(i)-world.spritesCount*/).getTile(up, down, left, right);
                 float x = offsetX + t * (area.TILE_WIDTH) + area.TILE_WIDTH/2 - img.getRegionWidth()/2;
                 float y = offsetY - i * area.TILE_HEIGHT-img.getRegionHeight()+area.TILE_HEIGHT;
                 float y2 = 0;

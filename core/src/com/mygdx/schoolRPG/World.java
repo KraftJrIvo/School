@@ -33,6 +33,10 @@ public class World{
     ArrayList<Texture> sprites;
     ArrayList<BlockMultiTile> tiles;
     ArrayList<AnimationSequence> animations;
+    ArrayList<String> names;
+    ArrayList<String> newNames;
+    ArrayList<Integer> tileTypes;
+    ArrayList<Integer> tileIndices;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
     AssetManager assets;
@@ -65,6 +69,25 @@ public class World{
         folderPath = worldPath;
         tlw = new File(worldPath+"/world.tlw");
 
+    }
+
+    public void updateTiles() {
+        ArrayList<String> preNames = new ArrayList<String>(names);
+        for (int i = 0; i < newNames.size(); ++i) {
+            int id = names.indexOf(newNames.get(i));
+            if (id >= 0 && id != i) {
+                int type = tileTypes.get(i);
+                int idx = tileIndices.get(i);
+                String name = preNames.get(i);
+                tileTypes.set(i, tileTypes.get(id));
+                tileIndices.set(i, tileIndices.get(id));
+                preNames.set(i, preNames.get(id));
+                tileTypes.set(id, type);
+                tileIndices.set(id, idx);
+                preNames.set(id, name);
+            }
+        }
+        names = preNames;
     }
 
     public void load(AssetManager assets) {
@@ -128,6 +151,20 @@ public class World{
         } else {
             try {
                 fis = new FileInputStream(tlw);
+
+                tileIndices = new ArrayList<Integer>();
+                tileTypes = new ArrayList<Integer>();
+                names = new ArrayList<String>();
+                newNames = new ArrayList<String>();
+                int namesCount;
+                namesCount = fis.read();
+                for (int i =0; i < namesCount; ++i) {
+                    int nameSize = fis.read();
+                    byte[] buff = new byte[nameSize];
+                    fis.read(buff);
+                    newNames.add(new String(buff));
+                }
+
                 int size = fis.read();
                 byte[] buff = new byte[size];
                 fis.read(buff);
@@ -194,11 +231,15 @@ public class World{
                 e.printStackTrace();
             }
             worldDir = Gdx.files.internal(folderPath);
+            int animsLoaded = 0;
             for (FileHandle entry: worldDir.list()) {
                 if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("world.tlw")){
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
+                names.add(entry.name().substring(0, entry.name().length() - 4));
+                tileTypes.add(0);
+                tileIndices.add(spritesCount);
                 spritesCount++;
             }
             worldDir = Gdx.files.internal(folderPath+"/tiles");
@@ -207,6 +248,9 @@ public class World{
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
+                names.add("tiles\\" + entry.name().substring(0, entry.name().length() - 4));
+                tileTypes.add(1);
+                tileIndices.add(tilesetsCount);
                 tilesetsCount++;
             }
             worldDir = Gdx.files.internal(folderPath+"/anim");
@@ -215,8 +259,13 @@ public class World{
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
+                names.add("anim\\" + entry.name().substring(0, entry.name().length() - 4));
+                tileTypes.add(2);
+                tileIndices.add(animsLoaded);
+                animsLoaded++;
             }
             worldDir = Gdx.files.internal(folderPath);
+            updateTiles();
         }
         loaded = true;
     }
@@ -225,7 +274,6 @@ public class World{
         characterMaker.initialiseResources(assets);
         bg = assets.get(folderPath+"/bg.png", Texture.class);
         shapeRenderer = new ShapeRenderer();
-
         if (!initialised && !areasCreated) {
             if (tlw == null) {
                 for (FileHandle entry: worldDir.list()) {
