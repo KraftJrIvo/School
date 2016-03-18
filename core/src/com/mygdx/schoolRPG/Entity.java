@@ -114,7 +114,8 @@ public class Entity implements Comparable {
 
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
         initialiseIfNeeded();
-        batch.setColor(new Color(1, 1, 1, alpha));
+        float baseAlpha = batch.getColor().a;
+        batch.setColor(new Color(1, 1, 1, baseAlpha * alpha));
         float anglee = 0;
         if (angle == 1) {
             anglee -= 90;
@@ -150,7 +151,7 @@ public class Entity implements Comparable {
             batch.draw(texR, xx, yy, texR.getRegionWidth()/2, 0,
                     texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
         }
-        batch.setColor(new Color(1, 1, 1, 1));
+        batch.setColor(new Color(1, 1, 1, baseAlpha));
     }
 
     Rectangle getRect() {

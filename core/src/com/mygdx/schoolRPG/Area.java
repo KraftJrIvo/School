@@ -2,6 +2,7 @@ package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -270,13 +271,13 @@ public class Area {
             respawnPlayer(null, assets, lastSpawnTileX, lastSpawnTileY, lastSpawnPos, 0, characterMaker);
         } else if (pos != 0) {
             if (tileX == -1) {
-                player.hitBox.x = 5;
+                player.hitBox.x = 15;
                 if (platformMode) {
                     player.speedX = speed;
                 }
                 if (platformMode) player.curPose = player.poses.getTile(PlayerMultiTile.PlayerPose.RIGHT);
             } else if (tileX == 1) {
-                player.hitBox.x = TILE_WIDTH * (width - 1) + 5;
+                player.hitBox.x = TILE_WIDTH * (width - 1);
                 if (platformMode) {
                     player.speedX = speed;
                 }
@@ -290,7 +291,7 @@ public class Area {
                 player.speedX = 0;
                 if (platformMode) player.curPose = player.poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
             } else if (tileY == -1) {
-                player.hitBox.y = TILE_HEIGHT * (height - 2) - 5;
+                player.hitBox.y = TILE_HEIGHT * (height - 1) - 10;
                 //player.speedY = speed;
                 if (platformMode) {
                     player.speedY = speed;
@@ -335,10 +336,13 @@ public class Area {
     }
 
 
-    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, boolean drawBG) {
-
+    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, boolean drawBG, boolean activeCamera) {
+        float alpha = batch.getColor().a;
         if (drawBG) {
+
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
             batch.draw(world.bg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, alpha));
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.PLUS) && zoom < 5) zoom += 1;
@@ -355,22 +359,23 @@ public class Area {
         translate.setToTranslation(-off, -off / 2, 0);
         batch.setTransformMatrix(transform.mul(translate));
 
-        moveCamera(5);
+        if (activeCamera) moveCamera(5);
 
         offsetX += -cameraX + SCREEN_WIDTH /2;
         offsetY += cameraY + SCREEN_HEIGHT /2;
 
-
+        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+            ParticleProperties pp = new TestParticle(world.assets, (float)cameraX+(Gdx.input.getX()-Gdx.graphics.getWidth()/2)/zoom, (float)cameraY+(Gdx.input.getY()-Gdx.graphics.getHeight()/2)/zoom, 1);
+            Particle prt = new Particle(assets, pp, platformMode);
+            worldObjectsHandler.addParticle(prt);
+        }
         if (Gdx.input.isTouched()) {
             //ParticleProperties pp = new WaterSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
             //ParticleProperties pp = new GooSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
-            ParticleProperties pp = new TestParticle(world.assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
-            Particle prt = new Particle(assets, pp, platformMode);
-            worldObjectsHandler.addParticle(prt);
             //objects.add(prt);
         }
 
-        worldObjectsHandler.draw(batch, world, offsetX, offsetY, drawPlayer);
+        worldObjectsHandler.draw(batch, world, offsetX, offsetY, drawPlayer, alpha);
         //Collections.sort(objects);
         /*if (!platformMode) {
 

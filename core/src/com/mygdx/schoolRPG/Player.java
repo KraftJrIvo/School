@@ -63,17 +63,29 @@ public class Player extends HittableEntity {
             if (!canLeft && speedX < 0) speedX = 0;
             if (!canRight && speedX > 0) speedX = 0;*/
             if (Gdx.input.isKeyPressed(Input.Keys.A) && !falling) {
-                speedX -= 2;
+                speedX -= 1;
                 if (Gdx.input.isKeyPressed(Input.Keys.D)) pushCount = -2;
                 else if (!pushLeft) pushCount = -2;
             }
-            else if (speedX < 0) speedX += 2;
+            else if (speedX < 0) {
+                if (speedX == -1){
+                    speedX = 0;
+                } else {
+                    speedX += 2;
+                }
+            }
             if (Gdx.input.isKeyPressed(Input.Keys.D) && !falling) {
-                speedX += 2;
+                speedX += 1;
                 if (Gdx.input.isKeyPressed(Input.Keys.A)) pushCount = -2;
                 else if (!pushRight) pushCount = -2;
             }
-            else if (speedX > 0) speedX -= 2;
+            else if (speedX > 0) {
+                if (speedX == 1){
+                    speedX = 0;
+                } else {
+                    speedX -= 2;
+                }
+            }
             if (Gdx.input.isKeyPressed(Input.Keys.W) && !falling) {
                 speedY += 1;
                 if (Gdx.input.isKeyPressed(Input.Keys.S)) pushCount = -2;
@@ -255,7 +267,7 @@ public class Player extends HittableEntity {
             diffY = 0;
         }
 
-
+        characterMaker.invalidateBobbing();
         if (characterMaker.directionsCheck()) {
             pushCount = -2;
         }

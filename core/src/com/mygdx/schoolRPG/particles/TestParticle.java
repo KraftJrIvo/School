@@ -29,7 +29,7 @@ public class TestParticle extends ParticleProperties {
         XStep=0.1f;
         YStep=0.1f;
         ZStep=0.1f;
-        alphaStep=0.08f;//.01f;
+        alphaStep=0.008f;//.01f;
         scalingStep=0;//.01f;
         bounces=5;
         floor = true;

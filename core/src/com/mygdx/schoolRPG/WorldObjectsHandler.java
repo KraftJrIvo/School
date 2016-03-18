@@ -1,7 +1,9 @@
 package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -540,7 +542,7 @@ public class WorldObjectsHandler {
             particles.get(i).fall();
             invalidateParticlesCollisions(particles.get(i));
             if (particles.get(i).alpha <= 0 || particles.get(i).x > area.width*area.TILE_WIDTH || particles.get(i).y > area.height*area.TILE_HEIGHT ||
-                    particles.get(i).x < 0 || (particles.get(i).y-area.TILE_HEIGHT < 0 && !area.platformMode) || particles.get(i).z > area.cameraY) {
+                    particles.get(i).x < 0 || (particles.get(i).y < -area.TILE_HEIGHT && !area.platformMode) || particles.get(i).z > area.cameraY) {
                 deleteObjectCellsForEntity(particles.get(i));
                 fallingObjects.remove(particles.get(i));
                 particles.remove(i);
@@ -628,7 +630,7 @@ public class WorldObjectsHandler {
         }
     }
 
-    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer) {
+    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, float baseAlpha) {
         if (area.zoom == 2.0f) {
             offsetX -= 75;
             offsetY -= 54;
@@ -652,9 +654,19 @@ public class WorldObjectsHandler {
             for (int i = 0; i <= area.height; ++i) {
                 objectsOnLevel.clear();
                 for (int t = 0; t < area.width; ++t) {
+                    /*
                     if (i < area.height && blocks.get(0).get(t).get(i) >= 0) {
                         drawLayer(batch, world, 0, offsetX, offsetY, i, t);
+                    }*/
+                    if (i < area.height && blocks.get(0).get(t).get(i) >= 0 && ((i == 0 || blocks.get(0).get(t).get(i-1) == -1) ||
+                            t == 0 || blocks.get(0).get(t-1).get(i) == -1 || t == area.width /*|| blocks.get(0).get(t+1).get(i) == -1*/)) {
+                        int iPlus = 0;
+                        while (i + iPlus < area.height && blocks.get(0).get(t).get(i + iPlus) >= 0) {
+                            drawLayer(batch, world, 0, offsetX, offsetY, i + iPlus, t);
+                            iPlus++;
+                        }
                     }
+
                     /*if (i < area.height) {
                         for (int z =0; z < objectCells.get(t).get(i).size(); ++z) {
                             if (objectCells.get(t).get(i).get(z).entity.floor || objectCells.get(t).get(i).get(z).entity.falling) {
@@ -683,7 +695,13 @@ public class WorldObjectsHandler {
                     //int id = objectsOnLevel.get(z).id;
                     if (drawPlayer && objectsOnLevel.get(z).type == ObjectType.PLAYER) {
                         if (!area.platformMode) {
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
+                            float w = ((Player)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
+                            float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
+                            batch.draw(area.shadow, offsetX + ((Player)objectsOnLevel.get(z).entity).hitBox.x+w2/2, offsetY - (((Player)objectsOnLevel.get(z).entity).hitBox.y + ((Player)objectsOnLevel.get(z).entity).hitBox.height/2)+w2/2, w*1.3f, w*1.3f);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
                         } else {
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         }
@@ -693,6 +711,12 @@ public class WorldObjectsHandler {
                             (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         } else if (objectsOnLevel.get(z).type == ObjectType.PARTICLE) {
                             (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
+                            if (!objectsOnLevel.get(z).entity.floor && !((Particle)objectsOnLevel.get(z).entity).fallen && objectsOnLevel.get(z).entity.z > 0) {
+                                float w = objectsOnLevel.get(z).entity.getTexRect().getWidth()/1.0f+objectsOnLevel.get(z).entity.z/3;
+                                batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha*(0.45f-objectsOnLevel.get(z).entity.z/50)));
+                                batch.draw(area.shadow, offsetX + objectsOnLevel.get(z).entity.x - w/2, offsetY - (objectsOnLevel.get(z).entity.y + w/2), w, w);
+                                batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                            }
                         } else if (objectsOnLevel.get(z).type == ObjectType.OBSTACLE) {
                             (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         }/* else if (objectCells.get(t).get(i).get(z).type == ObjectType.LIQUID) {
@@ -801,7 +825,7 @@ public class WorldObjectsHandler {
                 if (layer == 0)batch.draw(img, x, y, img.getRegionWidth(), img.getRegionHeight());
                 else batch.draw(img, x, y2, img.getRegionWidth(), img.getRegionHeight());
             } else {
-                Texture img = world.sprites.get(blocks.get(layer).get(t).get(i));
+                Texture img = world.sprites.get(world.tileIndices.get(blocks.get(layer).get(t).get(i)));
                 float x = offsetX + t * (area.TILE_WIDTH) + area.TILE_WIDTH/2 - img.getWidth()/2;
                 float y = offsetY - i * area.TILE_HEIGHT-img.getHeight()+area.TILE_HEIGHT;
                 float y2 = 0;
