@@ -17,11 +17,11 @@ public class AnimationSequence {
 	long animationTime;
     int firstFrame;
 	
-	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping) {
+	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping, int framesCount) {
 		this.fps = fps;
 		this.looping = looping;
 		pos = new Coords();
-		gs = new GlobalSequence(assets, sName);
+		gs = new GlobalSequence(assets, sName, framesCount);
 		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 

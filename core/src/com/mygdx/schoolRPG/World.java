@@ -74,12 +74,29 @@ public class World{
     }
 
     public void updateTiles() {
+        /*ArrayList<String> unusedNames = new ArrayList<String>();
+        ArrayList<Integer> unusedTypes = new ArrayList<Integer>();
+        ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
+        for (int i = 0; i < names.size(); ++i) {
+            if (!newNames.contains(names.get(i))) {
+                unusedNames.add(names.get(i));
+                unusedTypes.add(tileTypes.get(i));
+                unusedIndices.add(tileIndices.get(i));
+            }
+        }*/
         ArrayList<String> preNames = new ArrayList<String>(names);
+        ArrayList<Integer> preTileIndices = new ArrayList<Integer>(tileIndices);
+        ArrayList<Integer> preTileTypes = new ArrayList<Integer>(tileTypes);
         for (int i = 0; i < newNames.size(); ++i) {
-            tileTypes.set(i, tileTypes.get(names.indexOf(newNames.get(i))));
-            tileIndices.set(i, tileIndices.get(names.indexOf(newNames.get(i))));
+            preTileTypes.set(i, tileTypes.get(names.indexOf(newNames.get(i))));
+            preTileIndices.set(i, tileIndices.get(names.indexOf(newNames.get(i))));
             preNames.set(i, newNames.get(i));
         }
+        /*for (int i = 0; i < unusedNames.size(); ++i) {
+            tileTypes.set(newNames.size() + i, unusedTypes.get(i));
+            tileIndices.set(newNames.size() + i, unusedIndices.get(i));
+            preNames.set(newNames.size() + i, unusedNames.get(i));
+        }*/
         /*ArrayList<String> preNames = new ArrayList<String>(names);
         for (int i = 0; i < newNames.size(); ++i) {
             int id = names.indexOf(newNames.get(i));
@@ -95,6 +112,8 @@ public class World{
                 preNames.set(id, name);
             }
         }*/
+        tileIndices = preTileIndices;
+        tileTypes = preTileTypes;
         names = preNames;
     }
 
@@ -317,9 +336,10 @@ public class World{
                     }
                     for (int i = 0; i < names.size(); ++i) {
                         String s = entry.name().substring(0, entry.name().length() - 4);
-                        if (entry.name().substring(0, entry.name().length() - 4).equals(names.get(i))) {
+                        /*if (entry.name().substring(0, entry.name().length() - 4).equals(names.get(i))) {
                             tileIndices.set(i, sprites.size());
-                        }
+                            tileTypes.set(i, 0);
+                        }*/
                     }
                     sprites.add(assets.get(entry.path(), Texture.class));
                 }
@@ -329,11 +349,12 @@ public class World{
                     if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
                         continue;
                     }
-                    for (int i = 0; i < names.size(); ++i) {
+                    /*for (int i = 0; i < names.size(); ++i) {
                         if (("tiles\\" + entry.name().substring(0, entry.name().length() - 4)).equals(names.get(i))) {
                             tileIndices.set(i, tiles.size());
+                            tileTypes.set(i, 1);
                         }
-                    }
+                    }*/
                     tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
                 }
                 animations = new ArrayList<AnimationSequence>();
@@ -342,12 +363,13 @@ public class World{
                     if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
                         continue;
                     }
-                    for (int i = 0; i < names.size(); ++i) {
+                    /*for (int i = 0; i < names.size(); ++i) {
                         if (("anim\\" + entry.name().substring(0, entry.name().length() - 4)).equals(names.get(i))) {
                             tileIndices.set(i, animations.size());
+                            tileTypes.set(i, 2);
                         }
-                    }
-                    animations.add(new AnimationSequence(assets, entry.path(), 12, true));
+                    }*/
+                    animations.add(new AnimationSequence(assets, entry.path(), 12, true, 4));
                 }
                 worldDir = Gdx.files.internal(folderPath);
             }

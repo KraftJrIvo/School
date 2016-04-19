@@ -39,7 +39,7 @@ public class Player extends HittableEntity {
         jumpTicks = maxJumpTicks;
         if (spritesPath != null) {
             poses = new PlayerMultiTile(spritesPath, assets);
-            chargo = new AnimationSequence(assets, spritesPath.substring(0, spritesPath.length()-4)+"go.png", 20, true);
+            chargo = new AnimationSequence(assets, spritesPath.substring(0, spritesPath.length()-4)+"go.png", 20, true, 5);
         }
         this.characterMaker = characterMaker;
     }
@@ -62,10 +62,10 @@ public class Player extends HittableEntity {
             if (!canDown && speedY < 0) speedY = 0;
             if (!canLeft && speedX < 0) speedX = 0;
             if (!canRight && speedX > 0) speedX = 0;*/
-            if (Gdx.input.isKeyPressed(Input.Keys.A) && !falling) {
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !falling) {
                 speedX -= 1;
-                if (Gdx.input.isKeyPressed(Input.Keys.D)) pushCount = -2;
-                else if (!pushLeft) pushCount = -2;
+                //if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) pushCount = -2;
+                if (!pushLeft) pushCount = -2;
             }
             else if (speedX < 0) {
                 if (speedX == -1){
@@ -74,10 +74,9 @@ public class Player extends HittableEntity {
                     speedX += 2;
                 }
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.D) && !falling) {
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !falling) {
                 speedX += 1;
-                if (Gdx.input.isKeyPressed(Input.Keys.A)) pushCount = -2;
-                else if (!pushRight) pushCount = -2;
+                if (!pushRight) pushCount = -2;
             }
             else if (speedX > 0) {
                 if (speedX == 1){
@@ -86,16 +85,14 @@ public class Player extends HittableEntity {
                     speedX -= 2;
                 }
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.W) && !falling) {
+            if (Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) && !falling) {
                 speedY += 1;
-                if (Gdx.input.isKeyPressed(Input.Keys.S)) pushCount = -2;
-                else if (!pushUp) pushCount = -2;
+                if (!pushUp) pushCount = -2;
             }
             else if (speedY > 0) speedY -= 1;
-            if (Gdx.input.isKeyPressed(Input.Keys.S) && !falling) {
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && !Gdx.input.isKeyPressed(Input.Keys.UP) && !falling) {
                 speedY -= 1;
-                if (Gdx.input.isKeyPressed(Input.Keys.W)) pushCount = -2;
-                else if (!pushDown) pushCount = -2;
+                if (!pushDown) pushCount = -2;
             }
             else if (speedY < 0) speedY += 1;
         //}
@@ -250,6 +247,7 @@ public class Player extends HittableEntity {
     }*/
 
     public void invalidatePose(boolean stand, boolean notPush) {
+        characterMaker.go = (Math.abs(speedX) > 5 || Math.abs(speedY) > 5);
         if (!stand) {
             diffX = hitBox.x - oldX;
             diffY = hitBox.y - oldY;

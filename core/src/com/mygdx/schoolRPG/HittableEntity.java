@@ -213,11 +213,11 @@ public class HittableEntity extends Entity {
                     diffX = hitBox.x-rect.width - rect.x;
                 }
             } if (rect.getY() > centerY && rect.getY() < centerY+hitBox.getHeight()/2) {
-                if (upSide && oldY > rect.y) {
+                if (upSide && oldY >= rect.y) {
                     diffY = hitBox.y+hitBox.height - rect.y;
                 }
             } else if (rect.getY()+rect.getHeight() < centerY && rect.getY()+rect.getHeight() > hitBox.getY()) {
-                if (downSide && oldY < rect.y) {
+                if (downSide && oldY <= rect.y) {
                     diffY = hitBox.y-rect.height - rect.y;
                 }
             }

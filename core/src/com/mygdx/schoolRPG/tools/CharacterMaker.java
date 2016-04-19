@@ -29,6 +29,7 @@ public class CharacterMaker {
     TextureRegion arms_front_reversed, arms_side_reversed, legs_stand_side_reversed, arms_push_side_reversed, arms_push_front_reversed, arms_push_back_reversed, arms_push_side_back_reversed;
     public CharacterDirectionChecker cdc;
     public boolean push = true;
+    public boolean go = false;
     int legsHeight = 10;
     int bodyHeight = 16;
     int armsLevel = 6;
@@ -72,7 +73,7 @@ public class CharacterMaker {
             if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
                 continue;
             }
-            bodies.add(new GlobalSequence(assets, entry.path()));
+            bodies.add(new GlobalSequence(assets, entry.path(), 3));
             //assets.load(entry.path(), Texture.class);
         }
         heads = new ArrayList<GlobalSequence>();
@@ -81,7 +82,7 @@ public class CharacterMaker {
             if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
                 continue;
             }
-            heads.add(new GlobalSequence(assets, entry.path()));
+            heads.add(new GlobalSequence(assets, entry.path(), 3));
         }
         legs_stand_front = assets.get("chars/legs/stand_front.png");
         legs_stand_side = assets.get("chars/legs/stand_side.png");
@@ -99,16 +100,16 @@ public class CharacterMaker {
         arms_push_back_reversed.flip(true, false);
         arms_push_side_back_reversed = new TextureRegion(arms_push_side_back);
         arms_push_side_back_reversed.flip(true, false);
-        legs_walk_front = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true);
-        legs_walk_side = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true);
+        legs_walk_front = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true, 8);
+        legs_walk_side = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true, 8);
         legs_stand_side_reversed = new TextureRegion(legs_stand_side);
         legs_stand_side_reversed.flip(true, false);
         arms_side_reversed = new TextureRegion(arms_side);
         arms_side_reversed.flip(true, false);
         arms_front_reversed = new TextureRegion(arms_front);
         arms_front_reversed.flip(true, false);
-        timer1 = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true);
-        timer2 = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true);
+        timer1 = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true, 8);
+        timer2 = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true, 8);
     }
 
     public boolean directionsCheck() {
@@ -143,9 +144,9 @@ public class CharacterMaker {
         if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side_reversed, x, y);
-            } else if (Gdx.input.isKeyPressed(Input.Keys.W) && Math.abs(speedX)<=1 && speedY > speedX) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.UP) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.drawReversed(batch, x, y, (int) (15 * speedY), false);
-            } else if (Gdx.input.isKeyPressed(Input.Keys.S) && Math.abs(speedX)<=1 && speedY > speedX) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
             } else {
                 legs_walk_side.draw(batch, x, y, (int)(20*speedX), true);
@@ -159,9 +160,9 @@ public class CharacterMaker {
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side, x, y);
-            } else if (Gdx.input.isKeyPressed(Input.Keys.W) && Math.abs(speedX)<=1 && speedY > speedX) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.UP) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.drawReversed(batch, x, y, (int)(15*speedY), false);
-            } else if (Gdx.input.isKeyPressed(Input.Keys.S) && Math.abs(speedX)<=1 && speedY > speedX) {
+            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
             }  else {
                 legs_walk_side.draw(batch, x, y, (int)(20*speedX), false);
@@ -200,12 +201,12 @@ public class CharacterMaker {
     }
 
     public void invalidateBobbing() {
-        if (cdc.stand || push) {
-            timer2.getCurrentFrame(false);
-            bobbing = (float)(Math.sin((double)((float)timer2.currentFrame/(float)timer2.gs.getLength())*3)/2.0f-1.0f);
-        } else {
+        if (/*cdc.stand || push*/go) {
             timer1.getCurrentFrame(false);
             bobbing = (float)(Math.sin((double)((float)timer1.currentFrame/(float)timer1.gs.getLength())*3)-1.0);
+        } else {
+            timer2.getCurrentFrame(false);
+            bobbing = (float)(Math.sin((double)((float)timer2.currentFrame/(float)timer2.gs.getLength())*3)/2.0f-1.0f);
         }
     }
 
@@ -243,7 +244,7 @@ public class CharacterMaker {
     private void drawArm(SpriteBatch batch, float x, float y) {
         //y+=bobbing;
         if (cdc.lookDir == CharacterDirectionChecker.LookDirection.left) {
-            if (push && !Gdx.input.isKeyPressed(Input.Keys.W) && !Gdx.input.isKeyPressed(Input.Keys.S)) {
+            if (push && !Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
                     batch.draw(arms_push_side_reversed, x-8, y);
                 } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right_back) {
@@ -255,7 +256,7 @@ public class CharacterMaker {
                 batch.draw(arms_side_reversed, x, y);
             }
         } else if (cdc.lookDir == CharacterDirectionChecker.LookDirection.right) {
-            if (push && !Gdx.input.isKeyPressed(Input.Keys.W) && !Gdx.input.isKeyPressed(Input.Keys.S)) {
+            if (push && !Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right) {
                     batch.draw(arms_push_side, x - armSideWidth, y);
                 } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left_back) {

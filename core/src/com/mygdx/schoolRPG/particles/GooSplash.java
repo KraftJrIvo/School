@@ -14,7 +14,7 @@ public class GooSplash extends ParticleProperties {
         this.spawnZ = spawnZ;
         h=0;
         floorHeight=0;
-        animSeq1 = new AnimationSequence(assets, "particles/goo/1.png", 20, true);
+        animSeq1 = new AnimationSequence(assets, "particles/goo/1.png", 20, true, 4);
         tex2 = assets.get("particles/goo/2.png");
         r = 0;
         minXSpeed=-2.0f;

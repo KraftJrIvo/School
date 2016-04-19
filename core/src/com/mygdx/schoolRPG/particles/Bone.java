@@ -14,7 +14,7 @@ public class Bone extends ParticleProperties {
         this.spawnZ = spawnZ;
         h=0;
         floorHeight=0;
-        animSeq1 = new AnimationSequence(assets, "particles/bone/1.png", 10, true);
+        animSeq1 = new AnimationSequence(assets, "particles/bone/1.png", 10, true, 4);
         r = 4;
         minXSpeed=-2.0f;
         maxXSpeed=2.0f;

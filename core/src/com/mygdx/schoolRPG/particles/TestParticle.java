@@ -17,8 +17,8 @@ public class TestParticle extends ParticleProperties {
         this.spawnZ = spawnZ;
         h=0;
         floorHeight=0;
-        animSeq1 = new AnimationSequence(assets, "particles/test/1.png", 0, true);
-        animSeq2 = new AnimationSequence(assets, "particles/test/2.png", 0, true);
+        animSeq1 = new AnimationSequence(assets, "particles/test/1.png", 0, true, 2);
+        animSeq2 = new AnimationSequence(assets, "particles/test/2.png", 0, true, 2);
         r = 4;
         minXSpeed=-1.0f;
         maxXSpeed=1.0f;
@@ -31,7 +31,7 @@ public class TestParticle extends ParticleProperties {
         ZStep=0.1f;
         alphaStep=0.008f;//.01f;
         scalingStep=0;//.01f;
-        bounces=5;
+        bounces=9999;
         floor = true;
         bouncing = true;
     }

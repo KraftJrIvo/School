@@ -59,8 +59,12 @@ public class WorldObjectsHandler {
 
     private void addObjectCell(ObjectCell oc) {
         int tileX = (int)Math.floor(oc.entity.x/area.TILE_WIDTH)+2;
+        if (oc.entity.floor) {
+            tileX = (int)Math.floor(oc.entity.x/area.TILE_WIDTH);
+        }
         int tileY;
         if (oc.hIsY) {
+
             tileY = (int)Math.floor(oc.entity.h/area.TILE_HEIGHT)+2;
         } else {
             tileY = (int)Math.floor(oc.entity.y/area.TILE_HEIGHT)+2;
@@ -92,7 +96,11 @@ public class WorldObjectsHandler {
     }
 
     public void addNonSolid(Entity e) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true));
+        if (e.floor) {
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), false));
+        } else {
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true));
+        }
         nonSolids.add(e);
     }
 
@@ -658,8 +666,8 @@ public class WorldObjectsHandler {
                     if (i < area.height && blocks.get(0).get(t).get(i) >= 0) {
                         drawLayer(batch, world, 0, offsetX, offsetY, i, t);
                     }*/
-                    if (i < area.height && blocks.get(0).get(t).get(i) >= 0 && ((i == 0 || blocks.get(0).get(t).get(i-1) == -1) ||
-                            t == 0 || blocks.get(0).get(t-1).get(i) == -1 || t == area.width /*|| blocks.get(0).get(t+1).get(i) == -1*/)) {
+                    if (i < area.height && blocks.get(0).get(t).get(i) >= 0 && (i == 0 || (blocks.get(0).get(t).get(i-1) == -1) ||
+                            t == 0 || (blocks.get(0).get(t-1).get(i) == -1 && blocks.get(1).get(t-1).get(i) == -1) || t == area.width-1 || (blocks.get(0).get(t+1).get(i) == -1 && blocks.get(1).get(t+1).get(i) == -1) /*|| blocks.get(0).get(t+1).get(i) == -1*/)) {
                         int iPlus = 0;
                         while (i + iPlus < area.height && blocks.get(0).get(t).get(i + iPlus) >= 0) {
                             drawLayer(batch, world, 0, offsetX, offsetY, i + iPlus, t);
