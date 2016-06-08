@@ -25,6 +25,10 @@ public class AnimationSequence {
 		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 
+	public void reseed() {
+		seed = (int)Math.floor(Math.random()*gs.getLength());
+	}
+
     public void changeMode(int fps, boolean looping) {
         this.fps = fps;
         this.looping = looping;

@@ -247,7 +247,10 @@ public class Player extends HittableEntity {
     }*/
 
     public void invalidatePose(boolean stand, boolean notPush) {
-        characterMaker.go = (Math.abs(speedX) > 5 || Math.abs(speedY) > 5);
+        if (characterMaker != null) {
+            characterMaker.go = (Math.abs(speedX) > 5 || Math.abs(speedY) > 5);
+        }
+
         if (!stand) {
             diffX = hitBox.x - oldX;
             diffY = hitBox.y - oldY;
@@ -264,18 +267,19 @@ public class Player extends HittableEntity {
             diffX = 0;
             diffY = 0;
         }
+        if (characterMaker != null) {
+            characterMaker.invalidateBobbing();
+            if (characterMaker.directionsCheck()) {
+                pushCount = -2;
+            }
+            characterMaker.push = (pushCount > 1 && !notPush);
 
-        characterMaker.invalidateBobbing();
-        if (characterMaker.directionsCheck()) {
-            pushCount = -2;
-        }
-        characterMaker.push = (pushCount > 1 && !notPush);
-
-        if (Math.abs(diffX) > 0.5f) {
-            pushCount = 0;
-        }
-        if (Math.abs(diffY) > 0.5f) {
-            pushCount = 0;
+            if (Math.abs(diffX) > 0.5f) {
+                pushCount = 0;
+            }
+            if (Math.abs(diffY) > 0.5f) {
+                pushCount = 0;
+            }
         }
 
     }

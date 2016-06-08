@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -23,6 +24,7 @@ public class Menu {
     Texture pause, resume, exit, options;
     AssetManager assets;
     boolean android;
+    BitmapFont mainFont;
 
     public Menu(int id, boolean android) {
         this.android = android;
@@ -34,6 +36,7 @@ public class Menu {
     }
 
     public void load(AssetManager assets) {
+        mainFont = new BitmapFont(Gdx.files.internal("font0.fnt"), Gdx.files.internal("font0.png"), false);
         this.assets = assets;
         if (allowPause) {
             if (android) {

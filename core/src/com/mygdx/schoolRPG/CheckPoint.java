@@ -15,9 +15,9 @@ public class CheckPoint extends Entity {
     Texture offTex, onTex;
 
     public CheckPoint(AssetManager assets, String spritePath, float x, float y, float h, float floorHeight, int angle) {
-        super(assets, (Texture)assets.get(spritePath+"save1.png"), x, y, h, floorHeight, angle);
-        offTex = assets.get(spritePath+"save1.png");
-        onTex = assets.get(spritePath+"save2.png");
+        super(assets, (Texture)assets.get(spritePath+"/save1.png"), x, y, h, floorHeight, angle);
+        offTex = assets.get(spritePath+"/save1.png");
+        onTex = assets.get(spritePath+"/save2.png");
     }
 
     public void turnOn(ArrayList<CheckPoint> array) {

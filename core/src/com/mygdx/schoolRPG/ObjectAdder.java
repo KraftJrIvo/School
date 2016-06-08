@@ -199,7 +199,7 @@ public class ObjectAdder {
                     }
                     y+=blocks.get(7).get(t).get(i);
 
-                    CheckPoint cp = new CheckPoint(assets, world.worldDir+"/sprites/", x, y, 0, 0, blocks.get(5).get(t).get(i));
+                    CheckPoint cp = new CheckPoint(assets, world.folderPath, x, y, 0, 0, blocks.get(5).get(t).get(i));
                     worldObjectsHandler.addNonSolid(cp);
                     worldObjectsHandler.addCheckPoint(cp);
                     //}

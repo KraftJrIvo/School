@@ -38,6 +38,7 @@ public class World{
     ArrayList<String> newNames;
     ArrayList<Integer> tileTypes;
     ArrayList<Integer> tileIndices;
+    ArrayList<ParticleProperties> particles;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
     AssetManager assets;
@@ -118,12 +119,10 @@ public class World{
     }
 
     public void load(AssetManager assets) {
-        characterMaker = new CharacterMaker(assets);
-        characterMaker.cdc.setLookingForward(true);
 
         this.assets = assets;
 
-        assets.load("particles/test/1.png", Texture.class);
+        /*assets.load("particles/test/1.png", Texture.class);
         assets.load("particles/skull/1.png", Texture.class);
         assets.load("particles/body/1.png", Texture.class);
         assets.load("particles/bone/1.png", Texture.class);
@@ -133,16 +132,18 @@ public class World{
         assets.load("particles/water/1.png", Texture.class);
         assets.load("particles/water/2.png", Texture.class);
         assets.load("particles/goo/1.png", Texture.class);
-        assets.load("particles/goo/2.png", Texture.class);
+        assets.load("particles/goo/2.png", Texture.class);*/
 
         assets.load("blank.png", Texture.class);
         assets.load("blank2.png", Texture.class);
+        assets.load("shadow.png", Texture.class);
+        assets.load("prt_shadow.png", Texture.class);
 
         assets.load(folderPath + "/bg.png", Texture.class);
 
-        assets.load("worlds/platform_new/sprites/chargo.png", Texture.class);
-        assets.load("worlds/platform_new/sprites/save1.png", Texture.class);
-        assets.load("worlds/platform_new/sprites/save2.png", Texture.class);
+        //assets.load(folderPath + "/chars/0/chargo.png", Texture.class);
+        //assets.load(folderPath + "/chars/0/char.png", Texture.class);
+
         //if (platformMode) {
 
         //}
@@ -216,9 +217,13 @@ public class World{
                 tileHeight = fis.read();
                 areaWidth = fis.read();
                 areaHeight = fis.read();
-                firtsAreaWidth = 7;//Math.min(areaWidth, areaHeight);
-                firtsAreaHeight = 5;//Math.min(areaWidth, areaHeight);
-
+                if (!platformMode) {
+                    firtsAreaWidth = 7;//Math.min(areaWidth, areaHeight);
+                    firtsAreaHeight = 5;//Math.min(areaWidth, areaHeight);
+                } else {
+                    firtsAreaWidth = 24;//Math.min(areaWidth, areaHeight);
+                    firtsAreaHeight = 16;
+                }
                 int curCoordX = fis.read();
                 int curCoordY = fis.read();
                 int curCoordZ = fis.read();
@@ -292,7 +297,36 @@ public class World{
                 animsLoaded++;
             }
             worldDir = Gdx.files.internal(folderPath);
+
             updateTiles();
+        }
+        particles = new ArrayList<ParticleProperties>();
+        FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
+        int dirsCount = 0;
+        for (FileHandle entry: particlesDir.list()) {
+            if (entry.file().isDirectory()) {
+                assets.load(folderPath + "/particles/" + dirsCount + "/1.png", Texture.class);
+                FileHandle entry2 = Gdx.files.internal(folderPath + "/particles/" + dirsCount + "/2.png");
+                if (entry2.exists()) {
+                    assets.load(entry2.path(), Texture.class);
+                }
+                particles.add(new ParticleProperties(folderPath + "/particles/" + dirsCount));
+                dirsCount++;
+            }
+        }
+        if (platformMode) {
+            FileHandle charDir =  Gdx.files.internal(folderPath + "/chars");
+            for (FileHandle entry: charDir.list()) {
+                if (entry.isDirectory()) {
+                    assets.load(entry.path() + "/char.png", Texture.class);
+                    assets.load(entry.path() + "/chargo.png", Texture.class);
+                }
+            }
+            assets.load(folderPath + "/save1.png", Texture.class);
+            assets.load(folderPath + "/save2.png", Texture.class);
+        } else {
+            characterMaker = new CharacterMaker(assets, folderPath);
+            characterMaker.cdc.setLookingForward(true);
         }
         /*int minAreaArea = 99999;
         for (int i = 0 ; i < areas.size(); ++i) {
@@ -305,7 +339,12 @@ public class World{
     }
 
     public void initialiseResources(AssetManager assets) {
-        characterMaker.initialiseResources(assets);
+        if (!platformMode) {
+            characterMaker.initialiseResources(assets, folderPath);
+        }
+        for (int i = 0; i < particles.size(); ++i) {
+            particles.get(i).initialiseResources(assets, folderPath + "/particles/" + i);
+        }
         bg = assets.get(folderPath+"/bg.png", Texture.class);
         shapeRenderer = new ShapeRenderer();
         if (!initialised && !areasCreated) {
@@ -504,7 +543,7 @@ public class World{
 
     public void invalidate() {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate();
+            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate(this);
         }
     }
 

@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
-import com.mygdx.schoolRPG.particles.*;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.util.ArrayList;
@@ -151,7 +150,7 @@ public class Area {
 
             if (player == null) {
                 if (platformMode) {
-                    player = new Player(assets, world.worldDir+"/sprites/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                    player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
                 } else {
                     player = new Player(assets, null, (playerTileX * TILE_WIDTH), ((playerTileY) * TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
                 }
@@ -162,7 +161,7 @@ public class Area {
             //worldObjectsHandler.setPlayer(player);
 
         }
-        shadow = assets.get("particles/shadow.png");
+        shadow = assets.get("prt_shadow.png");
         initialised = true;
     }
 
@@ -209,9 +208,9 @@ public class Area {
     }
 
 
-    public void invalidate() {
+    public void invalidate(World world) {
         worldObjectsHandler.invalidateObjectCells();
-        worldObjectsHandler.invalidatePlayer();
+        worldObjectsHandler.invalidatePlayer(world);
         worldObjectsHandler.invalidateSolids();
         worldObjectsHandler.invalidateCollisions(player, player.oldX, player.oldY);
 
@@ -228,7 +227,7 @@ public class Area {
     public void respawnPlayerZ(String worldDir, AssetManager assets, int tileX, int tileY, CharacterMaker characterMaker) {
         if (player == null) {
             if (platformMode) {
-                player = new Player(assets, worldDir+"/sprites/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
             } else {
                 player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
             }
@@ -256,7 +255,7 @@ public class Area {
         if (player == null) {
 
             if (platformMode) {
-                player = new Player(assets, worldDir+"/sprites/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
             } else {
                 player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
             }
@@ -365,8 +364,7 @@ public class Area {
         offsetY += cameraY + SCREEN_HEIGHT /2;
 
         if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-            ParticleProperties pp = new TestParticle(world.assets, (float)cameraX+(Gdx.input.getX()-Gdx.graphics.getWidth()/2)/zoom, (float)cameraY+(Gdx.input.getY()-Gdx.graphics.getHeight()/2)/zoom, 1);
-            Particle prt = new Particle(assets, pp, platformMode);
+            Particle prt = new Particle(assets, new ParticleProperties(assets, world.particles.get(0)), platformMode, (float)cameraX+(Gdx.input.getX()-Gdx.graphics.getWidth()/2)/zoom, (float)cameraY+(Gdx.input.getY()-Gdx.graphics.getHeight()/2)/zoom, 1);
             worldObjectsHandler.addParticle(prt);
         }
         if (Gdx.input.isTouched()) {

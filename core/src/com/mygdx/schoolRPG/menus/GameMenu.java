@@ -41,8 +41,8 @@ public class GameMenu extends Menu {
         }
         worlds = new ArrayList<World>();
         worlds.add(new World("worlds/ultimatetest1"));
-        worlds.add(new World("worlds/forest"));
-        worlds.add(new World("worlds/platform_new"));
+        //worlds.add(new World("worlds/forest"));
+        worlds.add(new World("worlds/ultimatetest_p1"));
     }
 
     @Override

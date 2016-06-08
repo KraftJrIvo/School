@@ -1,17 +1,10 @@
 package com.mygdx.schoolRPG;
 
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.mygdx.schoolRPG.particles.Blood;
-import com.mygdx.schoolRPG.particles.Body;
-import com.mygdx.schoolRPG.particles.Bone;
-import com.mygdx.schoolRPG.particles.Skull;
-import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.util.ArrayList;
 
@@ -431,26 +424,22 @@ public class WorldObjectsHandler {
         }
     }*/
 
-    public void killPlayer() {
+    public void killPlayer(World world) {
         ParticleProperties pp;
         Particle prt;
         for (int i = 0; i < 20; ++i) {
-            pp = new Blood(area.assets, area.player.x+3, area.player.y-6, 1);
-            prt = new Particle(area.assets, pp, area.platformMode);
+            prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(6)), area.platformMode, area.player.x+3, area.player.y-6, 1);
             particles.add(prt);
             addParticle(prt);
         }
-        pp = new Skull(area.assets, area.player.x+3, area.player.y-6, 1);
-        prt = new Particle(area.assets, pp, area.platformMode);
+        prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(4)), area.platformMode, area.player.x+3, area.player.y-6, 1);
         particles.add(prt);
         addParticle(prt);
-        pp = new Body(area.assets, area.player.x+3, area.player.y-3, 1);
-        prt = new Particle(area.assets, pp, area.platformMode);
+        prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(1)), area.platformMode, area.player.x+3, area.player.y-3, 1);
         particles.add(prt);
         addParticle(prt);
         for (int i = 0; i < 4; ++i) {
-            pp = new Bone(area.assets, area.player.x+3, area.player.y-3, 1);
-            prt = new Particle(area.assets, pp, area.platformMode);
+            prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(2)), area.platformMode, area.player.x+3, area.player.y-3, 1);
             particles.add(prt);
             addParticle(prt);
         }
@@ -464,7 +453,7 @@ public class WorldObjectsHandler {
         }
     }
 
-    public void invalidatePlayer(){
+    public void invalidatePlayer(World world){
         if (!area.platformMode) {
             area.player.move();
             area.player.invalidatePose(false, false);
@@ -472,9 +461,9 @@ public class WorldObjectsHandler {
         } else {
             for (int i = 0; i < obstacles.size(); i++) {
                 if (obstacles.get(i).collide(area.player.hitBox) && obstacles.get(i).shape == DeathZone.ZoneShape.RECT) {
-                    killPlayer();
+                    killPlayer(world);
                 } else if (obstacles.get(i).shape != DeathZone.ZoneShape.RECT && obstacles.get(i).collide(new Rectangle(area.player.hitBox.x+1, area.player.hitBox.y-area.player.hitBox.height, area.player.hitBox.width-3, area.player.hitBox.height))) {
-                    killPlayer();
+                    killPlayer(world);
                 }
             }
             area.player.platformMove();
@@ -741,7 +730,7 @@ public class WorldObjectsHandler {
             }
 
             for (int i = 0; i < area.height; ++i) {
-                objectsOnLevel.clear();
+
                 for (int t = 0; t < area.width; ++t) {
                     for (int z =0; z < objectCells.get(t).get(i).size(); ++z) {
                         objectsOnLevel.add(objectCells.get(t).get(i).get(z));
@@ -751,14 +740,16 @@ public class WorldObjectsHandler {
                         objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true));
                     }
                 }
-                for (int z =0; z < objectsOnLevel.size(); ++z) {
-                    objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
-                }
+
             }
             for (int i = 0; i < area.height; ++i) {
                 for (int t = 0; t < area.width; ++t) {
                     drawLayer(batch, world, 1, offsetX, offsetY, i, t);
                 }
+            }
+
+            for (int z =0; z < objectsOnLevel.size(); ++z) {
+                objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
             }
         }
 

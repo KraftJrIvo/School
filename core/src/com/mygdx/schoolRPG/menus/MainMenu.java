@@ -1,12 +1,17 @@
 package com.mygdx.schoolRPG.menus;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.tools.Button;
+import com.mygdx.schoolRPG.tools.MenuListSelector;
+
+import java.util.ArrayList;
 
 /**
  * Created by IVO on 15.07.2014.
@@ -19,12 +24,13 @@ public class MainMenu extends Menu {
     float PLAYSIZE;
 
     public int curMenu = 0;
-    Texture backGround;
+    Texture backGround, title, cursor;
     Texture play, options, credits;
 
-    int halfScreenHeight = Gdx.graphics.getHeight() / 2;
-    int halfScreenWidth = Gdx.graphics.getWidth() / 2;
+    //int halfScreenHeight = Gdx.graphics.getHeight() / 2;
+    //int halfScreenWidth = Gdx.graphics.getWidth() / 2;
     Button playButton, optionsButton, creditsButton;
+    MenuListSelector selector;
 
     public MainMenu(int id, boolean android) {
         super(id, android);
@@ -37,13 +43,25 @@ public class MainMenu extends Menu {
     public void invalidate() {
         super.invalidate();
 
-        if (playButton.checkTouch()) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            int index = selector.getSelectedIndex();
+            if (index == 0) {
+                nextMenuSetting = 0;
+                nextMenu = 1;
+            } else if (index == 1) {
+                nextMenuSetting = 2;
+                nextMenu = 1;
+            }
+            else if (index == 1) {
+                nextMenuSetting = 1;
+                nextMenu = 1;
+            }
+        }
+        /*if (playButton.checkTouch()) {
             nextMenuSetting = 0;
             nextMenu = 1;
         }
-        /*if (optionsButton.checkTouch()) {
-            nextMenu = 2;
-        }*/
+
         if (creditsButton.checkTouch()) {
             nextMenuSetting = 1;
             nextMenu = 1;
@@ -52,20 +70,20 @@ public class MainMenu extends Menu {
         if (optionsButton.checkTouch()) {
             nextMenuSetting = 2;
             nextMenu = 1;
-        }
+        }*/
     }
 
     @Override
     public void draw(SpriteBatch batch, ShapeRenderer renderer) {
 
         batch.begin();
-
-
         batch.draw(backGround, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(title, Gdx.graphics.getWidth()/2 - title.getWidth()/2, Gdx.graphics.getHeight() - title.getHeight() * 1.5f);
+        selector.draw(batch);
         batch.end();
-        playButton.draw(batch);
-        optionsButton.draw(batch);
-        creditsButton.draw(batch);
+        //playButton.draw(batch);
+        //optionsButton.draw(batch);
+        //creditsButton.draw(batch);
 
         super.draw(batch, renderer);
     }
@@ -73,11 +91,12 @@ public class MainMenu extends Menu {
     @Override
     public void load(AssetManager assets) {
         super.load(assets);
-        assets.load("play.png", Texture.class);
+        //assets.load("play.png", Texture.class);
         assets.load("bg.png", Texture.class);
-        assets.load("options.png", Texture.class);
-        assets.load("credits.png", Texture.class);
-
+        assets.load("title.png", Texture.class);
+        assets.load("cursor.png", Texture.class);
+        //assets.load("options.png", Texture.class);
+        //assets.load("credits.png", Texture.class);
     }
 
     @Override
@@ -85,14 +104,20 @@ public class MainMenu extends Menu {
         if (!initialised) {
             super.initialiseResources();
             backGround = (assets.get("bg.png"));
+            ArrayList<String> list= new ArrayList<String>();
+            list.add("Play");
+            list.add("Options");
+            list.add("Info");
+            cursor = assets.get("cursor.png", Texture.class);
+            title = assets.get("title.png", Texture.class);
+            selector = new MenuListSelector(list, cursor, mainFont);
+            //play = (assets.get("play.png"));
+            //credits = (assets.get("credits.png"));
+            //options = (assets.get("options.png"));
 
-            play = (assets.get("play.png"));
-            credits = (assets.get("credits.png"));
-            options = (assets.get("options.png"));
-
-            playButton = new Button(new Rectangle(Gdx.graphics.getWidth()/3-PLAYSIZE/2, Gdx.graphics.getHeight()/2 - PLAYSIZE/2, PLAYSIZE, PLAYSIZE), play);
-            optionsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 + PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), options);
-            creditsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 - PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), credits);
+            //playButton = new Button(new Rectangle(Gdx.graphics.getWidth()/3-PLAYSIZE/2, Gdx.graphics.getHeight()/2 - PLAYSIZE/2, PLAYSIZE, PLAYSIZE), play);
+            //optionsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 + PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), options);
+            //creditsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 - PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), credits);
             initialised = true;
         }
     }

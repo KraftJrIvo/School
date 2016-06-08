@@ -16,13 +16,18 @@ public class Particle extends Entity {
     ParticleProperties pp;
     boolean fallen;
     boolean platformMode;
+    float spawnX=0, spawnY=0, spawnZ=0;
     //Texture shadow;
 
-    public Particle(AssetManager assets, ParticleProperties pp, boolean platformMode) {
-        super(assets, (Texture)null, pp.spawnX, pp.spawnY, pp.h, pp.floorHeight, 0);
+    public Particle(AssetManager assets, ParticleProperties pp, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
+        super(assets, (Texture)null, spawnX, spawnY, pp.h, pp.floorHeight, 0);
+        this.spawnX = spawnX;
+        this.spawnY = spawnY;
+        this.spawnZ = spawnZ;
         this.pp = pp;
         if (pp.animSeq1 != null) {
             anim = pp.animSeq1;
+            //anim.reseed();
         } else if (pp.tex1 != null) {
             tex = pp.tex1;
         } else {
@@ -62,6 +67,7 @@ public class Particle extends Entity {
 
             if (pp.animSeq2 != null) {
                 anim = pp.animSeq2;
+                //anim.reseed();
             } else if (pp.tex2 != null) {
                 tex = pp.tex2;
                 anim = null;

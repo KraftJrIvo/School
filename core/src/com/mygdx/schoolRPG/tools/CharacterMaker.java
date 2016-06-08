@@ -37,61 +37,49 @@ public class CharacterMaker {
     int armsOffsetSide = 5;
     int legsWidth, bodyWidth, armFrontWidth, armSideWidth, headWidth;
     float bobbing = 0;
+    int charsCount = 0;
 
-    public CharacterMaker(AssetManager assets) {
-        FileHandle curDir = Gdx.files.internal("chars/bodies");
+    public CharacterMaker(AssetManager assets, String worldPath) {
+        FileHandle curDir = Gdx.files.internal(worldPath + "/chars");
         for (FileHandle entry: curDir.list()) {
-            if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
-                continue;
+            if (entry.file().isDirectory()) {
+                assets.load(entry.path() + "/head.png", Texture.class);
+                assets.load(entry.path()  + "/body.png", Texture.class);
+                charsCount++;
             }
-            assets.load(entry.path(), Texture.class);
         }
-        curDir = Gdx.files.internal("chars/heads");
-        for (FileHandle entry: curDir.list()) {
-            if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
-                continue;
-            }
-            assets.load(entry.path(), Texture.class);
-        }
-        assets.load("chars/legs/stand_front.png", Texture.class);
-        assets.load("chars/legs/stand_side.png", Texture.class);
-        assets.load("chars/legs/walk_front.png", Texture.class);
-        assets.load("chars/legs/walk_side.png", Texture.class);
-        assets.load("chars/arms/stay_front.png", Texture.class);
-        assets.load("chars/arms/stay_side.png", Texture.class);
-        assets.load("chars/arms/push_side.png", Texture.class);
-        assets.load("chars/arms/push_front.png", Texture.class);
-        assets.load("chars/arms/push_back.png", Texture.class);
-        assets.load("chars/arms/push_side_back.png", Texture.class);
+        assets.load("char/body_male.png", Texture.class);
+        assets.load("char/body_female.png", Texture.class);
+        assets.load("char/stand_front.png", Texture.class);
+        assets.load("char/stand_side.png", Texture.class);
+        assets.load("char/walk_front.png", Texture.class);
+        assets.load("char/walk_side.png", Texture.class);
+        assets.load("char/stay_front.png", Texture.class);
+        assets.load("char/stay_side.png", Texture.class);
+        assets.load("char/push_side.png", Texture.class);
+        assets.load("char/push_front.png", Texture.class);
+        assets.load("char/push_back.png", Texture.class);
+        assets.load("char/push_side_back.png", Texture.class);
         cdc = new CharacterDirectionChecker();
     }
 
-    public void initialiseResources(AssetManager assets) {
+    public void initialiseResources(AssetManager assets, String worldPath) {
         bodies = new ArrayList<GlobalSequence>();
-        FileHandle curDir = Gdx.files.internal("chars/bodies");
-        for (FileHandle entry: curDir.list()) {
-            if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
-                continue;
-            }
-            bodies.add(new GlobalSequence(assets, entry.path(), 3));
-            //assets.load(entry.path(), Texture.class);
-        }
         heads = new ArrayList<GlobalSequence>();
-        curDir = Gdx.files.internal("chars/heads");
-        for (FileHandle entry: curDir.list()) {
-            if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()) {
-                continue;
-            }
-            heads.add(new GlobalSequence(assets, entry.path(), 3));
+        bodies.add(new GlobalSequence(assets,"char/body_male.png", 3));
+        bodies.add(new GlobalSequence(assets,"char/body_female.png", 3));
+        for (int i =0; i < charsCount; ++i) {
+            bodies.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/body.png", 3));
+            heads.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/head.png", 3));
         }
-        legs_stand_front = assets.get("chars/legs/stand_front.png");
-        legs_stand_side = assets.get("chars/legs/stand_side.png");
-        arms_front = assets.get("chars/arms/stay_front.png");
-        arms_side = assets.get("chars/arms/stay_side.png");
-        arms_push_side = assets.get("chars/arms/push_side.png");
-        arms_push_front = assets.get("chars/arms/push_front.png");
-        arms_push_back = assets.get("chars/arms/push_back.png");
-        arms_push_side_back = assets.get("chars/arms/push_side_back.png");
+        legs_stand_front = assets.get("char/stand_front.png");
+        legs_stand_side = assets.get("char/stand_side.png");
+        arms_front = assets.get("char/stay_front.png");
+        arms_side = assets.get("char/stay_side.png");
+        arms_push_side = assets.get("char/push_side.png");
+        arms_push_front = assets.get("char/push_front.png");
+        arms_push_back = assets.get("char/push_back.png");
+        arms_push_side_back = assets.get("char/push_side_back.png");
         arms_push_side_reversed = new TextureRegion(arms_push_side);
         arms_push_side_reversed.flip(true, false);
         arms_push_front_reversed = new TextureRegion(arms_push_front);
@@ -100,16 +88,16 @@ public class CharacterMaker {
         arms_push_back_reversed.flip(true, false);
         arms_push_side_back_reversed = new TextureRegion(arms_push_side_back);
         arms_push_side_back_reversed.flip(true, false);
-        legs_walk_front = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true, 8);
-        legs_walk_side = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true, 8);
+        legs_walk_front = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
+        legs_walk_side = new AnimationSequence(assets, "char/walk_side.png", 20, true, 8);
         legs_stand_side_reversed = new TextureRegion(legs_stand_side);
         legs_stand_side_reversed.flip(true, false);
         arms_side_reversed = new TextureRegion(arms_side);
         arms_side_reversed.flip(true, false);
         arms_front_reversed = new TextureRegion(arms_front);
         arms_front_reversed.flip(true, false);
-        timer1 = new AnimationSequence(assets, "chars/legs/walk_side.png", 20, true, 8);
-        timer2 = new AnimationSequence(assets, "chars/legs/walk_front.png", 15, true, 8);
+        timer1 = new AnimationSequence(assets, "char/walk_side.png", 20, true, 8);
+        timer2 = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
     }
 
     public boolean directionsCheck() {
