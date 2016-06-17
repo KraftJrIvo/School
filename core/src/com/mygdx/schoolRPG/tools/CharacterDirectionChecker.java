@@ -9,12 +9,13 @@ import com.badlogic.gdx.Input;
 public class CharacterDirectionChecker {
     public enum LookDirection {none, left, right, up, down}
     enum WalkDirection {none, left, right, up, down, left_back, right_back, up_back, down_back}
-    public LookDirection lookDir = LookDirection.none;
-    public WalkDirection walkDir = WalkDirection.none;
+    public LookDirection lookDir = LookDirection.down;
+    public WalkDirection walkDir = WalkDirection.down;
     boolean stand = true;
     boolean keepLookingForward = false;
-
-    public CharacterDirectionChecker() {
+    boolean keyboardControlled;
+    public CharacterDirectionChecker(boolean keyboardControlled) {
+        this.keyboardControlled = keyboardControlled;
     }
 
     public void setLookingForward(boolean b) {
@@ -22,7 +23,7 @@ public class CharacterDirectionChecker {
     }
 
     public boolean update() {
-
+        if (!keyboardControlled) return false;
         boolean look = true;
         WalkDirection newWalkDir = walkDir;
         LookDirection newLookDir = lookDir;

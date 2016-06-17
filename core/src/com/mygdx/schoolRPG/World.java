@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import java.io.*;
@@ -46,9 +47,10 @@ public class World{
     int firtsAreaHeight;
     ShapeRenderer shapeRenderer;
     int animsLoaded = 0;
+    GameMenu menu;
 
-
-    public World(String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
+    public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
+        this.menu = menu;
         areas = new ArrayList<Area>();
         this.folderPath = folderPath;
         maps = new ArrayList<Pixmap>();
@@ -67,7 +69,8 @@ public class World{
         curAreaZ = startingAreaZ;
     }
 
-    public World(String worldPath) {
+    public World(GameMenu menu, String worldPath) {
+        this.menu = menu;
         areas = new ArrayList<Area>();
         folderPath = worldPath;
         tlw = new File(worldPath+"/world.tlw");
@@ -326,7 +329,7 @@ public class World{
             assets.load(folderPath + "/save2.png", Texture.class);
         } else {
             characterMaker = new CharacterMaker(assets, folderPath);
-            characterMaker.cdc.setLookingForward(true);
+            characterMaker.cdcs.get(0).setLookingForward(true);
         }
         /*int minAreaArea = 99999;
         for (int i = 0 ; i < areas.size(); ++i) {
@@ -442,6 +445,8 @@ public class World{
                 changeArea(false, inRoomXCoord, inRoomYCoord, c);
             } else if (c < 0) {
                 changeArea(false, inRoomXCoord, inRoomYCoord, c);
+            } else {
+                areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).worldObjectsHandler.checkNPCs(menu, folderPath, assets);
             }
         }
         if (a.player.z > a.cameraY + SCREEN_HEIGHT) {

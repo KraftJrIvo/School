@@ -1,0 +1,49 @@
+﻿#0
+Кто-то
+1
+normal
+Эй.
+А ты кто такой?
+%-1
+1
+Nobody.
+2
+Victor.
+#1
+Nobody
+0
+Err... Nobody..?
+&
+5
+#2
+Nobody
+0
+My name is Victor.
+And who are you?
+#3
+???
+1
+normal
+Hey Victor!
+#4
+???
+1
+normal
+Call me Jeremy.
+&
+6
+#5
+Jeremy
+1
+normal
+So.
+Get out already, would ya?
+$
+#6
+Nobody
+0
+Ok, bye.
+*
+1
+0
+$

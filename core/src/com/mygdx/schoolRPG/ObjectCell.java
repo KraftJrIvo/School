@@ -11,7 +11,8 @@ enum ObjectType {
     OBSTACLE,
     PARTICLE,
     CHECKPOINT,
-    LIQUID
+    LIQUID,
+    NPC
 }
 
 public class ObjectCell {

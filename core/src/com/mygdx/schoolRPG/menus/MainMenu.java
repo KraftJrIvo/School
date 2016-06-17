@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.tools.Button;
@@ -24,8 +25,9 @@ public class MainMenu extends Menu {
     float PLAYSIZE;
 
     public int curMenu = 0;
-    Texture backGround, title, cursor;
+    Texture backGround, title, cursor, overlay;
     Texture play, options, credits;
+    float overlayAngle = 0;
 
     //int halfScreenHeight = Gdx.graphics.getHeight() / 2;
     //int halfScreenWidth = Gdx.graphics.getWidth() / 2;
@@ -43,7 +45,7 @@ public class MainMenu extends Menu {
     public void invalidate() {
         super.invalidate();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             int index = selector.getSelectedIndex();
             if (index == 0) {
                 nextMenuSetting = 0;
@@ -52,7 +54,7 @@ public class MainMenu extends Menu {
                 nextMenuSetting = 2;
                 nextMenu = 1;
             }
-            else if (index == 1) {
+            else if (index == 2) {
                 nextMenuSetting = 1;
                 nextMenu = 1;
             }
@@ -78,6 +80,10 @@ public class MainMenu extends Menu {
 
         batch.begin();
         batch.draw(backGround, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        float centerX = Gdx.graphics.getWidth()/2;
+        float centerY = Gdx.graphics.getHeight()/2;
+        batch.draw(new TextureRegion(overlay), centerX - overlay.getWidth()/2, centerY - overlay.getHeight()/2, 750.0f, 750.0f, 1500, 1500, 1, 1, overlayAngle, true);
+        overlayAngle += 0.01f;
         batch.draw(title, Gdx.graphics.getWidth()/2 - title.getWidth()/2, Gdx.graphics.getHeight() - title.getHeight() * 1.5f);
         selector.draw(batch);
         batch.end();
@@ -93,6 +99,8 @@ public class MainMenu extends Menu {
         super.load(assets);
         //assets.load("play.png", Texture.class);
         assets.load("bg.png", Texture.class);
+        assets.load("bg_new.png", Texture.class);
+        assets.load("bg_overlay.png", Texture.class);
         assets.load("title.png", Texture.class);
         assets.load("cursor.png", Texture.class);
         //assets.load("options.png", Texture.class);
@@ -103,14 +111,15 @@ public class MainMenu extends Menu {
     public void initialiseResources() {
         if (!initialised) {
             super.initialiseResources();
-            backGround = (assets.get("bg.png"));
+            backGround = (assets.get("bg_new.png"));
             ArrayList<String> list= new ArrayList<String>();
             list.add("Play");
             list.add("Options");
             list.add("Info");
-            cursor = assets.get("cursor.png", Texture.class);
+
             title = assets.get("title.png", Texture.class);
-            selector = new MenuListSelector(list, cursor, mainFont);
+            overlay = assets.get("bg_overlay.png", Texture.class);
+            selector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
             //play = (assets.get("play.png"));
             //credits = (assets.get("credits.png"));
             //options = (assets.get("options.png"));

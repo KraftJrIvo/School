@@ -1,10 +1,12 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.menus.GameMenu;
 
 import java.util.ArrayList;
 
@@ -22,9 +24,11 @@ public class WorldObjectsHandler {
     ArrayList<Particle> particles;
     ArrayList<CheckPoint> checkPoints;
     ArrayList<LiquidSurface> liquidSurfaces;
+    ArrayList<NPC> NPCs;
     ArrayList<ArrayList<ArrayList<ObjectCell>>> objectCells;
     Texture staticFloor;
     Texture dynamicFloor;
+    Dialog currentDialog = null;
     //Player player;
     Area area;
 
@@ -38,6 +42,7 @@ public class WorldObjectsHandler {
         particles = new ArrayList<Particle>();
         solids = new ArrayList<HittableEntity>();
         fallingObjects = new ArrayList<Entity>();
+        NPCs = new ArrayList<NPC>();
         area.lastSpawnTileX = area.playerTileX;
         area.lastSpawnTileY = area.playerTileY;
         objectCells = new ArrayList<ArrayList<ArrayList<ObjectCell>>>();
@@ -115,6 +120,11 @@ public class WorldObjectsHandler {
     public void addParticle(Particle prt) {
         addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, prt, ObjectType.PARTICLE, particles.size(), true));
         particles.add(prt);
+    }
+
+    public void addNPC(NPC npc) {
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true));
+        NPCs.add(npc);
     }
 
     public void invalidateParticlesCollisions(Particle p) {
@@ -472,6 +482,37 @@ public class WorldObjectsHandler {
 
     }
 
+    public void invalidateNPCs() {
+        for (int i = 0; i < NPCs.size(); ++i) {
+            NPCs.get(i).invalidatePose(false, false);
+        }
+    }
+
+    public void checkNPCs(GameMenu menu, String worldPath, AssetManager assets) {
+        if (currentDialog != null) {
+            return;
+        }
+        for (int i = 0; i < NPCs.size(); ++i) {
+            float dist = (float)Math.sqrt((area.player.x - NPCs.get(i).x) * (area.player.x - NPCs.get(i).x) + (area.player.y - NPCs.get(i).y) * (area.player.y - NPCs.get(i).y));
+            if (dist < 20) {
+                menu.drawPause = false;
+                menu.paused = true;
+                menu.unpausable = false;
+                String str = "";
+                for (int j = 0; j < NPCs.get(i).flagsCount; ++j) {
+                    if (NPCs.get(i).flags.get(j)) {
+                        str += 1;
+                    } else {
+                        str += 0;
+                    }
+                }
+                currentDialog = new Dialog(worldPath + "/chars/" + NPCs.get(i).charId + "/dialog/" + str + ".txt", false, NPCs, assets, worldPath + "/chars");
+            }
+
+            //NPCs.get(i).invalidatePose(false, false);
+        }
+    }
+
     public void invalidateSolids() {
         for (int i=0; i<solids.size(); ++i) {
             float old = solids.get(i).y;
@@ -627,7 +668,7 @@ public class WorldObjectsHandler {
         }
     }
 
-    public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, float baseAlpha) {
+    public void draw(GameMenu menu, SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, float baseAlpha) {
         if (area.zoom == 2.0f) {
             offsetX -= 75;
             offsetY -= 54;
@@ -702,7 +743,23 @@ public class WorldObjectsHandler {
                         } else {
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         }
-                    } else if (objectsOnLevel.get(z).type == ObjectType.SOLID) {
+                    } else if (objectsOnLevel.get(z).type == ObjectType.NPC) {
+                        if (!area.platformMode) {
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
+                            float w = ((NPC)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
+                            float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
+                            NPC npc = ((NPC)objectsOnLevel.get(z).entity);
+
+                            batch.draw(area.shadow, offsetX + npc.hitBox.x+w2/2, offsetY - (((NPC)objectsOnLevel.get(z).entity).hitBox.y + npc.hitBox.height/2)+w2/2, w*1.3f, w*1.3f);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                            npc.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                        } else {
+                            NPC npc = ((NPC)objectsOnLevel.get(z).entity);
+                            npc.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
+                        }
+                    }
+                    else if (objectsOnLevel.get(z).type == ObjectType.SOLID) {
                             (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         } else if (objectsOnLevel.get(z).type == ObjectType.NONSOLID) {
                             (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
@@ -752,7 +809,15 @@ public class WorldObjectsHandler {
                 objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
             }
         }
-
+        if (currentDialog != null) {
+            currentDialog.draw(batch);
+            if (currentDialog.finished) {
+                currentDialog = null;
+                menu.drawPause = true;
+                menu.paused = false;
+                menu.unpausable = true;
+            }
+        }
         /*else {
             for (int i = -1; i <= height + 1; ++i) {
                 for (int t = 0; t < width; ++t) {

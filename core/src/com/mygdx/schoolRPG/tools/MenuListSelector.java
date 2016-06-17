@@ -2,6 +2,7 @@ package com.mygdx.schoolRPG.tools;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,11 +19,25 @@ public class MenuListSelector {
     BitmapFont font;
     int selectedIndex = 0;
     float cursorAngle = 0;
+    int height;
+    float xOffset;
+    float yOffset;
+    boolean centerAlign;
+    float titlesGap;
+    float centerX;
+    float centerY;
 
-    public MenuListSelector(ArrayList<String> titles, Texture cursor, BitmapFont font) {
+    public MenuListSelector(ArrayList<String> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign) {
+        this.centerAlign = centerAlign;
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
         this.titles = titles;
-        this.cursor = cursor;
+        this.cursor = assets.get(cursor, Texture.class);
         this.font = font;
+        this.height = height;
+        titlesGap = font.getLineHeight();// * 2;
+        centerX = Gdx.graphics.getWidth()/2;
+        centerY = height/2;
     }
 
     public int getSelectedIndex() {
@@ -41,13 +56,18 @@ public class MenuListSelector {
             selectedIndex = 0;
         }
 
-        float titlesGap = font.getLineHeight() * 2;
-        float centerX = Gdx.graphics.getWidth()/2;
-        float centerY = Gdx.graphics.getHeight()/2;
         for (int i = 0; i < titles.size(); ++i) {
-            font.draw(batch, titles.get(i), centerX - font.getBounds( titles.get(i)).width/2, centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
+            if (centerAlign) {
+                font.draw(batch, titles.get(i), xOffset + centerX - font.getBounds( titles.get(i)).width/2, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
+            } else {
+                font.draw(batch, titles.get(i), xOffset + centerX, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
+            }
         }
-        batch.draw(new TextureRegion(cursor), centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 32, centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - 4 * cursor.getWidth()/2, 5.5f, 5.5f, 11, 11, 5, 5, cursorAngle, true);
-        cursorAngle += 0.1f;
+        if (centerAlign) {
+            batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+        } else {
+            batch.draw(new TextureRegion(cursor), xOffset + centerX - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+        }
+        cursorAngle += 0.5f;
     }
 }

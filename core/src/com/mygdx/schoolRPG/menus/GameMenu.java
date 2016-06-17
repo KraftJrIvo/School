@@ -40,9 +40,9 @@ public class GameMenu extends Menu {
             rightJoyRect = new Rectangle(Gdx.graphics.getWidth() * 6 / 7 - JOYBASESIZE / 2, Gdx.graphics.getHeight() / 5 - JOYBASESIZE / 2, JOYBASESIZE, JOYBASESIZE);
         }
         worlds = new ArrayList<World>();
-        worlds.add(new World("worlds/ultimatetest1"));
+        worlds.add(new World(this, "worlds/ultimatetest1"));
         //worlds.add(new World("worlds/forest"));
-        worlds.add(new World("worlds/ultimatetest_p1"));
+        worlds.add(new World(this, "worlds/ultimatetest_p1"));
     }
 
     @Override
@@ -57,6 +57,8 @@ public class GameMenu extends Menu {
             assets.load("joy.png", Texture.class);
             assets.load("joybase.png", Texture.class);
         }
+        assets.load("dialog_overlay1.png", Texture.class);
+        assets.load("dialog_overlay2.png", Texture.class);
         worlds.get(curWorld).load(assets);
         //changeWorld(0);
     }

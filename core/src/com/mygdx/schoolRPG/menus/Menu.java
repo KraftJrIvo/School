@@ -25,6 +25,8 @@ public class Menu {
     AssetManager assets;
     boolean android;
     BitmapFont mainFont;
+    public boolean drawPause = true;
+    public boolean unpausable = true;
 
     public Menu(int id, boolean android) {
         this.android = android;
@@ -36,7 +38,7 @@ public class Menu {
     }
 
     public void load(AssetManager assets) {
-        mainFont = new BitmapFont(Gdx.files.internal("font0.fnt"), Gdx.files.internal("font0.png"), false);
+        mainFont = new BitmapFont(Gdx.files.internal("font1.fnt"), Gdx.files.internal("font1.png"), false);
         this.assets = assets;
         if (allowPause) {
             if (android) {
@@ -78,6 +80,7 @@ public class Menu {
         if (allowPause) {
             if (android && pauseButton.checkTouch() ||
                     Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+                drawPause = true;
                 paused = true;
             }
         }
@@ -90,7 +93,7 @@ public class Menu {
             if (android && allowPause) {
                 pauseButton.draw(batch);
             }
-        } else {
+        } else if (drawPause) {
             batch.setColor(1,1,1,0.5f);
             batch.begin();
             batch.draw(assets.get("p.png", Texture.class), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -98,7 +101,11 @@ public class Menu {
             batch.setColor(1,1,1,1);
             if ((android && (pauseButton.checkTouch())) || resumeButton.checkTouch() ||
                     Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-                paused = false;
+                if (unpausable) {
+                    paused = false;
+                } else {
+                    drawPause = !drawPause;
+                }
             }
             if (exitButton.checkTouch()) nextMenu = 0;
             if (optionsButton.checkTouch()) optionsOpen = true;

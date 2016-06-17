@@ -35,9 +35,9 @@ public class ObjectAdder {
                 int type = blocks.get(4).get(t).get(i);
                 int img = blocks.get(3).get(t).get(i);
 
-                if (img == -1 && type != 10 && type != 11 && (type < 20 || type > 25)) continue;
+                if (img == -1 && type != 10 && type != 11 && (type < 20 || type > 25) && type > 0) continue;
                 float x = 0;
-                if (type != 10 && type != 11 && (type < 20 || type > 25)) {
+                if (type != 10 && type != 11 && (type < 20 || type > 25) && type > 0) {
                     if(world.tileTypes.get(img) == 0){
                         x = t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2 + blocks.get(6).get(t).get(i);
                     } else if (world.tileTypes.get(img) == 1) {
@@ -406,6 +406,16 @@ public class ObjectAdder {
                         }
                     }
                     worldObjectsHandler.addLiquidSurface(ls);
+                } else if (type < 0 && type >= -56) {
+                    int playerWidth = 16;
+                    int playerHeight = 5;
+                    int playerFloor = 10;
+                    int dir = blocks.get(5).get(t).get(i);
+                    NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.worldDir + "/chars/" + (type + 56) + "/");
+                    characterMaker.setDirection(dir, type + 56);
+                    npc.movable = false;
+                    worldObjectsHandler.addNPC(npc);
+                    worldObjectsHandler.addSolid(npc);
                 }
             }
         }

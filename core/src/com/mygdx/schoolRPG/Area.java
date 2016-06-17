@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.util.ArrayList;
@@ -211,10 +212,9 @@ public class Area {
     public void invalidate(World world) {
         worldObjectsHandler.invalidateObjectCells();
         worldObjectsHandler.invalidatePlayer(world);
+        worldObjectsHandler.invalidateNPCs();
         worldObjectsHandler.invalidateSolids();
         worldObjectsHandler.invalidateCollisions(player, player.oldX, player.oldY);
-
-
    }
 
     /*public void respawnPlayerZ(String worldDir, AssetManager assets, int tileX, int tileY, CharacterMaker characterMaker) {
@@ -373,7 +373,7 @@ public class Area {
             //objects.add(prt);
         }
 
-        worldObjectsHandler.draw(batch, world, offsetX, offsetY, drawPlayer, alpha);
+        worldObjectsHandler.draw(world.menu, batch, world, offsetX, offsetY, drawPlayer, alpha);
         //Collections.sort(objects);
         /*if (!platformMode) {
 

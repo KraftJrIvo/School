@@ -27,8 +27,10 @@ public class CharacterMaker {
     ArrayList<GlobalSequence> bodies, heads;
     Texture legs_stand_front, legs_stand_side, arms_front, arms_side, arms_push_side, arms_push_front, arms_push_back, arms_push_side_back;
     TextureRegion arms_front_reversed, arms_side_reversed, legs_stand_side_reversed, arms_push_side_reversed, arms_push_front_reversed, arms_push_back_reversed, arms_push_side_back_reversed;
-    public CharacterDirectionChecker cdc;
-    public boolean push = true;
+    //public CharacterDirectionChecker cdc;
+    public ArrayList<CharacterDirectionChecker> cdcs;
+    public ArrayList<Boolean> pushes;
+    //public boolean push = true;
     public boolean go = false;
     int legsHeight = 10;
     int bodyHeight = 16;
@@ -36,7 +38,8 @@ public class CharacterMaker {
     int armsOffset = 4;
     int armsOffsetSide = 5;
     int legsWidth, bodyWidth, armFrontWidth, armSideWidth, headWidth;
-    float bobbing = 0;
+    //float bobbing = 0;
+    ArrayList<Float> bobbings;
     int charsCount = 0;
 
     public CharacterMaker(AssetManager assets, String worldPath) {
@@ -46,6 +49,12 @@ public class CharacterMaker {
                 assets.load(entry.path() + "/head.png", Texture.class);
                 assets.load(entry.path()  + "/body.png", Texture.class);
                 charsCount++;
+                FileHandle curDir1 = Gdx.files.internal(entry.path() + "/graphics");
+                if (curDir1.exists()) {
+                    for (FileHandle entry1: curDir1.list()) {
+                        assets.load(entry1.path(), Texture.class);
+                    }
+                }
             }
         }
         assets.load("char/body_male.png", Texture.class);
@@ -60,7 +69,12 @@ public class CharacterMaker {
         assets.load("char/push_front.png", Texture.class);
         assets.load("char/push_back.png", Texture.class);
         assets.load("char/push_side_back.png", Texture.class);
-        cdc = new CharacterDirectionChecker();
+        cdcs = new ArrayList<CharacterDirectionChecker>();
+        cdcs.add(new CharacterDirectionChecker(true));
+        bobbings = new ArrayList<Float>();
+        bobbings.add(new Float(0));
+        pushes = new ArrayList<Boolean>();
+        pushes.add(new Boolean(false));
     }
 
     public void initialiseResources(AssetManager assets, String worldPath) {
@@ -71,6 +85,11 @@ public class CharacterMaker {
         for (int i =0; i < charsCount; ++i) {
             bodies.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/body.png", 3));
             heads.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/head.png", 3));
+        }
+        for (int i =0; i < heads.size()-1; ++i) {
+            cdcs.add(new CharacterDirectionChecker(false));
+            bobbings.add(new Float(0));
+            pushes.add(new Boolean(false));
         }
         legs_stand_front = assets.get("char/stand_front.png");
         legs_stand_side = assets.get("char/stand_side.png");
@@ -100,8 +119,8 @@ public class CharacterMaker {
         timer2 = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
     }
 
-    public boolean directionsCheck() {
-        return cdc.update();
+    public boolean directionsCheck(int id) {
+        return cdcs.get(id).update();
     }
 
     public void draw(SpriteBatch batch, int id, float x, float y, float speedX, float speedY) {
@@ -111,24 +130,26 @@ public class CharacterMaker {
         armFrontWidth = arms_front.getWidth();
         armSideWidth = arms_side.getWidth();
         headWidth = heads.get(id).getWidth()/3;
-        if (cdc.lookDir == CharacterDirectionChecker.LookDirection.up) {
-            drawLegs(batch, x-legsWidth/2, y, speedX, speedY);
+        float bobbing = bobbings.get(id);
+        if (cdcs.get(id).lookDir == CharacterDirectionChecker.LookDirection.up) {
+            drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
             drawHead(batch, id, x-headWidth/2, y+legsHeight+bodyHeight+bobbing);
-            drawArm(batch, x, y + legsHeight + armsLevel + bobbing);
+            drawArm(batch, x, y + legsHeight + armsLevel + bobbing, id);
             drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
         } else {
-            if (cdc.lookDir != CharacterDirectionChecker.LookDirection.down) {
-                drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3);
+            if (cdcs.get(id).lookDir != CharacterDirectionChecker.LookDirection.down) {
+                drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3, id);
             }
-            drawLegs(batch, x-legsWidth/2, y, speedX, speedY);
+            drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
             drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
             drawHead(batch, id, x-headWidth / 2, y + legsHeight + bodyHeight + bobbing);
-            drawArm(batch, x, y+legsHeight+armsLevel+bobbing);
+            drawArm(batch, x, y+legsHeight+armsLevel+bobbing, id);
         }
     }
 
-    private void drawLegs(SpriteBatch batch, float x, float y, float speedX, float speedY) {
+    private void drawLegs(SpriteBatch batch, float x, float y, float speedX, float speedY, int id) {
         //System.out.println(speedX);
+        CharacterDirectionChecker cdc = cdcs.get(id);
         if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side_reversed, x, y);
@@ -188,19 +209,37 @@ public class CharacterMaker {
         }
     }
 
-    public void invalidateBobbing() {
-        if (/*cdc.stand || push*/go) {
+    public void setDirection(int dir, int id) {
+        CharacterDirectionChecker cdc = cdcs.get(id);
+        if (dir == 1) {
+            cdc.walkDir = CharacterDirectionChecker.WalkDirection.left;
+            cdc.lookDir = CharacterDirectionChecker.LookDirection.left;
+        } else if (dir == 2) {
+            cdc.walkDir = CharacterDirectionChecker.WalkDirection.up;
+            cdc.lookDir = CharacterDirectionChecker.LookDirection.up;
+        } else if (dir == 3) {
+            cdc.walkDir = CharacterDirectionChecker.WalkDirection.right;
+            cdc.lookDir = CharacterDirectionChecker.LookDirection.right;
+        }
+    }
+
+    public void invalidateBobbing(int id) {
+        CharacterDirectionChecker cdc = cdcs.get(id);
+        boolean push = pushes.get(id);
+        if (!cdc.stand && !push) {
             timer1.getCurrentFrame(false);
-            bobbing = (float)(Math.sin((double)((float)timer1.currentFrame/(float)timer1.gs.getLength())*3)-1.0);
+            bobbings.set(id,(float)(Math.sin((double)((float)timer1.currentFrame/(float)timer1.gs.getLength())*3)-1.0));
         } else {
             timer2.getCurrentFrame(false);
-            bobbing = (float)(Math.sin((double)((float)timer2.currentFrame/(float)timer2.gs.getLength())*3)/2.0f-1.0f);
+            bobbings.set(id, (float)(Math.sin((double)((float)timer2.currentFrame/(float)timer2.gs.getLength())*3)/2.0f-1.0f));
         }
     }
 
 
     private void drawBody(SpriteBatch batch, int id, float x, float y) {
-        y+=bobbing;
+        y+= bobbings.get(id);;
+        id+=2;
+        CharacterDirectionChecker cdc = cdcs.get(id-2);
         if (cdc.lookDir == CharacterDirectionChecker.LookDirection.left) {
             bodies.get(id).getFrame(BodyPartRotation.side.value).flip(true, false);
             batch.draw(bodies.get(id).getFrame(BodyPartRotation.side.value), x, y);
@@ -215,7 +254,8 @@ public class CharacterMaker {
     }
 
     private void drawHead(SpriteBatch batch, int id, float x, float y) {
-        y+=bobbing;
+        y+=bobbings.get(id);
+        CharacterDirectionChecker cdc = cdcs.get(id);
         if (cdc.lookDir == CharacterDirectionChecker.LookDirection.left) {
             heads.get(id).getFrame(BodyPartRotation.side.value).flip(true, false);
             batch.draw(heads.get(id).getFrame(BodyPartRotation.side.value), x, y);
@@ -229,8 +269,10 @@ public class CharacterMaker {
         }
     }
 
-    private void drawArm(SpriteBatch batch, float x, float y) {
+    private void drawArm(SpriteBatch batch, float x, float y, int id) {
         //y+=bobbing;
+        CharacterDirectionChecker cdc = cdcs.get(id);
+        boolean push = pushes.get(id);
         if (cdc.lookDir == CharacterDirectionChecker.LookDirection.left) {
             if (push && !Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
