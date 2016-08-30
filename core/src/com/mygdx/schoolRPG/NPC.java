@@ -41,6 +41,7 @@ public class NPC extends HittableEntity {
     public ArrayList<Boolean> flags;
     public int flagsCount = 0;
     public Color charColor;
+    boolean isRunning = false;
 
     public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String charPath) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);

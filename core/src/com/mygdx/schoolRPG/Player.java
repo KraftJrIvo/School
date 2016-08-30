@@ -37,6 +37,12 @@ public class Player extends NPC {
             if (!canDown && speedY < 0) speedY = 0;
             if (!canLeft && speedX < 0) speedX = 0;
             if (!canRight && speedX > 0) speedX = 0;*/
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            isRunning = true;
+        } else {
+            isRunning = false;
+        }
+
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !falling) {
             speedX -= 1;
             //if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) pushCount = -2;
@@ -71,14 +77,22 @@ public class Player extends NPC {
         }
         else if (speedY < 0) speedY += 1;
         //}
-        if (Math.abs(speedX) > 16) {
-            if (speedX < 0) speedX = -16;
-            else  speedX = 16;
+        int maxSpeedX, maxSpeedY;
+        if (isRunning) {
+            maxSpeedX = 32;
+            maxSpeedY = 20;
+        } else {
+            maxSpeedX = 16;
+            maxSpeedY = 10;
+        }
+        if (Math.abs(speedX) > maxSpeedX) {
+            if (speedX < 0) speedX = -maxSpeedX;
+            else  speedX = maxSpeedX;
 
         }
-        if (Math.abs(speedY) > 10) {
-            if (speedY < 0) speedY = -10;
-            else speedY = 10;
+        if (Math.abs(speedY) > maxSpeedY) {
+            if (speedY < 0) speedY = -maxSpeedY;
+            else speedY = maxSpeedY;
 
         }
         oldX = hitBox.x;

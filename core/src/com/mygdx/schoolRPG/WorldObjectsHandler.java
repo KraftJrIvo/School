@@ -809,15 +809,7 @@ public class WorldObjectsHandler {
                 objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
             }
         }
-        if (currentDialog != null) {
-            currentDialog.draw(batch);
-            if (currentDialog.finished) {
-                currentDialog = null;
-                menu.drawPause = true;
-                menu.paused = false;
-                menu.unpausable = true;
-            }
-        }
+
         /*else {
             for (int i = -1; i <= height + 1; ++i) {
                 for (int t = 0; t < width; ++t) {

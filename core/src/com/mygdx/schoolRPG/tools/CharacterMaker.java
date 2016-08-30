@@ -23,8 +23,9 @@ public class CharacterMaker {
             this.value = value;
         }
     }
-    AnimationSequence legs_walk_front, legs_walk_side, timer1, timer2;
+    AnimationSequence legs_walk_front, legs_walk_side, legs_run_side, timer1, timer2;
     ArrayList<GlobalSequence> bodies, heads;
+    ArrayList<Texture> sprites;
     Texture legs_stand_front, legs_stand_side, arms_front, arms_side, arms_push_side, arms_push_front, arms_push_back, arms_push_side_back;
     TextureRegion arms_front_reversed, arms_side_reversed, legs_stand_side_reversed, arms_push_side_reversed, arms_push_front_reversed, arms_push_back_reversed, arms_push_side_back_reversed;
     //public CharacterDirectionChecker cdc;
@@ -46,8 +47,13 @@ public class CharacterMaker {
         FileHandle curDir = Gdx.files.internal(worldPath + "/chars");
         for (FileHandle entry: curDir.list()) {
             if (entry.file().isDirectory()) {
-                assets.load(entry.path() + "/head.png", Texture.class);
-                assets.load(entry.path()  + "/body.png", Texture.class);
+                FileHandle spriteFile = Gdx.files.internal(entry.path() + "/sprite.png");
+                if (spriteFile.exists()) {
+                    assets.load(entry.path() + "/sprite.png", Texture.class);
+                } else {
+                    assets.load(entry.path() + "/head.png", Texture.class);
+                    assets.load(entry.path()  + "/body.png", Texture.class);
+                }
                 charsCount++;
                 FileHandle curDir1 = Gdx.files.internal(entry.path() + "/graphics");
                 if (curDir1.exists()) {
@@ -63,6 +69,7 @@ public class CharacterMaker {
         assets.load("char/stand_side.png", Texture.class);
         assets.load("char/walk_front.png", Texture.class);
         assets.load("char/walk_side.png", Texture.class);
+        assets.load("char/run_side.png", Texture.class);
         assets.load("char/stay_front.png", Texture.class);
         assets.load("char/stay_side.png", Texture.class);
         assets.load("char/push_side.png", Texture.class);
@@ -80,11 +87,19 @@ public class CharacterMaker {
     public void initialiseResources(AssetManager assets, String worldPath) {
         bodies = new ArrayList<GlobalSequence>();
         heads = new ArrayList<GlobalSequence>();
+        sprites = new ArrayList<Texture>();
         bodies.add(new GlobalSequence(assets,"char/body_male.png", 3));
         bodies.add(new GlobalSequence(assets,"char/body_female.png", 3));
         for (int i =0; i < charsCount; ++i) {
-            bodies.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/body.png", 3));
-            heads.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/head.png", 3));
+            if (assets.isLoaded(worldPath + "/chars/" + i + "/sprite.png")) {
+                sprites.add(assets.get(worldPath + "/chars/" + i + "/sprite.png", Texture.class));
+                bodies.add(null);
+                heads.add(null);
+            } else {
+                bodies.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/body.png", 3));
+                heads.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/head.png", 3));
+                sprites.add(null);
+            }
         }
         for (int i =0; i < heads.size()-1; ++i) {
             cdcs.add(new CharacterDirectionChecker(false));
@@ -109,6 +124,7 @@ public class CharacterMaker {
         arms_push_side_back_reversed.flip(true, false);
         legs_walk_front = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
         legs_walk_side = new AnimationSequence(assets, "char/walk_side.png", 20, true, 8);
+        legs_run_side = new AnimationSequence(assets, "char/run_side.png", 20, true, 7);
         legs_stand_side_reversed = new TextureRegion(legs_stand_side);
         legs_stand_side_reversed.flip(true, false);
         arms_side_reversed = new TextureRegion(arms_side);
@@ -124,26 +140,30 @@ public class CharacterMaker {
     }
 
     public void draw(SpriteBatch batch, int id, float x, float y, float speedX, float speedY) {
-
-        legsWidth = legs_stand_front.getWidth();
-        bodyWidth = bodies.get(id).getWidth()/3;
-        armFrontWidth = arms_front.getWidth();
-        armSideWidth = arms_side.getWidth();
-        headWidth = heads.get(id).getWidth()/3;
-        float bobbing = bobbings.get(id);
-        if (cdcs.get(id).lookDir == CharacterDirectionChecker.LookDirection.up) {
-            drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
-            drawHead(batch, id, x-headWidth/2, y+legsHeight+bodyHeight+bobbing);
-            drawArm(batch, x, y + legsHeight + armsLevel + bobbing, id);
-            drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
-        } else {
-            if (cdcs.get(id).lookDir != CharacterDirectionChecker.LookDirection.down) {
-                drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3, id);
+        if (sprites.get(id) == null) {
+            legsWidth = legs_stand_front.getWidth();
+            bodyWidth = bodies.get(id).getWidth()/3;
+            armFrontWidth = arms_front.getWidth();
+            armSideWidth = arms_side.getWidth();
+            headWidth = heads.get(id).getWidth()/3;
+            float bobbing = bobbings.get(id);
+            if (cdcs.get(id).lookDir == CharacterDirectionChecker.LookDirection.up) {
+                drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
+                drawHead(batch, id, x-headWidth/2, y+legsHeight+bodyHeight+bobbing);
+                drawArm(batch, x, y + legsHeight + armsLevel + bobbing, id);
+                drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
+            } else {
+                if (cdcs.get(id).lookDir != CharacterDirectionChecker.LookDirection.down) {
+                    drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3, id);
+                }
+                drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
+                drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
+                drawHead(batch, id, x-headWidth / 2, y + legsHeight + bodyHeight + bobbing);
+                drawArm(batch, x, y+legsHeight+armsLevel+bobbing, id);
             }
-            drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
-            drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing);
-            drawHead(batch, id, x-headWidth / 2, y + legsHeight + bodyHeight + bobbing);
-            drawArm(batch, x, y+legsHeight+armsLevel+bobbing, id);
+        } else {
+            Texture sprite = sprites.get(id);
+            batch.draw(sprite, x - sprite.getWidth()/2, y);
         }
     }
 
@@ -158,13 +178,22 @@ public class CharacterMaker {
             } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
             } else {
-                legs_walk_side.draw(batch, x, y, (int)(20*speedX), true);
+                if (Math.abs(speedX) > 1.6f) {
+                    legs_run_side.draw(batch, x, y, (int)(10*speedX), true);
+                } else {
+                    legs_walk_side.draw(batch, x, y, (int)(20*speedX), true);
+                }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side_reversed, x, y);
             } else {
-                legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), false);
+                if (Math.abs(speedX) > 1.6f) {
+                    legs_run_side.drawReversed(batch, x, y, (int)(10*speedX), false);
+                } else {
+                    legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), false);
+                }
+
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right) {
             if (cdc.stand) {
@@ -174,13 +203,22 @@ public class CharacterMaker {
             } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && Math.abs(speedX)<=1 && speedY > speedX) {
                 legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
             }  else {
-                legs_walk_side.draw(batch, x, y, (int)(20*speedX), false);
+                if (Math.abs(speedX) > 1.6f) {
+                    legs_run_side.draw(batch, x, y, (int)(10*speedX), false);
+                } else {
+                    legs_walk_side.draw(batch, x, y, (int)(20*speedX), false);
+                }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side, x, y);
             } else {
-                legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), true);
+                if (Math.abs(speedX) > 1.6f) {
+                    legs_run_side.drawReversed(batch, x, y, (int)(10*speedX), true);
+                } else {
+                    legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), true);
+                }
+
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.up) {
             if (cdc.stand) {

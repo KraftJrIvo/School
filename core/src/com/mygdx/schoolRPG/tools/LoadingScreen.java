@@ -17,10 +17,11 @@ public class LoadingScreen {
     }
 
     public void draw(SpriteBatch batch) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
+        float screenRatioY = Gdx.graphics.getHeight()/720.0f;Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        batch.draw(loading, Gdx.graphics.getWidth()/2 - loading.getWidth()/2, Gdx.graphics.getHeight()/2 - loading.getHeight()/2);
+        batch.draw(loading, Gdx.graphics.getWidth()/screenRatioX/2 - loading.getWidth()/2, Gdx.graphics.getHeight()/screenRatioY/2 - loading.getHeight()/2);
         batch.end();
     }
 

@@ -553,19 +553,31 @@ public class World{
     }
 
     public void draw(SpriteBatch batch) {
+        Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {
-            if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)) != null) {
-                areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).draw(batch, this, 0, 0, true, true, true);
+            if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {
+                curArea.draw(batch, this, 0, 0, true, true, true);
                 checkPlayerPosition();
             }
+            if (curArea.worldObjectsHandler.currentDialog != null) {
+                curArea.worldObjectsHandler.currentDialog.draw(batch, menu.drawPause);
+                if (curArea.worldObjectsHandler.currentDialog.finished) {
+                    curArea.worldObjectsHandler.currentDialog = null;
+                    menu.drawPause = true;
+                    menu.paused = false;
+                    menu.unpausable = true;
+                }
+            }
+
         } else {
             Area area1, area2;
-            if (oldAreaX + areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).w-1 < curAreaX || oldAreaY > curAreaY + areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).h-1) {
-                area1 = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
-                area2 = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            Area oldArea = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
+            if (oldAreaX + areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).w-1 < curAreaX || oldAreaY > curAreaY + curArea.h-1) {
+                area1 = oldArea;
+                area2 = curArea;
             } else {
-                area2 = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
-                area1 = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+                area2 = oldArea;
+                area1 = curArea;
             }
             boolean freeHorCamera1 = (area1.width * area1.TILE_WIDTH * area1.zoom < area1.camera.getWidth());
             boolean freeVerCamera1 = (area1.height * area1.TILE_HEIGHT * area1.zoom < area1.camera.getHeight());
@@ -573,13 +585,13 @@ public class World{
             boolean freeVerCamera2 = (area2.height * area2.TILE_HEIGHT * area2.zoom < area2.camera.getHeight());
             if (areaTransitionZ != 0) {
                 if (areaTransitionZ > 0.2f) {
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).draw(batch, this, 0, 0, true, true, true);
+                    oldArea.draw(batch, this, 0, 0, true, true, true);
                     batch.setColor(0, 0, 0, 1.25f * ((1.0f - areaTransitionZ)));
                     batch.draw((Texture) assets.get("blank.png"), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
                     batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
                     areaTransitionZ /= 1.1f;
                 } else {
-                    areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).draw(batch, this, 0, 0, true, true, true);
+                    curArea.draw(batch, this, 0, 0, true, true, true);
                     batch.setColor(0, 0, 0, areaTransitionZ*5);
                     batch.draw((Texture)assets.get("blank.png"), 0 ,0 ,SCREEN_WIDTH, SCREEN_HEIGHT );
                     batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -587,12 +599,12 @@ public class World{
                 }
                 if (Math.abs(areaTransitionZ) < 0.01f && areaTransitionZ != 0) {
                     areaTransitionZ = 0;
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
+                    oldArea.removeParticles();
+                    oldArea.resetCheckPoints();
                 }
             } else if (areaTransitionX != 0) {
                 if (oldAreaX < curAreaX) {
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraY + (area1.y+area1.h-area2.y-area2.h)*firtsAreaHeight*area1.TILE_HEIGHT;
+                    oldArea.cameraY = curArea.cameraY + (area1.y+area1.h-area2.y-area2.h)*firtsAreaHeight*area1.TILE_HEIGHT;
                     //float freeOff = 0;
                     //if (freeHorCamera1) freeOff = /*area1.zoom **/ area1.camera.getWidth()/2/area1.zoom;
                     if (freeHorCamera1 || freeHorCamera2) {
@@ -607,7 +619,7 @@ public class World{
                         area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, false, true);
                     }
                 } else {
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).cameraY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraY - (area1.y+area1.h-area2.y-area2.h)*firtsAreaHeight*area1.TILE_HEIGHT;
+                    oldArea.cameraY = curArea.cameraY - (area1.y+area1.h-area2.y-area2.h)*firtsAreaHeight*area1.TILE_HEIGHT;
                     if (freeHorCamera1 || freeHorCamera2) {
                         area2.cameraX = 12;
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionX * 2.0f));
@@ -631,7 +643,7 @@ public class World{
                     off2 = 0;
                 }
                 if (oldAreaY < curAreaY) {
-                    areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraX + (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
+                    oldArea.cameraX = curArea.cameraX + (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
                     if (freeVerCamera1 || freeVerCamera2) {
                         //area2.cameraY = 12;
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
@@ -652,7 +664,7 @@ public class World{
                         area2.draw(batch, this, 0, 0, true, false, false);
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                     } else {
-                        areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).cameraX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).cameraX - (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
+                        oldArea.cameraX = curArea.cameraX - (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
                         area1.draw(batch, this, /*(area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH*/0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area1.zoom*(1.0f-areaTransitionY)+off2/* + area1.FLOOR_HEIGHT+2*/, false, true, true);
                         area2.draw(batch, this, 0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area2.zoom*(-areaTransitionY), true, false, true);
                     }

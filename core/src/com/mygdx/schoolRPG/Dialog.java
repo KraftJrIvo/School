@@ -146,16 +146,17 @@ public class Dialog {
         }
     }
 
-    public void draw(SpriteBatch batch) {
-        batch.draw(overlay, Gdx.graphics.getWidth()/2 - overlay.getWidth()/2, 0);
+    public void draw(SpriteBatch batch, boolean paused) {
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
+        batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth()/2, 0);
         if (currentSpeech != null) {
-            currentSpeech.draw(batch);
+            currentSpeech.draw(batch, paused);
             if (currentSpeech.finished) {
                 int id = speechTransitionsIds.get(speeches.indexOf(currentSpeech));
                 checkFinished(id);
             }
         } else {
-            currentChoice.draw(batch);
+            currentChoice.draw(batch, paused);
             if (currentChoice.finished) {
                 int id = choiceTransitionsIds.get(choices.indexOf(currentChoice)).get(currentChoice.selector.getSelectedIndex());
                 checkFinished(id);
