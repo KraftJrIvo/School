@@ -113,6 +113,9 @@ public class Entity implements Comparable {
     }
 
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
+        if (floor) {
+            h = -999999;
+        }
         initialiseIfNeeded();
         float baseAlpha = batch.getColor().a;
         batch.setColor(new Color(1, 1, 1, baseAlpha * alpha));

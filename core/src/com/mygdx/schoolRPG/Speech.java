@@ -21,6 +21,7 @@ public class Speech {
     Texture overlay, texture;
     BitmapFont font;
     int flagId = -1;
+    boolean flagVal;
     int flagCharId = -1;
     NPC flagTarget;
 
@@ -32,10 +33,11 @@ public class Speech {
     long millsPerChar = 50;
     float screenRatioX, screenRatioY;
 
-    public Speech(String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, ArrayList<NPC> npcs) {
+    public Speech(String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs) {
         this.speaker = speaker;
         this.phrases = phrases;
         this.flagCharId = flagCharId;
+        this.flagVal = flagVal;
         progress = new ArrayList<Boolean>();
         for (int i =0; i < phrases.size(); ++i) {
             progress.add(false);
@@ -84,7 +86,7 @@ public class Speech {
             if (ok)  {
 
                 if (flagId != -1) {
-                    flagTarget.flags.set(flagId, true);
+                    flagTarget.flags.set(flagId, flagVal);
                 }
                 finished = true;
             } else {

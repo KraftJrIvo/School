@@ -58,8 +58,8 @@ public class Dialog {
                         charId = Integer.parseInt(line);
                         if (charId != 0) {
                             texCharId = charId;
-                            imageName = in.readLine();
                         }
+                        imageName = in.readLine();
                         line = in.readLine();
                     }
                     do {
@@ -72,7 +72,7 @@ public class Dialog {
                         line = in.readLine();
                         transId = Integer.parseInt(line);
 
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, false, npcs));
                         speechTransitionsIds.add(transId);
                         line = in.readLine();
                         c = line.charAt(0);
@@ -82,16 +82,17 @@ public class Dialog {
                         line = in.readLine();
                         flagId = Integer.parseInt(line);
                         line = in.readLine();
+                        int flagVal = Integer.parseInt(line);
+                        boolean flagV = true;
+                        if (flagVal == 0) {
+                            flagV = false;
+                        }
+                        line = in.readLine();
                         c = line.charAt(0);
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, flagV, npcs));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
-                        /*for (int i =0; i < npcs.size(); ++i) {
-                            if (npcs.get(i).charId == charId) {
-                                npcs.get(i).flags.set(flagId, true);
-                            }
-                        }*/
                     } else {
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, false, npcs));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     }
                 } else if (c == '%') {

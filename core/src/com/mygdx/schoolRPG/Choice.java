@@ -16,7 +16,7 @@ public class Choice extends Speech {
     int transitionId;
 
     public Choice(String question, ArrayList<String> phrases, AssetManager assets, String texPath) {
-        super(question, phrases, assets, texPath, -1, -1, -1, null);
+        super(question, phrases, assets, texPath, -1, -1, -1, false, null);
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         System.out.println();
         selector = new MenuListSelector(phrases, assets, "cursor.png", font, overlay.getHeight() - 20, 350, 190, false);

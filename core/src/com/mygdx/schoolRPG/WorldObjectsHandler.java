@@ -88,7 +88,28 @@ public class WorldObjectsHandler {
         this.player = player;
     }*/
 
+    public void removeSolid(int id) {
+        for (int i = 0; i < objectCells.size(); ++i) {
+            for (int j = 0; j < objectCells.get(i).size(); ++j) {
+                for (int k = 0; k < objectCells.get(i).get(j).size(); ++k) {
+                    if (objectCells.get(i).get(j).get(k).entity == solids.get(id)) {
+                        objectCells.get(i).get(j).remove(k);
+                    }
+                }
+
+            }
+        }
+        solids.remove(id);
+    }
+
     public void addSolid(HittableEntity he) {
+        he.x = he.hitBox.x;
+        he.y = he.hitBox.y;
+        if (he.floor) {
+            he.h = -999999;
+        } else {
+            he.h = he.y + he.floorHeight;
+        }
         addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, he, ObjectType.SOLID, solids.size(), true));
         solids.add(he);
     }
@@ -197,7 +218,7 @@ public class WorldObjectsHandler {
         for (int z=0; z<solids.size(); ++z) {
             if (!solids.get(z).falling) {
                 if (area.platformMode) {
-                    he.hitBox = solids.get(z).pushOutSolidObjects(he, area, area.player.oldX, he.oldY);
+                    he.hitBox = solids.get(z).pushOutSolidObjects(he);
                     if (he.hitBox.y < oldRect.y && he.pSpeed > 0) {
                         he.pSpeed=0;
                     } else if (he.hitBox.y > oldRect.y && he.pSpeed < 0) {
@@ -226,9 +247,7 @@ public class WorldObjectsHandler {
                             he.hitBox = tmp.pushOutSolidObjects(he, area, oldX, oldY);
                             he.hitBox = tmp.pushOutSolidObjects(he, area, area.player.oldX, he.oldY);
                         } else {
-                            he.hitBox = tmp.pushOutSolidObjects(he, area, area.player.oldX, he.oldY);
-                            he.hitBox = tmp.pushOutSolidObjects(he, area, he.oldX, he.oldY);
-                            he.hitBox = tmp.pushOutSolidObjects(he, area, oldX, oldY);
+                            he.hitBox = tmp.pushOutSolidObjects(he);
                         }
                     }
                     if (he.hitBox == area.player.hitBox && (he.hitBox.x != oldRect.x || he.hitBox.y != oldRect.y)) {
@@ -247,7 +266,7 @@ public class WorldObjectsHandler {
                             }
                         }
                         //}
-                        return;
+                        //return;
                     } /*else {
                         player.push = false;
                     }*/
@@ -506,7 +525,7 @@ public class WorldObjectsHandler {
                         str += 0;
                     }
                 }
-                currentDialog = new Dialog(worldPath + "/chars/" + NPCs.get(i).charId + "/dialog/" + str + ".txt", false, NPCs, assets, worldPath + "/chars");
+                currentDialog = new Dialog(worldPath + "/chars/" + NPCs.get(i).charId + "/dialog/" + str /*+ ".txt"*/, false, NPCs, assets, worldPath + "/chars");
             }
 
             //NPCs.get(i).invalidatePose(false, false);
@@ -676,7 +695,7 @@ public class WorldObjectsHandler {
         ArrayList<ObjectCell> objectsOnLevel = new ArrayList<ObjectCell>();
         if (!area.platformMode) {
             area.playerTileX = (int)Math.floor(area.player.x/area.TILE_WIDTH);
-            area.playerTileY = (int)Math.floor(area.player.h/area.TILE_HEIGHT)+1;
+            area.playerTileY = (int)Math.floor((area.player.h - 2)/area.TILE_HEIGHT)+2;
             if (area.playerTileX < 0) {
                 area.playerTileX = 0;
             } else if (area.playerTileX > area.width) {
@@ -688,8 +707,10 @@ public class WorldObjectsHandler {
                 area.playerTileY = area.height-1;
             }
 
+            boolean playerDrawn = false;
+            int playerDrawNow = -1;
 
-            for (int i = 0; i <= area.height; ++i) {
+            for (int i = 0; i <= area.height + 1; ++i) {
                 objectsOnLevel.clear();
                 for (int t = 0; t < area.width; ++t) {
                     /*
@@ -712,38 +733,66 @@ public class WorldObjectsHandler {
                             }
                         }
                     }*/
-                    if (i > 0 && blocks.get(2).get(t).get(i - 1) == 2) {
+                    if (i > 0 && i <= area.height && blocks.get(2).get(t).get(i - 1) == 2) {
                         drawLayer(batch, world, 1, offsetX, offsetY, i - 1, t);
                     }
 
-                    if (i == area.height) {
+                    /*if (i == area.height) {
                         continue;
-                    }
-                    for (int z =0; z < objectCells.get(t).get(i).size(); ++z) {
-                        if (objectCells.get(t).get(i).get(z) != null) {
-                            objectsOnLevel.add(objectCells.get(t).get(i).get(z));
+                    }*/
+                    if (i > 0) {
+                        for (int z =0; z < objectCells.get(t).get(i - 1).size(); ++z) {
+                            if (objectCells.get(t).get(i - 1).get(z) != null) {
+                                if (objectCells.get(t).get(i - 1).get(z).entity.floor) {
+                                    objectCells.get(t).get(i - 1).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
+                                } else {
+                                    objectsOnLevel.add(objectCells.get(t).get(i - 1).get(z));
+                                }
+                            }
                         }
                     }
-                    if (i == area.playerTileY && t == area.playerTileX) {
+                    /*if (i == area.playerTileY && t == area.playerTileX) {
                         objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true));
-                    }
+                    }*/
                 }
                 sortObjectCells(objectsOnLevel);
+                if (!playerDrawn) {
+                    for (int z =0; z < objectsOnLevel.size(); ++z) {
+                        if ((objectsOnLevel.get(z).hIsY && objectsOnLevel.get(z).entity.h > area.player.h) || (!objectsOnLevel.get(z).hIsY && objectsOnLevel.get(z).entity.y > area.player.h)) {
+                            //objectsOnLevel.add();
+                            objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true));
+                            playerDrawNow = z;
+                            break;
+                        }
+                    }
+                    if (playerDrawNow == -1 && i == area.playerTileY) {
+                        objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true));
+                        playerDrawNow = objectsOnLevel.size() - 1;
+                    }
+                }
+                /*if (i == area.height && !playerDrawn) {
+                    playerDrawNow = objectsOnLevel.size() - 1;
+                }*/
                 for (int z =0; z < objectsOnLevel.size(); ++z) {
                     //int id = objectsOnLevel.get(z).id;
-                    if (drawPlayer && objectsOnLevel.get(z).type == ObjectType.PLAYER) {
+                    if (drawPlayer && z == playerDrawNow/* && objectsOnLevel.get(z).type == ObjectType.PLAYER*/) {
                         if (!area.platformMode) {
+                            //ObjectCell player = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true);
+                            ObjectCell player = objectsOnLevel.get(objectsOnLevel.size() - 1);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-                            float w = ((Player)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
+                            float w = ((Player)player.entity).hitBox.width * 0.75f;
                             float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
-                            batch.draw(area.shadow, offsetX + ((Player)objectsOnLevel.get(z).entity).hitBox.x+w2/2, offsetY - (((Player)objectsOnLevel.get(z).entity).hitBox.y + ((Player)objectsOnLevel.get(z).entity).hitBox.height/2)+w2/2, w*1.3f, w*1.3f);
+                            batch.draw(area.shadow, offsetX + ((Player) player.entity).hitBox.x + w2 / 2, offsetY - (((Player)player.entity).hitBox.y + ((Player)player.entity).hitBox.height / 2) + w2 / 2, w * 1.3f, w * 1.3f);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                            playerDrawn = true;
+                            playerDrawNow = -1;
                         } else {
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                         }
-                    } else if (objectsOnLevel.get(z).type == ObjectType.NPC) {
+                    }
+                    if (objectsOnLevel.get(z).type == ObjectType.NPC) {
                         if (!area.platformMode) {
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
                             float w = ((NPC)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
@@ -778,7 +827,20 @@ public class WorldObjectsHandler {
                     }*/
 
                 }
+                /*if (drawPlayer && !playerDrawn) {
+                    ObjectCell player = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true);
+                    batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
+                    float w = ((Player)player.entity).hitBox.width * 0.75f;
+                    float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
+                    batch.draw(area.shadow, offsetX + ((Player) player.entity).hitBox.x + w2 / 2, offsetY - (((Player)player.entity).hitBox.y + ((Player)player.entity).hitBox.height / 2) + w2 / 2, w * 1.3f, w * 1.3f);
+                    batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                    area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT);
+                    batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                    playerDrawn = true;
+                    playerDrawNow = -1;
+                }*/
             }
+
         } else {
             for (int i = 0; i < area.height; ++i) {
                 for (int t = 0; t < area.width; ++t) {

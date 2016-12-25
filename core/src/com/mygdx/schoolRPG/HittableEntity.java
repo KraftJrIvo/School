@@ -7,7 +7,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+//import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+
+import javax.vecmath.Point2f;
+import java.util.ArrayList;
 
 /**
  * Created by Kraft on 27.12.2014.
@@ -31,6 +36,7 @@ public class HittableEntity extends Entity {
     int checksum = 0;
     float platformOffset = 0;
     boolean isPlatform = false;
+    Point2f point1, point2;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
         super(assets, texPath, x, y, height-1, floorHeight, angle);
@@ -74,6 +80,14 @@ public class HittableEntity extends Entity {
         graphicY = hitBox.y;
     }
 
+    public HittableEntity(HittableEntity he) {
+        super(he.assets, he.tex, he.x, he.y, he.hitBox.height-1, he.floorHeight, he.angle);
+        this.floorHeight = he.floorHeight;
+        hitBox = new Rectangle(he.x, he.y, he.hitBox.width, he.hitBox.height);
+        this.movable = he.movable;
+        leftSide = rightSide = downSide = upSide = true;
+    }
+
     public void setSides(boolean l, boolean r, boolean d, boolean u) {
         leftSide = l;
         rightSide = r;
@@ -99,13 +113,88 @@ public class HittableEntity extends Entity {
         }
     }
 
+    private float clamp(float xx, float lower, float upper) {
+        return Math.max(lower, Math.min(upper, xx));
+    }
+
+    private Point2f getClosestRectanglePoint(float x, float y) {
+        float l = hitBox.x;
+        float t = hitBox.y - hitBox.height;
+        float w = hitBox.width;
+        float h = hitBox.height;
+        float r = l + w;
+        float b = hitBox.y;
+        float xxx = clamp(x, l, r);
+        float yyy = clamp(y, t, b);
+        float dl = Math.abs(xxx-l);
+        float dr = Math.abs(xxx-r);
+        float db = Math.abs(yyy-b);
+        float dt = Math.abs(yyy-t);
+        float m = Math.min(Math.min(dl, dr), Math.min(dt, db));
+        if (m == dt) {
+            //sr.line(l * 2 - 13, 720 - 2 * t, r * 2 - 13, 720 - 2 * t);
+
+            return new Point2f(xxx, t);
+        }
+        if (m == db) {
+            //sr.line(l * 2 - 13, 720 - 2 * b, r * 2 - 13, 720 - 2 * b);
+            return new Point2f(xxx, b);
+        }
+        if (m == dl) {
+            //sr.line(l * 2 - 13, 720 - 2 * t, l * 2 - 13, 720 - 2 * b);
+            return new Point2f(l, yyy);
+        }
+        //sr.line(r * 2 - 13, 720 - 2 * t, r * 2 - 13, 720 - 2 * b);
+        return new Point2f(r, yyy);
+    }
+
+    public Rectangle pushOutSolidObjects(HittableEntity he) {
+      /* ShapeRenderer sr = new ShapeRenderer();
+        sr.setColor(1, 0, 0, 1);
+        sr.begin(ShapeRenderer.ShapeType.Line);
+        sr.setColor(1, 0, 0, 1);*/
+        Rectangle rect = he.getRect();
+        if (he.getClass() == Player.class) {
+            hitBox.height -= 4;
+        }
+        point1 = getClosestRectanglePoint(rect.x + rect.width/2, rect.y-rect.height/2);
+        if (he.getClass() == Player.class) {
+            hitBox.height += 4;
+        }
+        //point1.y += rect.height/2-3;
+        point2 = he.getClosestRectanglePoint(point1.x, point1.y);
+        //point1.y += rect.height/2;
+
+        //sr.end();
+        float dist1 = (float)Math.hypot(hitBox.x + hitBox.width/2.0f - point1.x, hitBox.y - hitBox.height/2.0f - point1.y);
+        float dist2 = (float)Math.hypot(hitBox.x + hitBox.width/2.0f - point2.x, hitBox.y - hitBox.height/2.0f - point2.y);
+        if (dist2 < dist1) {
+            float diffX = point1.x - point2.x;
+            float diffY = point1.y - point2.y;
+            if (movable && !he.movable) {
+                hitBox.x -= diffX;
+                hitBox.y -= diffY;
+            } else if (!movable && he.movable) {
+                rect.x += diffX;
+                rect.y += diffY;
+            } else if (movable && he.movable) {
+                hitBox.x -= diffX/2.0f;
+                hitBox.y -= diffY/2.0f;
+                rect.x += diffX/2.0f;
+                rect.y += diffY/2.0f;
+            }
+
+        }
+
+
+        return rect;
+    }
+
     public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
 
         type = 1;
         boolean overlapX = false, overlapY = false;
         boolean platformMode = area.platformMode;
-       //he.deltaX = he.hitBox.x;
-        //he.deltaY = he.hitBox.y;
         Rectangle rect = he.getRect();
         float oldYY = he.hitBox.y;
         Rectangle oldRect = new Rectangle(he.hitBox);
@@ -114,16 +203,6 @@ public class HittableEntity extends Entity {
         if (rect.x+rect.width > hitBox.x+0.2f && rect.x < hitBox.x+hitBox.width-0.2f) {
             overlapX = true;
         }
-        /*if (rect.width == 64 && !movable && rect.width == 64) {
-            float a1  = rect.x+rect.width;
-            float a2  = hitBox.x+0.2f;
-            float a3  = rect.x;
-            float a4  = hitBox.x+hitBox.width-0.2f;
-            boolean a5  = rect.x+rect.width > hitBox.x+0.2f;
-            boolean a6  = rect.x < hitBox.x+hitBox.width-0.2f;
-            overlapX = false;
-        }*/
-
         if (rect.y+rect.height > hitBox.y+0.3f && rect.y < hitBox.y+hitBox.height-0.3f) {
             overlapY = true;
         }
@@ -159,20 +238,6 @@ public class HittableEntity extends Entity {
                 }
             }
         }
-        /*if (platformMode && deadEndObjectDown != null && deadEndObjectDown.movable) {
-            if (!deadEndObjectDown.canDown) {
-                hitBox.x = deadEndObjectX + platformOffset;
-            }
-        }*/
-        /*if ((deadEndObject == null || (deadEndObjectX != deadEndObject.hitBox.x || deadEndObjectY != deadEndObject.hitBox.y))) {
-            deadEndObjectX = 0;
-            makeFree();
-        }*/ /*else if (deadEndObject != null && checksum != 0 && (deadEndObjectX != 0 && deadEndObjectY != 0)) {
-            if (deadEndObject.canLeft && checksum == 1 || deadEndObject.canRight && checksum == 2 ||
-                deadEndObject.canUp && checksum == 3 || deadEndObject.canDown && checksum == 4) {
-                makeFree();
-            }
-        }*/
 
         float diffX=0, diffY=0;
         if (overlapX && overlapY && hitBox.overlaps(rect) && hitBox != rect) {
@@ -226,10 +291,6 @@ public class HittableEntity extends Entity {
             boolean canMoveVer = ((diffY < 0 && canDown) || (diffY > 0 && canUp)||diffY==0);
 
 
-
-            /*if (this.getClass() != Player.class && platformMode && Math.abs(diffY) > 3) {
-                diffY = 0;
-            }*/
             if (Math.abs(diffX) > 5) {
                 diffX = 0;
             }
@@ -237,12 +298,7 @@ public class HittableEntity extends Entity {
             if (Math.abs(diffY) > 6) {
                 diffY = 0;
             }
-            //}
-
             if (objectIsPlayer) {
-                /*if (((Player)he).pushCount >= 0) {
-                    ((Player)he).pushCount = 3;
-                } else {*/
                 if (platformMode && isPlatform && Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                     return rect;
                 }
@@ -352,19 +408,11 @@ public class HittableEntity extends Entity {
                         }
                     }
                 }
-                /*if (diffX != 0 && diffY != 0) {
-                    if (Math.abs(diffX) < Math.abs(diffY)) hitBox.x -= diffX;
-                    else hitBox.y -= diffY;
-                } else {
-                    hitBox.x -= diffX;
-                    hitBox.y -= diffY;
-                }*/
             }
             if (he.movable && (!movable || (!canMoveHor || !canMoveVer))) {
                 if (rect.width == 64 && diffX != 0) {
                     System.out.println();
                 }
-                //System.out.println(diffX + " " + diffY + " " + rect.x + " " + (hitBox.x+hitBox.width));
                 canMoveHor = movable&&((diffX < 0 && canLeft) || (diffX > 0 && canRight)||diffX==0);
                 canMoveVer = movable&&((diffY < 0 && canDown) || (diffY > 0 && canUp)||diffY==0);
                 //if (this.getClass() != Player.class) {
@@ -464,13 +512,6 @@ public class HittableEntity extends Entity {
                                 he.canDown = true;
 
                             }
-                            /*if (rightSide && centerX < center2X && hitBox.x + hitBox.width - rect.x < hitBox.getWidth()/4) {
-                                if (rect.x + (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 5 < hitBox.x+hitBox.width) rect.x += (hitBox.getWidth()/4 - (hitBox.x + hitBox.width - rect.x)) / 20;
-                                else rect.x = hitBox.x + hitBox.width;
-                            } else if (leftSide && centerX > center2X && rect.x + rect.width - hitBox.x < hitBox.getWidth()/4) {
-                                if (rect.x - (hitBox.getWidth()/4 - (rect.x + rect.width - hitBox.x)) / 5 + rect.width > hitBox.x) rect.x -= (hitBox.getWidth()/4 - (rect.x + rect.width - hitBox.x)) / 20;
-                                else rect.x = hitBox.x - rect.width;
-                            }*/
                         } else if (diffX != 0 && (leftSide || rightSide) && !canMoveVer) {
                             if (upSide && centerY <= center2Y && hitBox.y+hitBox.height-rect.y <= SLIP_EDGE_Y) {
                                 he.hitBox.y += 0.6f;
@@ -501,25 +542,12 @@ public class HittableEntity extends Entity {
             if (he.deltaX != false) {
                 System.out.println();
             }
-            //if (platformMode) {
-                /*if ((!canLeft || !canRight)){
-                    canDown = true;
-                    canUp = true;
-                }
-                if ((!canUp || !canDown)){
-                    canLeft = true;
-                    canRight = true;
-                }*/
-            //}
 
         }
         x = hitBox.x;
         y = hitBox.y;
         //this.oldX = x;
         //this.oldY = y;
-        /*if (platformMode && Math.abs(hitBox.y - oldY2) < 0.3f && pSpeed == 0) {
-            hitBox.y = oldY2;
-        }*/
         if (Math.abs(oldYY-rect.y)>3) {
             System.out.println();
         }
@@ -603,7 +631,7 @@ public class HittableEntity extends Entity {
         x = hitBox.x;
         y = hitBox.y;
         if (!floor) {
-            h = y+floorHeight;
+            h = y;//+floorHeight;
         } else {
             h = 999999;
         }

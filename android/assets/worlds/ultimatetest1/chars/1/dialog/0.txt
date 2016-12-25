@@ -4,20 +4,22 @@
 normal
 Эй.
 А ты кто такой?
-%-1
+%
 1
 Nobody.
 2
 Victor.
 #1
-Nobody
+You
 0
+normal
 Err... Nobody..?
 &
 5
 #2
-Nobody
+You
 0
+normal
 My name is Victor.
 And who are you?
 #3
@@ -33,17 +35,19 @@ Call me Jeremy.
 &
 6
 #5
-Jeremy
+???
 1
 normal
 So.
 Get out already, would ya?
 $
 #6
-Nobody
+You
 0
+normal
 Ok, bye.
 *
 1
 0
+1
 $

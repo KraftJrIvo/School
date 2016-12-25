@@ -202,7 +202,7 @@ public class Player extends NPC {
         if (!controlsBlocked) {
             oldX = hitBox.x;
             oldY = hitBox.y;
-            hitBox.x += (float)speedX/10.0f;
+            if ((speedX > 0 && canRight) || (speedX < 0 && canLeft)) hitBox.x += (float)speedX/10.0f;
         }
         //hitBox.y -= (float)speedY/10.0f;
         if (controlsBlocked && (!Gdx.input.isKeyPressed(Input.Keys.A) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)) && !Gdx.input.isKeyPressed(Input.Keys.D) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyJustPressed(Input.Keys.Z)) {

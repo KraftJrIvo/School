@@ -273,11 +273,11 @@ public class ObjectAdder {
                     } else {
                         if(world.tileTypes.get(img) == 0){
                             width = world.sprites.get(world.tileIndices.get(img)).getWidth();
-                            height = world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
+                            height = 2*world.sprites.get(world.tileIndices.get(img)).getWidth()/3;
                         } else {
                             //?y+=2;
                             width = world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth();
-                            height = world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2;
+                            height = 2*world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/3;
                         }
                     }
                     if(world.tileTypes.get(img) == 0){
@@ -406,7 +406,7 @@ public class ObjectAdder {
                         }
                     }
                     worldObjectsHandler.addLiquidSurface(ls);
-                } else if (type < 0 && type >= -56) {
+                } else if (type < 0 && type >= -56 && type != -1) {
                     int playerWidth = 16;
                     int playerHeight = 5;
                     int playerFloor = 10;

@@ -424,6 +424,59 @@ public class World{
         }
     }
 
+    private void checkSolidsPosition() {
+        Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        for (int i = 0; i < a.worldObjectsHandler.solids.size(); ++i) {
+            HittableEntity solid = a.worldObjectsHandler.solids.get(i);
+            if (solid.movable) {
+                int inRoomXCoord = (int)Math.floor(solid.x/a.TILE_WIDTH/firtsAreaWidth);
+                int inRoomYCoord = (int)(Math.floor(a.height/firtsAreaHeight-(solid.y+solid.hitBox.getHeight()/2)/a.TILE_HEIGHT/firtsAreaHeight));
+                int offX = 0, offY = 0, offZ = 0;
+                boolean horizontal = false;
+                if (solid.hitBox.x < 5) {
+                    offX = -1;
+                    offY = inRoomYCoord;
+                    horizontal = true;
+                } else if (solid.hitBox.x > a.TILE_WIDTH*(a.width)-a.player.hitBox.getWidth()-5) {
+                    offX = inRoomXCoord + 1;
+                    offY = inRoomYCoord;
+                    horizontal = true;
+                } else if (solid.hitBox.y+solid.hitBox.getHeight() < -solid.hitBox.getHeight()/2) {
+                    offX = inRoomXCoord;
+                    offY = inRoomYCoord;
+                } else if (solid.hitBox.y > a.TILE_HEIGHT*(a.height-1)) {
+                    offX = inRoomXCoord;
+                    offY = -1;
+                } else {
+                    continue;
+                }
+                a.worldObjectsHandler.removeSolid(i);
+                Area toArea = areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ));
+                float pos = 0;
+                if (horizontal) {
+                    pos = solid.hitBox.y + ((toArea.y+toArea.h) - (a.y+a.h)) * firtsAreaHeight * a.TILE_HEIGHT;
+                    if (offX > 0) {
+                        solid.hitBox.x = toArea.TILE_WIDTH;
+                    } else {
+                        solid.hitBox.x = (toArea.width - 2) * toArea.TILE_WIDTH ;
+                    }
+                    solid.hitBox.y = pos;
+                } else {
+                    pos = solid.hitBox.x - (areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).x - a.x)*firtsAreaWidth*a.TILE_WIDTH;//a.player.hitBox.y;// - inRoomYCoord;
+                    if (offY > 0) {
+                        solid.hitBox.y = (toArea.height - 2) * toArea.TILE_HEIGHT - solid.hitBox.height;
+                    } else {
+                        solid.hitBox.y = toArea.TILE_HEIGHT;
+                    }
+                    solid.hitBox.x = pos;
+                }
+
+                toArea.worldObjectsHandler.addSolid(solid);
+
+            }
+        }
+    }
+
     private void checkPlayerPosition() {
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (tlw == null && maps.size() == 0) return;
@@ -558,6 +611,7 @@ public class World{
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {
                 curArea.draw(batch, this, 0, 0, true, true, true);
                 checkPlayerPosition();
+                checkSolidsPosition();
             }
             if (curArea.worldObjectsHandler.currentDialog != null) {
                 curArea.worldObjectsHandler.currentDialog.draw(batch, menu.drawPause);

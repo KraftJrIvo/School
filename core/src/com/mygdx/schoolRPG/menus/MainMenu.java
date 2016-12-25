@@ -34,7 +34,6 @@ public class MainMenu extends Menu {
     //int halfScreenWidth = Gdx.graphics.getWidth() / 2;
     Button playButton, optionsButton, creditsButton;
     MenuListSelector selector;
-    CircularSelector cs;
 
     public MainMenu(int id, boolean android) {
         super(id, android);
@@ -89,7 +88,6 @@ public class MainMenu extends Menu {
         overlayAngle += 0.01f;
         batch.draw(title, Gdx.graphics.getWidth()/screenRatioX/2 - title.getWidth()/2, Gdx.graphics.getHeight()/screenRatioY - title.getHeight() * 1.5f);
         selector.draw(batch, false);
-        cs.draw(batch, false);
         batch.end();
         //playButton.draw(batch);
         //optionsButton.draw(batch);
@@ -125,11 +123,6 @@ public class MainMenu extends Menu {
             overlay = assets.get("bg_overlay.png", Texture.class);
             selector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
 
-            ArrayList<Texture> sprits = new ArrayList<Texture>();
-            for (int i = 0; i < 1; ++i) {
-                sprits.add(assets.get("cursor.png", Texture.class));
-            }
-            cs = new CircularSelector(list, sprits, mainFont, Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/5, 100.0f);
             //play = (assets.get("play.png"));
             //credits = (assets.get("credits.png"));
             //options = (assets.get("options.png"));
