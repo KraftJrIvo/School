@@ -218,15 +218,17 @@ public class World{
 
                 tileWidth = fis.read();
                 tileHeight = fis.read();
+                firtsAreaWidth = fis.read();
+                firtsAreaHeight = fis.read();
                 areaWidth = fis.read();
                 areaHeight = fis.read();
-                if (!platformMode) {
-                    firtsAreaWidth = 7;//Math.min(areaWidth, areaHeight);
-                    firtsAreaHeight = 5;//Math.min(areaWidth, areaHeight);
+                /*if (!platformMode) {
+                    firtsAreaWidth = 7;
+                    firtsAreaHeight = 5;
                 } else {
-                    firtsAreaWidth = 24;//Math.min(areaWidth, areaHeight);
+                    firtsAreaWidth = 24;
                     firtsAreaHeight = 16;
-                }
+                }*/
                 int curCoordX = fis.read();
                 int curCoordY = fis.read();
                 int curCoordZ = fis.read();
