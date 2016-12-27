@@ -32,6 +32,8 @@ public class World{
     boolean platformMode = false;
     int width, height, areaWidth, areaHeight, tileWidth, tileHeight;
     CharacterMaker characterMaker;
+    ArrayList<Boolean> flags;
+    ArrayList<String> flagNames;
     ArrayList<Texture> sprites;
     ArrayList<BlockMultiTile> tiles;
     ArrayList<AnimationSequence> animations;
@@ -150,13 +152,14 @@ public class World{
         //if (platformMode) {
 
         //}
-
+        flags = new ArrayList<Boolean>();
+        flagNames = new ArrayList<String>();
         if (tlw == null) {
             worldDir = Gdx.files.internal(folderPath);
             int curX,curY,curZ=0;
             int count = 0;
             for (FileHandle entry: worldDir.list()) {
-                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("bg.png")){
+                if (!entry.file().getName().contains(".png") || entry.file().getName().equals("bg.png")){
                     continue;
                 }
                 assets.load(entry.path(), Pixmap.class);
@@ -181,6 +184,21 @@ public class World{
             }
         } else {
             try {
+
+                BufferedReader flagsIn = new BufferedReader(new FileReader(folderPath + "/flags"));
+                String line = flagsIn.readLine();
+                int flagsCount = Integer.parseInt(line);
+                for (int i = 0; i < flagsCount; ++i) {
+                    line = flagsIn.readLine();
+                    flagNames.add(line);
+                    line = flagsIn.readLine();
+                    if (line.equals("0")) {
+                        flags.add(false);
+                    } else {
+                        flags.add(true);
+                    }
+                }
+
                 fis = new FileInputStream(tlw);
 
                 tileIndices = new ArrayList<Integer>();
@@ -270,7 +288,7 @@ public class World{
             worldDir = Gdx.files.internal(folderPath);
 
             for (FileHandle entry: worldDir.list()) {
-                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("world.tlw")){
+                if (!entry.file().getName().contains(".png")){
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
@@ -281,7 +299,7 @@ public class World{
             }
             worldDir = Gdx.files.internal(folderPath+"/tiles");
             for (FileHandle entry: worldDir.list()) {
-                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                if (!entry.file().getName().contains(".png")){
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
@@ -292,7 +310,7 @@ public class World{
             }
             worldDir = Gdx.files.internal(folderPath+"/anim");
             for (FileHandle entry: worldDir.list()) {
-                if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                if (!entry.file().getName().contains(".png")){
                     continue;
                 }
                 assets.load(entry.path(), Texture.class);
@@ -355,7 +373,7 @@ public class World{
         if (!initialised && !areasCreated) {
             if (tlw == null) {
                 for (FileHandle entry: worldDir.list()) {
-                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("bg.png")){
+                    if (!entry.file().getName().contains(".png") || entry.file().getName().equals("bg.png")){
                         continue;
                     }
                     maps.add(assets.get(entry.path(), Pixmap.class));
@@ -375,7 +393,7 @@ public class World{
                 sprites = new ArrayList<Texture>();
                 worldDir = Gdx.files.internal(folderPath);
                 for (FileHandle entry: worldDir.list()) {
-                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory() || entry.file().getName().equals("world.tlw")){
+                    if (!entry.file().getName().contains(".png")){
                         continue;
                     }
                     for (int i = 0; i < names.size(); ++i) {
@@ -390,7 +408,7 @@ public class World{
                 tiles = new ArrayList<BlockMultiTile>();
                 worldDir = Gdx.files.internal(folderPath+"/tiles");
                 for (FileHandle entry: worldDir.list()) {
-                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                    if (!entry.file().getName().contains(".png")){
                         continue;
                     }
                     /*for (int i = 0; i < names.size(); ++i) {
@@ -404,7 +422,7 @@ public class World{
                 animations = new ArrayList<AnimationSequence>();
                 worldDir = Gdx.files.internal(folderPath+"/anim");
                 for (FileHandle entry: worldDir.list()) {
-                    if (entry.file().getName().equals("Thumbs.db") || entry.file().isDirectory()){
+                    if (!entry.file().getName().contains(".png")){
                         continue;
                     }
                     /*for (int i = 0; i < names.size(); ++i) {
@@ -703,9 +721,9 @@ public class World{
                     if (freeVerCamera1 || freeVerCamera2) {
                         //area2.cameraY = 12;
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
-                        area1.draw(batch, this, 0, 0, false, true, false);
+                        area1.draw(batch, this, 0, 0, true, true, false);
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionY * 2.0f));
-                        area2.draw(batch, this, 0, -6, true, false, false);
+                        area2.draw(batch, this, 0, -6, false, false, false);
                         batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                     } else {
                         area1.draw(batch, this, 0, (SCREEN_HEIGHT +off*area1.TILE_HEIGHT+add)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, true, true);

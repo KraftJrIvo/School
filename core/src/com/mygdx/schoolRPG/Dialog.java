@@ -44,6 +44,7 @@ public class Dialog {
             int flagId = -1;
             int transId = -1;
             String imageName = "";
+            String talkPostfix = "";
             do {
                 c = line.charAt(0);
 
@@ -59,6 +60,11 @@ public class Dialog {
                         if (charId != 0) {
                             texCharId = charId;
                         }
+                        if (charId == texCharId) {
+                            talkPostfix = "_speaking";
+                        } else {
+                            talkPostfix = "_listening";
+                        }
                         imageName = in.readLine();
                         line = in.readLine();
                     }
@@ -72,7 +78,7 @@ public class Dialog {
                         line = in.readLine();
                         transId = Integer.parseInt(line);
 
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, false, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs));
                         speechTransitionsIds.add(transId);
                         line = in.readLine();
                         c = line.charAt(0);
@@ -89,16 +95,19 @@ public class Dialog {
                         }
                         line = in.readLine();
                         c = line.charAt(0);
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, flagV, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     } else {
-                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png", charId, flagCharId, flagId, false, npcs));
+                        speeches.add(new Speech(name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     }
                 } else if (c == '%') {
                     speechTransitionsIds.set(speechTransitionsIds.size()-1, -1 * (choiceTransitionsIds.size() + 1));
                     choiceTransitionsIds.add(new ArrayList<Integer>());
+                    talkPostfix = "_listening";
                     ArrayList<String> phrases = new ArrayList<String>();
+                    line = in.readLine();
+                    phrases.add(line);
                     line = in.readLine();
                     while (c != '#') {
                         transId = Integer.parseInt(line);
@@ -108,7 +117,7 @@ public class Dialog {
                         line = in.readLine();
                         c = line.charAt(0);
                     }
-                    choices.add(new Choice(speeches.get(speeches.size()-1).phrases.get(speeches.get(speeches.size()-1).phrases.size() - 1), phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + ".png"));
+                    choices.add(new Choice(speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs));
                 } else if (c == '$') {
                     speechTransitionsIds.set(speechTransitionsIds.size()-1, 999999);
                     line = in.readLine();

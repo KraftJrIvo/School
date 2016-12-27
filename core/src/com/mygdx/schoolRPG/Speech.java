@@ -73,8 +73,12 @@ public class Speech {
         //System.out.println(screenRatioX + " " + screenRatioY);
         batch.draw(texture, Gdx.graphics.getWidth()/screenRatioX/2 - texture.getWidth(), 0, texture.getWidth() * 2, texture.getHeight() * 2);
         batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth() /2, Gdx.graphics.getHeight()/screenRatioY/8);
-        font.setColor(Color.WHITE);
+        if (target != null) {
+            font.setColor(target.charColor);
+
+        }
         font.draw(batch, speaker, textX, textY);
+        font.setColor(Color.WHITE);
         if (!paused && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             boolean ok = true;
             for (int i =0; i < phrases.size(); ++i) {
@@ -98,9 +102,7 @@ public class Speech {
                 }
             }
         }
-        if (target != null) {
-            font.setColor(target.charColor);
-        }
+
         for (int i= 0; i < phrases.size(); ++i) {
             if (progress.get(i)) {
                 font.draw(batch, phrases.get(i), textX, textY - 32 * (i+1) - 10);

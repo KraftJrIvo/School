@@ -39,6 +39,7 @@ public class NPC extends HittableEntity {
     int charId = 0;
     String name = "";
     public ArrayList<Boolean> flags;
+    public ArrayList<String> flagNames;
     public int flagsCount = 0;
     public Color charColor;
     boolean isRunning = false;
@@ -56,16 +57,24 @@ public class NPC extends HittableEntity {
         }
         this.characterMaker = characterMaker;
         flags = new ArrayList<Boolean>();
+        flagNames = new ArrayList<String>();
         if (charPath != null) {
             try {
                 float r, g, b;
-                BufferedReader in = new BufferedReader(new FileReader(charPath + "/stats.txt"));
+                BufferedReader in = new BufferedReader(new FileReader(charPath + "/stats"));
                 String line = in.readLine();
                 name = line;
                 line = in.readLine();
                 flagsCount = Integer.parseInt(line);
                 for (int j =0; j < flagsCount; ++j) {
-                    flags.add(false);
+                    line = in.readLine();
+                    flagNames.add(line);
+                    line = in.readLine();
+                    if (line.equals("0")) {
+                        flags.add(false);
+                    } else {
+                        flags.add(true);
+                    }
                 }
                 line = in.readLine();
                 r = Float.parseFloat(line);
@@ -126,7 +135,7 @@ public class NPC extends HittableEntity {
             if (characterMaker.directionsCheck(charId)) {
                 pushCount = -2;
             }
-            characterMaker.pushes.set(charId, (pushCount > 1 && !notPush));
+            characterMaker.pushes.set(charId, (pushCount >= 1 && !notPush));
 
             if (Math.abs(diffX) > 0.5f) {
                 pushCount = 0;
