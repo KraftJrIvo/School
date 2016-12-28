@@ -40,13 +40,14 @@ public class Area {
     BlockMultiTile black, white;
     float playerFloor = -1;
     int lastSpawnTileX, lastSpawnTileY;
-
+    public String worldPath;
+    boolean playerHidden = false;
 
     float lastSpawnPos;
     Texture shadow;
     boolean saved = false;
 
-    public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode) {
+    public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world) {
         TILE_WIDTH = tileWidth;
         TILE_HEIGHT = tileHeight;
         this.x = x;
@@ -138,13 +139,13 @@ public class Area {
             }
         }
 
-        worldObjectsHandler = new WorldObjectsHandler(this, blocks);
+        worldObjectsHandler = new WorldObjectsHandler(this, blocks, world.flagNames, world.flags);
         adder = new ObjectAdder(worldObjectsHandler);
     }
 
     public void initialiseResources(AssetManager assets, World world, CharacterMaker characterMaker) {
         this.assets = world.assets;
-
+        worldPath = world.worldDir.path();
         if (!initialised) {
 
             adder.initialiseWorldObjects(assets, world, characterMaker);
@@ -336,6 +337,7 @@ public class Area {
 
 
     public void draw(SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, boolean drawBG, boolean activeCamera) {
+        drawPlayer = drawPlayer && !playerHidden;
         float alpha = batch.getColor().a;
         if (drawBG) {
 

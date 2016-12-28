@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 
@@ -31,6 +32,7 @@ public class Entity implements Comparable {
     float fallY = 0;
     int angle = 0;
     boolean inWater = false, inGoo = false;
+    Texture active = null;
 
     void setFloor(boolean b) {
         floor = b;
@@ -68,7 +70,7 @@ public class Entity implements Comparable {
     }
 
     public Entity(AssetManager assets, Texture tex, float x, float y, float h, float floorHeight, int angle) {
-        //this.texPath = texPath;
+        if (tex != null) this.texPath = ((FileTextureData)tex.getTextureData()).getFileHandle().path();
         this.tex = tex;
         this.x = x;
         this.y = y;
@@ -82,7 +84,7 @@ public class Entity implements Comparable {
     }
 
     public Entity(AssetManager assets, AnimationSequence anim, float x, float y, float h, float floorHeight, int angle) {
-        //this.texPath = texPath;
+        this.texPath = anim.path;
         this.anim = anim;
         this.x = x;
         this.y = y;
@@ -112,13 +114,32 @@ public class Entity implements Comparable {
         }
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
         if (floor) {
             h = -999999;
         }
         initialiseIfNeeded();
+        if (active) {
+            this.active = assets.get("active.png");
+            int height = 0;
+            int width = 0;
+            if (anim != null) {
+                height = anim.getFirstFrame().getRegionHeight();
+                width = anim.getFirstFrame().getRegionWidth();
+            } else if (tex != null) {
+                height = tex.getHeight();
+                width = tex.getWidth();
+            } else if (texR != null) {
+                height = texR.getRegionHeight();
+                width = texR.getRegionWidth();
+            }
+            batch.draw(this.active, offsetX + x - this.active.getWidth()/2 + width/2, offsetY - y + 3 + height);
+        }
+        float baseR = batch.getColor().r;
+        float baseG = batch.getColor().g;
+        float baseB = batch.getColor().b;
         float baseAlpha = batch.getColor().a;
-        batch.setColor(new Color(1, 1, 1, baseAlpha * alpha));
+        batch.setColor(new Color(baseR, baseG, baseB, baseAlpha * alpha));
         float anglee = 0;
         if (angle == 1) {
             anglee -= 90;
@@ -127,16 +148,24 @@ public class Entity implements Comparable {
         } else if (angle == 3) {
             anglee -= 270;
         }
+
         if (anim != null) {
-            anglee -= 90;
+            TextureRegion texx = anim.getCurrentFrame(false);
             float yy;
-            if (floor) yy = offsetY - y-floorHeight + z + anim.getFirstFrame().getRegionHeight()*scale/2 - anim.getFirstFrame().getRegionHeight();
+            if (floor) yy = offsetY - y-floorHeight + z - texx.getRegionHeight()*scale/2;
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
+            if (centered) xx = offsetX+ x - texx.getRegionWidth()*scale/2;
+            //batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
+            batch.draw(texx, xx, yy);
+            /*anglee -= 90;
+            float yy;
+            if (floor) yy = offsetY - y-floorHeight + z + anim.getFirstFrame().getRegionHeight()*scale/2 - anim.getFirstFrame().getRegionHeight();
+            else yy = offsetY - y-floorHeight + z - 3;
+            float xx = offsetX+x - 3;
             if (centered) xx = offsetX+x - anim.getFirstFrame().getRegionWidth()*scale/2;
-
-            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth() /2, anim.getFirstFrame().getRegionHeight()/2,
-                    anim.getFirstFrame().getRegionWidth()*scale, anim.getFirstFrame().getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
+            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()/2.0f, anim.getFirstFrame().getRegionHeight()/2.0f,
+                    anim.getFirstFrame().getRegionHeight()*scale, anim.getFirstFrame().getRegionWidth()*scale, 1.0f, 1.0f, anglee, false);*/
         } else if (tex != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - tex.getHeight()*scale/2;

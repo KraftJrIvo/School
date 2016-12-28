@@ -625,7 +625,7 @@ public class HittableEntity extends Entity {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
         oldX = x;
         oldY = y;
         x = hitBox.x;
@@ -658,6 +658,19 @@ public class HittableEntity extends Entity {
         if (!canLeft) batch.setColor(new Color(0, 0, 1, 0.25f));*/
 
         super.initialiseIfNeeded();
+        if (active) {
+            this.active = assets.get("active.png");
+            int height = 0;
+            if (anim != null) {
+                height = anim.getFirstFrame().getRegionHeight();
+            } else if (tex != null) {
+                height = tex.getHeight();
+            } else if (texR != null) {
+                height = texR.getRegionHeight();
+            }
+            batch.draw(this.active, offsetX + x + this.active.getWidth()/2, offsetY - y + 3 + height);
+        }
+
         float anglee = 0;
         if (angle == 1) {
             anglee = -90;

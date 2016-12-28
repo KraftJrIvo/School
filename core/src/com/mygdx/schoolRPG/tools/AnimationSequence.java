@@ -15,9 +15,11 @@ public class AnimationSequence {
 	int seed;
 	long startTime;
 	long animationTime;
+	public String path;
     int firstFrame;
 	
 	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping, int framesCount) {
+		path = sName;
 		this.fps = fps;
 		this.looping = looping;
 		pos = new Coords();

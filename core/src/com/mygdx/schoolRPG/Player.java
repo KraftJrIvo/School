@@ -31,19 +31,19 @@ public class Player extends NPC {
         controlsBlocked = true;
     }
 
-    public void move() {
+    public void move(boolean allowToMove) {
         //if (!falling) {
             /*if (!canUp && speedY > 0) speedY = 0;
             if (!canDown && speedY < 0) speedY = 0;
             if (!canLeft && speedX < 0) speedX = 0;
             if (!canRight && speedX > 0) speedX = 0;*/
-        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             isRunning = true;
         } else {
             isRunning = false;
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !falling) {
+        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !falling) {
             speedX -= 1;
             //if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) pushCount = -2;
             if (!pushLeft) pushCount = -2;
@@ -55,7 +55,7 @@ public class Player extends NPC {
                 speedX += 2;
             }
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !falling) {
+        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !falling) {
             speedX += 1;
             if (!pushRight) pushCount = -2;
         }
@@ -66,12 +66,12 @@ public class Player extends NPC {
                 speedX -= 2;
             }
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) && !falling) {
+        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) && !falling) {
             speedY += 1;
             if (!pushUp) pushCount = -2;
         }
         else if (speedY > 0) speedY -= 1;
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && !Gdx.input.isKeyPressed(Input.Keys.UP) && !falling) {
+        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.DOWN) && !Gdx.input.isKeyPressed(Input.Keys.UP) && !falling) {
             speedY -= 1;
             if (!pushDown) pushCount = -2;
         }

@@ -65,7 +65,7 @@ public class ParticleProperties {
         r = 4;
         this.path = path;
         try {
-            BufferedReader in = new BufferedReader(new FileReader(path + "/stats.txt"));
+            BufferedReader in = new BufferedReader(new FileReader(path + "/stats"));
             String line = in.readLine();
             r = Integer.parseInt(line);
             line = in.readLine();

@@ -138,7 +138,7 @@ public class World{
         assets.load("particles/water/2.png", Texture.class);
         assets.load("particles/goo/1.png", Texture.class);
         assets.load("particles/goo/2.png", Texture.class);*/
-
+        assets.load("active.png", Texture.class);
         assets.load("blank.png", Texture.class);
         assets.load("blank2.png", Texture.class);
         assets.load("shadow.png", Texture.class);
@@ -259,7 +259,7 @@ public class World{
                     buff = new byte[areaWidth*areaHeight*7];
                     fis.read(buff);
                     if (curCoordX != 246) {
-                        areas.add(new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode));
+                        areas.add(new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this));
                         int areaRoomsHor = (int)Math.ceil(areaWidth/firtsAreaWidth);
                         int areaRoomsVer = (int)Math.ceil(areaHeight/firtsAreaHeight);
                         for (int i = curCoordX; i < curCoordX+areaRoomsHor; ++i) {
@@ -437,10 +437,13 @@ public class World{
             }
         }
         //System.out.println(areas.size() + " " + areaIds.size());
+        for (int t = 0; t < areas.size(); ++t) {
+            if (areas.get(t) == null) continue;
+            areas.get(t).initialiseResources(assets, this, characterMaker);
+        }
+
         if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
-        } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialiseResources(assets, this, characterMaker);
         }
     }
 
@@ -512,15 +515,16 @@ public class World{
         } else if (a.player.y > a.TILE_HEIGHT*(a.height-1)) {
             changeArea(false, inRoomXCoord, -1, 0);
         }
+        a.worldObjectsHandler.checkNPCs(menu, folderPath, assets);
+        a.worldObjectsHandler.checkObjects(folderPath, assets, this);
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             int c = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).chekZPath();
             if (c > 0) {
                 changeArea(false, inRoomXCoord, inRoomYCoord, c);
             } else if (c < 0) {
                 changeArea(false, inRoomXCoord, inRoomYCoord, c);
-            } else {
-                areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).worldObjectsHandler.checkNPCs(menu, folderPath, assets);
             }
+            a.worldObjectsHandler.activateActiveObject(menu, folderPath, assets, this);
         }
         if (a.player.z > a.cameraY + SCREEN_HEIGHT) {
             if (curAreaZ >= 1 && areaIds.get(curAreaX).get(curAreaY).get(curAreaZ-1) != -1) {
@@ -607,7 +611,7 @@ public class World{
             curAreaX = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).x;
             curAreaY = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).y;
             curAreaZ = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).z;
-            initialised = false;
+            //initialised = false;
             if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.invalidatePose(true, true);
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
@@ -622,6 +626,24 @@ public class World{
     public void invalidate() {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate(this);
+        }
+    }
+
+    public void synchronizeFlags() {
+        for (int t = 0; t < areas.size(); ++t) {
+            if (areas.get(t) == null) continue;
+            Area a = areas.get(t);
+
+            for (int i = 0; i < a.worldObjectsHandler.NPCs.size(); ++i) {
+                for (int j = 0; j < a.worldObjectsHandler.NPCs.get(i).flags.size(); ++j) {
+                    for (int z = 0; z < flagNames.size(); ++z) {
+                        if (a.worldObjectsHandler.NPCs.get(i).flagNames.get(j).equals(flagNames.get(z))) {
+                            a.worldObjectsHandler.NPCs.get(i).flags.set(j, flags.get(z));
+                        }
+                    }
+                }
+            }
+
         }
     }
 

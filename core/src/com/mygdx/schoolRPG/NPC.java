@@ -131,11 +131,11 @@ public class NPC extends HittableEntity {
             diffY = 0;
         }
         if (characterMaker != null) {
-            characterMaker.invalidateBobbing(charId);
+            characterMaker.invalidateBobbing(charId, speedX, speedY);
             if (characterMaker.directionsCheck(charId)) {
                 pushCount = -2;
             }
-            characterMaker.pushes.set(charId, (pushCount >= 1 && !notPush));
+            characterMaker.pushes.set(charId, (pushCount > 1 && !notPush));
 
             if (Math.abs(diffX) > 0.5f) {
                 pushCount = 0;
@@ -148,8 +148,22 @@ public class NPC extends HittableEntity {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
         super.initialiseIfNeeded();
+
+        if (active) {
+            this.active = assets.get("active.png");
+            int height = 0;
+            if (anim != null) {
+                height = anim.getFirstFrame().getRegionHeight();
+            } else if (tex != null) {
+                height = tex.getHeight();
+            } else if (texR != null) {
+                height = texR.getRegionHeight();
+            }
+            batch.draw(this.active, offsetX + x, offsetY - y + 10 + height);
+        }
+
         if (poses != null) poses.initialiseIfNeeded(assets);
         x = hitBox.x;
         y = hitBox.y;
@@ -227,8 +241,20 @@ public class NPC extends HittableEntity {
         }
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean active) {
         super.initialiseIfNeeded();
+
+        if (active) {
+            this.active = assets.get("active.png");
+            int height = 50;
+            int width = 4;
+            if (characterMaker.sprites.get(charId) != null) {
+                height = characterMaker.sprites.get(charId).getHeight() + 3;
+                //width = characterMaker.sprites.get(charId).getWidth();
+            }
+            batch.draw(this.active, offsetX + x + this.active.getWidth()/2, offsetY - y + height);
+        }
+
         x = hitBox.x;
         y = hitBox.y;
         //if (hitBox.width == 16)h = hitBox.y-8;

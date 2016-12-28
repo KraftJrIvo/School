@@ -414,7 +414,7 @@ public class ObjectAdder {
                     NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.worldDir + "/chars/" + (type + 56) + "/");
                     characterMaker.setDirection(dir, type + 56);
                     npc.movable = false;
-                    worldObjectsHandler.addNPC(npc);
+                    worldObjectsHandler.addNPC(npc, world);
                     worldObjectsHandler.addSolid(npc);
                 }
             }

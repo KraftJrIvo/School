@@ -25,7 +25,7 @@ public class CharacterMaker {
     }
     AnimationSequence legs_walk_front, legs_walk_side, legs_run_side, timer1, timer2;
     ArrayList<GlobalSequence> bodies, heads;
-    ArrayList<Texture> sprites;
+    public ArrayList<Texture> sprites;
     Texture legs_stand_front, legs_stand_side, arms_front, arms_side, arms_push_side, arms_push_front, arms_push_back, arms_push_side_back;
     TextureRegion arms_front_reversed, arms_side_reversed, legs_stand_side_reversed, arms_push_side_reversed, arms_push_front_reversed, arms_push_back_reversed, arms_push_side_back_reversed;
     //public CharacterDirectionChecker cdc;
@@ -261,10 +261,10 @@ public class CharacterMaker {
         }
     }
 
-    public void invalidateBobbing(int id) {
+    public void invalidateBobbing(int id, float speedX, float speedY) {
         CharacterDirectionChecker cdc = cdcs.get(id);
         boolean push = pushes.get(id);
-        if (!cdc.stand && !push) {
+        if (Math.abs(speedX) > 4 || Math.abs(speedY) > 4) {
             timer1.getCurrentFrame(false);
             bobbings.set(id,(float)(Math.sin((double)((float)timer1.currentFrame/(float)timer1.gs.getLength())*3)-1.0));
         } else {

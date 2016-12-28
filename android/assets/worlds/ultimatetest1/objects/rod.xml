@@ -1,0 +1,40 @@
+<object statesCount="2" startState="0" radius="15">
+    <state id="0"
+           switchable="true"
+           switchCondition=""
+           tex="rod"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           hidePlayer="false"/> 
+    <state id="1"
+           switchable="true"
+           switchCondition=""
+           tex="rod_use"
+           texType="anim"
+           fps="10"
+           looping="true"
+           framesCount="8"
+           
+           flagName=""
+           flagVal="true"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           hidePlayer="true"/> 
+</object>
