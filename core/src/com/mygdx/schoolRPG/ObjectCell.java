@@ -43,13 +43,18 @@ public class ObjectCell {
     int cellOffsetX, cellOffsetY;
     boolean transfer;
     public boolean hIsY;
+    private long startTime;
+    private long lastSpawned;
 
     public int radius;
     public boolean isObject = false;
     public int statesCount = 0;
     public int currentState = -1;
+    public int offsetX = 0;
+    public int offsetY = 0;
     public ArrayList<Boolean> statesSwitchables;
     public ArrayList<String> statesConditionFlags;
+    public ArrayList<Boolean> statesConditionFlagVals;
     public ArrayList<String> statesTexTypes;
     public ArrayList<String> statesTex;
     public ArrayList<String> statesFlags;
@@ -117,7 +122,8 @@ public class ObjectCell {
     }
 
     public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
-        if (!statesSwitchables.get(currentState) || (flagNames.contains(statesConditionFlags.get(currentState)) && !flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
+        if (statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
+                && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
         currentState++;
         currentState = currentState % statesCount;
         if (statesTexTypes.get(currentState).equals("sprite")) {
@@ -133,9 +139,34 @@ public class ObjectCell {
             }
         }
         area.playerHidden = statesHidePlayer.get(currentState);
+        startTime = System.currentTimeMillis();
+        lastSpawned = 0;
     }
 
-    public void objectCheck(String worldDir, AssetManager assets) {
+    public float getParticleCoord(int n) {
+        return statesParticlesCoords.get(currentState).get(n);
+    }
+
+    public void checkFlags(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
+        if ((flagNames.contains(statesConditionFlags.get(currentState)) && statesConditionFlagVals.get(currentState) == flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) {
+            activate(worldDir, assets, flagNames, flags, area);
+        }
+    }
+
+    public boolean isSwitchable() {
+        return statesSwitchables.get(currentState);
+    }
+
+    public boolean checkParticleEmission() {
+        if (statesParticles.get(currentState) < 0) return false;
+        boolean res = (System.currentTimeMillis() - startTime - lastSpawned) > statesIntervals.get(currentState);
+        if (res) {
+            lastSpawned = System.currentTimeMillis() - startTime;
+        }
+        return res;
+    }
+
+    public void objectCheck(String worldDir, AssetManager assets, int state) {
         if (entity.texPath == null) return;
         String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
 
@@ -165,11 +196,17 @@ public class ObjectCell {
             }
             doc.getDocumentElement().normalize();
             statesCount = Integer.parseInt(doc.getDocumentElement().getAttribute("statesCount"));
-            currentState = Integer.parseInt(doc.getDocumentElement().getAttribute("startState"));
+            currentState = state;
+            if (currentState == -1) {
+                currentState = Integer.parseInt(doc.getDocumentElement().getAttribute("startState"));
+            }
             radius = Integer.parseInt(doc.getDocumentElement().getAttribute("radius"));
+            offsetX = Integer.parseInt(doc.getDocumentElement().getAttribute("offsetX"));
+            offsetY = Integer.parseInt(doc.getDocumentElement().getAttribute("offsetY"));
             NodeList nList = doc.getElementsByTagName("state");
             statesSwitchables = new ArrayList<Boolean>();
             statesConditionFlags = new ArrayList<String>();
+            statesConditionFlagVals = new ArrayList<Boolean>();
             statesTexTypes = new ArrayList<String>();
             statesTex = new ArrayList<String>();
             statesFlags = new ArrayList<String>();
@@ -185,7 +222,14 @@ public class ObjectCell {
                 Node nNode = nList.item(i);
                 Element eElement = (Element) nNode;
                 statesSwitchables.add(Boolean.parseBoolean(eElement.getAttribute("switchable")));
-                statesConditionFlags.add(eElement.getAttribute("switchCondition"));
+                String condition = eElement.getAttribute("switchCondition");
+                if (condition.length() > 0 && condition.charAt(0) == '!') {
+                    condition = condition.substring(1);
+                    statesConditionFlagVals.add(false);
+                } else {
+                    statesConditionFlagVals.add(true);
+                }
+                statesConditionFlags.add(condition);
                 statesTex.add(eElement.getAttribute("tex"));
                 statesTexTypes.add(eElement.getAttribute("texType"));
                 statesFlags.add(eElement.getAttribute("flagName"));
@@ -208,6 +252,8 @@ public class ObjectCell {
                 entity.tex = null;
                 entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
             }
+            startTime = System.currentTimeMillis();
+            lastSpawned = 0;
         }
     }
 }

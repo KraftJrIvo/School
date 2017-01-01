@@ -625,7 +625,7 @@ public class HittableEntity extends Entity {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         oldX = x;
         oldY = y;
         x = hitBox.x;
@@ -668,7 +668,7 @@ public class HittableEntity extends Entity {
             } else if (texR != null) {
                 height = texR.getRegionHeight();
             }
-            batch.draw(this.active, offsetX + x + this.active.getWidth()/2, offsetY - y + 3 + height);
+            batch.draw(this.active, offsetX + x + this.active.getWidth()/2 + activeX, offsetY - y + 3 + height + activeY);
         }
 
         float anglee = 0;

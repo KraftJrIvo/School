@@ -1,4 +1,4 @@
-<object statesCount="2" startState="0" radius="20">
+<object statesCount="2" startState="0" radius="20" offsetX="0" offsetY="0">
     <state id="0"
            switchable="true"
            switchCondition=""

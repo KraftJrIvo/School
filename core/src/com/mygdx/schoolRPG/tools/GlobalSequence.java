@@ -19,6 +19,10 @@ public class GlobalSequence {
 		this.sName = sName;
 		importSequence(assets, sName, framesCount);
 	}
+
+	public GlobalSequence(AssetManager assets, Texture tex, int framesCount) {
+		importSequence(assets, tex, framesCount);
+	}
 	
 	public int getLength() {
 		if (bImages == null) {
@@ -55,11 +59,15 @@ public class GlobalSequence {
 		return sName;
 	}
 
-	/*public void setSequence() {
-		for (TextureRegion t:bImages) {
-			t.setTexture();
+	private void importSequence (AssetManager assets, Texture tex, int count) {
+		texture = tex;
+		int imgCount = count;//(int)Math.ceil(texture.getWidth()/texture.getHeight());
+		bImages = new TextureRegion[imgCount];
+		for (int i =0; i < imgCount; ++i) {
+			int width = texture.getWidth()/imgCount;
+			bImages[i] = new TextureRegion(texture, width*i, 0, width, texture.getHeight());
 		}
-	}*/
+	}
 	
 	private void importSequence (AssetManager assets, String sName, int count) {
 		texture = assets.get(sName);

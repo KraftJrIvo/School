@@ -110,10 +110,13 @@ public class ParticleProperties {
         }
 
     }
+
+
     public void initialiseResources(AssetManager assets, String path) {
         animSeq1 = new AnimationSequence(assets, path + "/1.png", speed, true, frames);
         try {
-            animSeq2 = new AnimationSequence(assets, path + "/2.png", speed, true, frames);
+            Texture tex = assets.get(path + "/2.png", Texture.class);
+            animSeq2 = new AnimationSequence(assets, tex, speed, true, 1/*tex.getWidth()/animSeq1.getFirstFrame().getRegionWidth()*/);
         } catch (GdxRuntimeException e) {
 
         }

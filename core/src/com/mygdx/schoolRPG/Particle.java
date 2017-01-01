@@ -24,9 +24,11 @@ public class Particle extends Entity {
         this.spawnX = spawnX;
         this.spawnY = spawnY;
         this.spawnZ = spawnZ;
+        z = spawnZ;
         this.pp = pp;
         if (pp.animSeq1 != null) {
-            anim = pp.animSeq1;
+            anim = new AnimationSequence(pp.animSeq1);
+            //anim.reseed();
             //anim.reseed();
         } else if (pp.tex1 != null) {
             tex = pp.tex1;

@@ -27,12 +27,8 @@ public class MainMenu extends Menu {
 
     public int curMenu = 0;
     Texture backGround, title, cursor, overlay;
-    Texture play, options, credits;
     float overlayAngle = 0;
 
-    //int halfScreenHeight = Gdx.graphics.getHeight() / 2;
-    //int halfScreenWidth = Gdx.graphics.getWidth() / 2;
-    Button playButton, optionsButton, creditsButton;
     MenuListSelector selector;
 
     public MainMenu(int id, boolean android) {
@@ -52,28 +48,14 @@ public class MainMenu extends Menu {
                 nextMenuSetting = 0;
                 nextMenu = 1;
             } else if (index == 1) {
-                nextMenuSetting = 2;
-                nextMenu = 1;
+                nextMenuSetting = 0;
+                nextMenu = 2;
             }
             else if (index == 2) {
                 nextMenuSetting = 1;
                 nextMenu = 1;
             }
         }
-        /*if (playButton.checkTouch()) {
-            nextMenuSetting = 0;
-            nextMenu = 1;
-        }
-
-        if (creditsButton.checkTouch()) {
-            nextMenuSetting = 1;
-            nextMenu = 1;
-        }
-
-        if (optionsButton.checkTouch()) {
-            nextMenuSetting = 2;
-            nextMenu = 1;
-        }*/
     }
 
     @Override

@@ -473,7 +473,7 @@ public class World{
                 } else {
                     continue;
                 }
-                a.worldObjectsHandler.removeSolid(i);
+                int state = a.worldObjectsHandler.removeSolid(i);
                 Area toArea = areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ));
                 float pos = 0;
                 if (horizontal) {
@@ -493,11 +493,14 @@ public class World{
                     }
                     solid.hitBox.x = pos;
                 }
-
-                toArea.worldObjectsHandler.addSolid(solid);
-
+                toArea.worldObjectsHandler.addSolid(solid, state);
             }
         }
+    }
+
+    private void checkAreaObjects(Area a) {
+        a.worldObjectsHandler.checkNPCs(menu, folderPath, assets);
+        a.worldObjectsHandler.checkObjects(folderPath, assets, this);
     }
 
     private void checkPlayerPosition() {
@@ -515,8 +518,6 @@ public class World{
         } else if (a.player.y > a.TILE_HEIGHT*(a.height-1)) {
             changeArea(false, inRoomXCoord, -1, 0);
         }
-        a.worldObjectsHandler.checkNPCs(menu, folderPath, assets);
-        a.worldObjectsHandler.checkObjects(folderPath, assets, this);
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             int c = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).chekZPath();
             if (c > 0) {
@@ -649,15 +650,26 @@ public class World{
 
     public void draw(SpriteBatch batch) {
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
+            checkAreaObjects(curArea);
+        }
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {
                 curArea.draw(batch, this, 0, 0, true, true, true);
-                checkPlayerPosition();
-                checkSolidsPosition();
+                if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
+                    checkPlayerPosition();
+                    checkSolidsPosition();
+                }
             }
             if (curArea.worldObjectsHandler.currentDialog != null) {
                 curArea.worldObjectsHandler.currentDialog.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentDialog.finished) {
+                    ArrayList<String> changedFlagsNames = curArea.worldObjectsHandler.currentDialog.changedFlagsNames;
+                    for (int i = 0; i < changedFlagsNames.size(); ++i) {
+                        if (flagNames.contains(changedFlagsNames.get(i))) {
+                            flags.set(flagNames.indexOf(changedFlagsNames.get(i)), curArea.worldObjectsHandler.currentDialog.changedFlagsVals.get(i));
+                        }
+                    }
                     curArea.worldObjectsHandler.currentDialog = null;
                     menu.drawPause = true;
                     menu.paused = false;

@@ -72,11 +72,11 @@ public class ObjectAdder {
                         y+=blocks.get(7).get(t).get(i);
                         Entity e = new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i));
                         e.setFloor(true);
-                        worldObjectsHandler.addNonSolid(e);
+                        worldObjectsHandler.addNonSolid(e, -1);
                     } else {
                         Entity e = new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y, 0, 0, blocks.get(5).get(t).get(i));
                         e.setFloor(true);
-                        worldObjectsHandler.addNonSolid(e);
+                        worldObjectsHandler.addNonSolid(e, -1);
                     }
                 } else if (type == 2) {
                     float y = (i)* area.TILE_HEIGHT;
@@ -90,9 +90,9 @@ public class ObjectAdder {
                             }
                         }
                         y+=blocks.get(7).get(t).get(i);
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
                     } else {
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
                     }
                 } else if (type == 3) {
                     float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
@@ -108,11 +108,11 @@ public class ObjectAdder {
                         }
                         y+=blocks.get(7).get(t).get(i);
 
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
                     } else if (world.tileTypes.get(img) == 1) {
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
                     } else {
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.animations.get(world.tileIndices.get(img) - world.tilesetsCount), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.animations.get(world.tileIndices.get(img) - world.tilesetsCount).getFirstFrame().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.animations.get(world.tileIndices.get(img) - world.tilesetsCount), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.animations.get(world.tileIndices.get(img) - world.tilesetsCount).getFirstFrame().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
                     }
 
 
@@ -129,8 +129,8 @@ public class ObjectAdder {
                         }
                         y+=blocks.get(7).get(t).get(i);
 
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
-                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.RECT, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.RECT, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()), -1);
                     }
                 }  else if (type == 7) {
                     float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
@@ -145,8 +145,8 @@ public class ObjectAdder {
                         }
                         y+=blocks.get(7).get(t).get(i);
 
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
-                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.TRIANGLE, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.TRIANGLE, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()), -1);
                     }
                 }  else if (type == 8) {
                     float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
@@ -161,8 +161,8 @@ public class ObjectAdder {
                         }
                         y+=blocks.get(7).get(t).get(i);
 
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
-                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.CIRCLE, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.CIRCLE, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()), -1);
                     }
                 }  else if (type == 9) {
                     float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
@@ -177,8 +177,8 @@ public class ObjectAdder {
                         }
                         y+=blocks.get(7).get(t).get(i);
 
-                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)));
-                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.DOT, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()));
+                        worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addObstacle(new DeathZone(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i), DeathZone.ZoneShape.DOT, world.sprites.get(world.tileIndices.get(img)).getWidth(), world.sprites.get(world.tileIndices.get(img)).getHeight()), -1);
                     }
                 }  else if (type == 10) {
                     x = t*area.TILE_WIDTH+area.TILE_WIDTH/2-area.TILE_WIDTH/2 + blocks.get(6).get(t).get(i);
@@ -200,8 +200,8 @@ public class ObjectAdder {
                     y+=blocks.get(7).get(t).get(i);
 
                     CheckPoint cp = new CheckPoint(assets, world.folderPath, x, y, 0, 0, blocks.get(5).get(t).get(i));
-                    worldObjectsHandler.addNonSolid(cp);
-                    worldObjectsHandler.addCheckPoint(cp);
+                    worldObjectsHandler.addNonSolid(cp, -1);
+                    worldObjectsHandler.addCheckPoint(cp, -1);
                     //}
                 } else if (type == 4) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
@@ -252,10 +252,10 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1);
                     } else {
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
-                                width, height, floorHeight, false, blocks.get(5).get(t).get(i)));
+                                width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1);
                     }
                 } else if (type == 5) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
@@ -303,10 +303,10 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, world.sprites.get(world.tileIndices.get(img)).getWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)));
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, world.sprites.get(world.tileIndices.get(img)).getWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1);
                     } else {
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
-                                width, height, area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)));
+                                width, height, area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1);
                     }
                 } else if (type == 11) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
@@ -362,23 +362,23 @@ public class ObjectAdder {
                             }
                         }
                         if (img != -1) {
-                            worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y + (height - area.TILE_HEIGHT) + 2, 0, 0, blocks.get(5).get(t).get(i)));
+                            worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y + (height - area.TILE_HEIGHT) + 2, 0, 0, blocks.get(5).get(t).get(i)), -1);
                         } else y+=2;
                         HittableEntity he = new HittableEntity(assets, (Texture)null, xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i));
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
                         //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he);
+                        worldObjectsHandler.addSolid(he, -1);
                     } else {
                         if (img != -1) {
-                            worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y+2, 0, 0, blocks.get(5).get(t).get(i)));
+                            worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y+2, 0, 0, blocks.get(5).get(t).get(i)), -1);
                         } else y+=2;
                         HittableEntity he = new HittableEntity(assets, (TextureRegion)null, t*area.TILE_WIDTH + area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y,
                                 width, height, floorHeight, false, blocks.get(5).get(t).get(i));
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
                         //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he);
+                        worldObjectsHandler.addSolid(he, -1);
                     }
                 } else if ((type >= 20 && type <= 25) && (t == 0 || blocks.get(4).get(t-1).get(i) != type)) {
                     int surfacesCount = 0;
@@ -405,7 +405,7 @@ public class ObjectAdder {
                             ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.NONE, true);
                         }
                     }
-                    worldObjectsHandler.addLiquidSurface(ls);
+                    worldObjectsHandler.addLiquidSurface(ls, -1);
                 } else if (type < 0 && type >= -56 && type != -1) {
                     int playerWidth = 16;
                     int playerHeight = 5;
@@ -414,8 +414,8 @@ public class ObjectAdder {
                     NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.worldDir + "/chars/" + (type + 56) + "/");
                     characterMaker.setDirection(dir, type + 56);
                     npc.movable = false;
-                    worldObjectsHandler.addNPC(npc, world);
-                    worldObjectsHandler.addSolid(npc);
+                    worldObjectsHandler.addNPC(npc, world, -1);
+                    worldObjectsHandler.addSolid(npc, -1);
                 }
             }
         }

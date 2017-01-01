@@ -148,7 +148,7 @@ public class NPC extends HittableEntity {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         super.initialiseIfNeeded();
 
         if (active) {
@@ -161,7 +161,7 @@ public class NPC extends HittableEntity {
             } else if (texR != null) {
                 height = texR.getRegionHeight();
             }
-            batch.draw(this.active, offsetX + x, offsetY - y + 10 + height);
+            batch.draw(this.active, offsetX + x + activeX, offsetY - y + 3 + height + activeY);
         }
 
         if (poses != null) poses.initialiseIfNeeded(assets);
@@ -241,7 +241,7 @@ public class NPC extends HittableEntity {
         }
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean active) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean active) {
         super.initialiseIfNeeded();
 
         if (active) {

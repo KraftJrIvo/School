@@ -1,4 +1,4 @@
-<object statesCount="2" startState="0" radius="20">
+<object statesCount="2" startState="0" radius="20" offsetX="10" offsetY="0">
     <state id="0"
            switchable="true"
            switchCondition=""
@@ -20,7 +20,7 @@
            hidePlayer="false"/> 
     <state id="1"
            switchable="true"
-           switchCondition=""
+           switchCondition="!TVisOn"
            tex="tv_on"
            texType="anim"
            fps="10"

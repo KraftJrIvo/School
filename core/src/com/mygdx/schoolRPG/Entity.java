@@ -114,7 +114,7 @@ public class Entity implements Comparable {
         }
     }
 
-    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active) {
+    public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         if (floor) {
             h = -999999;
         }
@@ -133,7 +133,7 @@ public class Entity implements Comparable {
                 height = texR.getRegionHeight();
                 width = texR.getRegionWidth();
             }
-            batch.draw(this.active, offsetX + x - this.active.getWidth()/2 + width/2, offsetY - y + 3 + height);
+            batch.draw(this.active, offsetX + x - this.active.getWidth()/2 + width/2 + activeX, offsetY - y + 3 + height + activeY);
         }
         float baseR = batch.getColor().r;
         float baseG = batch.getColor().g;

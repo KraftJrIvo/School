@@ -32,8 +32,10 @@ public class Speech {
     long curTime;
     long millsPerChar = 50;
     float screenRatioX, screenRatioY;
+    Dialog dialog;
 
-    public Speech(String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs) {
+    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs) {
+        this.dialog = dialog;
         this.speaker = speaker;
         this.phrases = phrases;
         this.flagCharId = flagCharId;
@@ -52,11 +54,11 @@ public class Speech {
             for (int i =0; i < npcs.size(); ++i) {
                 if (npcs.get(i).charId == charId) {
                     target = npcs.get(i);
-                    break;
+                    //break;
                 }
                 if (npcs.get(i).charId == flagCharId) {
                     flagTarget = npcs.get(i);
-                    break;
+                    //break;
                 }
             }
         }
@@ -91,6 +93,8 @@ public class Speech {
 
                 if (flagId != -1) {
                     flagTarget.flags.set(flagId, flagVal);
+                    dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+                    dialog.changedFlagsVals.add(flagVal);
                 }
                 finished = true;
             } else {

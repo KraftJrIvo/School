@@ -27,6 +27,22 @@ public class AnimationSequence {
 		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 
+	public AnimationSequence(AssetManager assets, Texture tex, int fps, boolean looping, int framesCount) {
+		this.fps = fps;
+		this.looping = looping;
+		pos = new Coords();
+		gs = new GlobalSequence(assets, tex, framesCount);
+		seed = (int)Math.floor(Math.random()*gs.getLength());
+	}
+
+	public AnimationSequence(AnimationSequence animationSequence) {
+		fps = animationSequence.fps;
+		looping = animationSequence.looping;
+		pos = new Coords();
+		gs = animationSequence.gs;
+		seed = (int)Math.floor(Math.random()*gs.getLength());
+	}
+
 	public void reseed() {
 		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
