@@ -61,9 +61,11 @@ public class SchoolRPG extends ApplicationAdapter {
 	}
 
 	private void changeMenu(int newId, int newSetting) {
+		int language = menus.get(curMenuId).currentLanguage;
 		menus.get(curMenuId).nextMenu = curMenuId;
 		if (newId == 0) {
 			curMenuId = 0;
+			menus.get(curMenuId).currentLanguage = language;
 			return;
 		}
 		if (findId(newId) > 0) {
@@ -83,6 +85,7 @@ public class SchoolRPG extends ApplicationAdapter {
 		if (newId == 1) {
 			menus.get(curMenuId).changeSetting(newSetting);
 		}
+		menus.get(curMenuId).currentLanguage = language;
 		//System.out.println(menus.get(curMenuId).nextMenu);
 
 	}

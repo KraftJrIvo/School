@@ -430,6 +430,17 @@ public class WorldObjectsHandler {
         }
     }
 
+    public String getActiveDialogPath(GameMenu menu, String worldPath) {
+
+        String diagPath = worldPath + "/chars/" + activeNPC.charId + "/dialog/";
+        if (menu.currentLanguage == 0) {
+            diagPath += "eng/";
+        } else if (menu.currentLanguage == 1) {
+            diagPath += "rus/";
+        }
+        return diagPath;
+    }
+
     public void activateActiveObject(GameMenu menu, String worldPath, AssetManager assets, World world) {
         if (activeNPC == null && activeObject != null) {
             activeObject.activate(worldPath, assets, flagNames, flags, area);
@@ -446,7 +457,7 @@ public class WorldObjectsHandler {
                     str += 0;
                 }
             }
-            currentDialog = new Dialog(worldPath + "/chars/" + activeNPC.charId + "/dialog/" + str, false, NPCs, assets, worldPath + "/chars");
+            currentDialog = new Dialog(getActiveDialogPath(menu, worldPath), str, false, NPCs, assets, worldPath + "/chars", menu.currentLanguage);
         }
     }
 

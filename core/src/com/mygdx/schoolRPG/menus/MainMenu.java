@@ -48,13 +48,34 @@ public class MainMenu extends Menu {
                 nextMenuSetting = 0;
                 nextMenu = 1;
             } else if (index == 1) {
-                nextMenuSetting = 0;
-                nextMenu = 2;
+                optionsOpen = true;
+                //nextMenuSetting = 0;
+                //nextMenu = 2;
             }
             else if (index == 2) {
                 nextMenuSetting = 1;
                 nextMenu = 1;
             }
+        }
+    }
+
+    @Override
+    public void updateLanguage() {
+        super.updateLanguage();
+        ArrayList<String> list = new ArrayList<String>();
+        if (currentLanguage == 0) {
+            list.add("Play");
+            list.add("Options");
+            list.add("Info");
+        } else {
+            list.add("Играть");
+            list.add("Опции");
+            list.add("Инфо");
+        }
+        if (selector != null) {
+            selector.titles = list;
+        } else {
+            selector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
         }
     }
 
@@ -69,12 +90,8 @@ public class MainMenu extends Menu {
         batch.draw(new TextureRegion(overlay), centerX - overlay.getWidth()/2, centerY - overlay.getHeight()/2, 750.0f, 750.0f, 1500, 1500, 1, 1, overlayAngle, true);
         overlayAngle += 0.01f;
         batch.draw(title, Gdx.graphics.getWidth()/screenRatioX/2 - title.getWidth()/2, Gdx.graphics.getHeight()/screenRatioY - title.getHeight() * 1.5f);
-        selector.draw(batch, false);
+        selector.draw(batch, optionsOpen);
         batch.end();
-        //playButton.draw(batch);
-        //optionsButton.draw(batch);
-        //creditsButton.draw(batch);
-
         super.draw(batch, renderer);
     }
 
@@ -96,22 +113,9 @@ public class MainMenu extends Menu {
         if (!initialised) {
             super.initialiseResources();
             backGround = (assets.get("bg_new.png"));
-            ArrayList<String> list= new ArrayList<String>();
-            list.add("Play");
-            list.add("Options");
-            list.add("Info");
-
+            updateLanguage();
             title = assets.get("title.png", Texture.class);
             overlay = assets.get("bg_overlay.png", Texture.class);
-            selector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
-
-            //play = (assets.get("play.png"));
-            //credits = (assets.get("credits.png"));
-            //options = (assets.get("options.png"));
-
-            //playButton = new Button(new Rectangle(Gdx.graphics.getWidth()/3-PLAYSIZE/2, Gdx.graphics.getHeight()/2 - PLAYSIZE/2, PLAYSIZE, PLAYSIZE), play);
-            //optionsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 + PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), options);
-            //creditsButton = new Button(new Rectangle(Gdx.graphics.getWidth()*2/3-PLAYSIZE/3, Gdx.graphics.getHeight()/2 - PLAYSIZE/3 - PLAYSIZE/3, PLAYSIZE/1.5f, PLAYSIZE/1.5f), credits);
             initialised = true;
         }
     }

@@ -28,8 +28,62 @@ public class Dialog {
     Speech currentSpeech = null;
     Choice currentChoice = null;
     boolean finished = false;
+    public int language;
+    public String fileName;
 
-    public Dialog(String filePath, boolean monologue, ArrayList<NPC> npcs, AssetManager assets, String charPath) {
+    public void reload(String folderPath, int language, int startId) {
+        this.language = language;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(folderPath + fileName));
+            char c;
+            String line = in.readLine();
+            int choiceId = 0;
+            for (int i = 0; i < speeches.size(); ++i) {
+                while (!line.startsWith("#")) {
+                    line = in.readLine();
+                    if (line == null) {
+                            return;
+                    }
+                }
+                in.readLine();
+                in.readLine();
+                in.readLine();
+                for (int j = 0; j < speeches.get(i).phrases.size(); ++j) {
+                    line = in.readLine();
+                    speeches.get(i).phrases.set(j, line);
+                }
+                line = in.readLine();
+                if (line.charAt(0) == '%') {
+                    line = in.readLine();
+                    choices.get(choiceId).question = line;
+                    for (int j = 0; j < choices.get(choiceId).phrases.size(); ++j) {
+                        in.readLine();
+                        line = in.readLine();
+                        choices.get(choiceId).phrases.set(j, line);
+                    }
+                    choiceId++;
+                }
+            }
+            in.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (startId < 0) {
+            currentSpeech = choices.get(- startId - 1);
+        } else {
+            currentSpeech = speeches.get(startId);
+        }
+    }
+
+    public int getCurrentSpeechId() {
+        int index = speeches.indexOf(currentSpeech);
+        if (index == -1) index = -(choices.indexOf(currentSpeech) + 1);
+        return index;
+    }
+
+    public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, AssetManager assets, String charPath, int language) {
         speeches = new ArrayList<Speech>();
         choices = new ArrayList<Choice>();
         choiceTransitionsIds = new ArrayList<ArrayList<Integer>>();
@@ -37,9 +91,11 @@ public class Dialog {
         changedFlagsVals = new ArrayList<Boolean>();
         changedFlagsNames = new ArrayList<String>();
         this.monologue = monologue;
+        this.language = language;
+        this.fileName = fileName;
         overlay = assets.get("dialog_overlay1.png", Texture.class);
         try {
-            BufferedReader in = new BufferedReader(new FileReader(filePath));
+            BufferedReader in = new BufferedReader(new FileReader(folder + fileName));
             char c;
             String line = in.readLine();
             int charId = -1;

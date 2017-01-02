@@ -1,0 +1,154 @@
+<object statesCount="8" startState="0" radius="20" offsetX="0" offsetY="0">
+    <state id="0"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           hidePlayer="false"/> 
+    <state id="1"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="0"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="500"
+           
+           hidePlayer="false"/> 
+    <state id="2"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="1"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="100"
+           
+           hidePlayer="false"/> 
+    <state id="3"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="2"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="10"
+           
+           hidePlayer="false"/> 
+    <state id="4"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="3"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="10"
+           
+           hidePlayer="false"/> 
+    <state id="5"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="4"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="500"
+           
+           hidePlayer="false"/> 
+    <state id="6"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="5"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="10"
+           
+           hidePlayer="false"/> 
+    <state id="7"
+           switchable="true"
+           switchCondition=""
+           tex="yellow"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="6"
+           emitX="8"
+           emitY="0"
+           emitZ="18"
+           emitInterval="10"
+           
+           hidePlayer="false"/> 
+</object>

@@ -122,7 +122,7 @@ public class ObjectCell {
     }
 
     public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
-        if (statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
+        if (!statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
                 && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
         currentState++;
         currentState = currentState % statesCount;

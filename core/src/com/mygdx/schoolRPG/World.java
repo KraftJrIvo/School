@@ -648,10 +648,18 @@ public class World{
         }
     }
 
+    public void checkDialog(Area area) {
+        if (menu.currentLanguage != area.worldObjectsHandler.currentDialog.language) {
+            area.worldObjectsHandler.currentDialog.reload(area.worldObjectsHandler.getActiveDialogPath(menu, folderPath), menu.currentLanguage, area.worldObjectsHandler.currentDialog.getCurrentSpeechId());
+        }
+    }
+
     public void draw(SpriteBatch batch) {
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
             checkAreaObjects(curArea);
+        } else if (curArea.worldObjectsHandler.currentDialog != null) {
+            checkDialog(curArea);
         }
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {

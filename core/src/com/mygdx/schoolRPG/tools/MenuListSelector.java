@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Created by Kraft on 09.06.2016.
  */
 public class MenuListSelector {
-    ArrayList<String> titles;
+    public ArrayList<String> titles;
     Texture cursor;
     BitmapFont font;
     int selectedIndex = 0;
@@ -46,6 +46,10 @@ public class MenuListSelector {
 
     public int getSelectedIndex() {
         return selectedIndex;
+    }
+
+    public void setSelectedIndex(int index) {
+        selectedIndex = index;
     }
 
     public void draw(SpriteBatch batch, boolean paused) {

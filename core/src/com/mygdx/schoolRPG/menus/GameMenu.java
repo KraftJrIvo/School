@@ -91,6 +91,11 @@ public class GameMenu extends Menu {
         }
     }
 
+    /*@Override
+    public void updateLanguage() {
+
+    }*/
+
 
     public void invalidate() {
         super.invalidate();

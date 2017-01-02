@@ -29,7 +29,11 @@ public class Menu {
     BitmapFont mainFont;
     public boolean drawPause = true;
     public boolean unpausable = true;
-    MenuListSelector pauseSelector;
+    MenuListSelector pauseSelector, optionsSelector;
+
+    int musicVolume, soundVolume;
+    public int currentLanguage;
+    ArrayList<String> languages;
 
     public Menu(int id, boolean android) {
         this.android = android;
@@ -41,6 +45,7 @@ public class Menu {
     }
 
     public void load(AssetManager assets) {
+        assets.load("p.png", Texture.class);
         mainFont = new BitmapFont(Gdx.files.internal("font1.fnt"), Gdx.files.internal("font1.png"), false);
         this.assets = assets;
         if (allowPause) {
@@ -52,10 +57,13 @@ public class Menu {
             if (!assets.isLoaded("play.png", Texture.class)) {
                 assets.load("play.png", Texture.class);
             }
-            if (!assets.isLoaded("p.png", Texture.class)) {
-                assets.load("p.png", Texture.class);
-            }
         }
+        musicVolume = 100;
+        soundVolume = 100;
+        currentLanguage = 0;
+        languages = new ArrayList<String>();
+        languages.add("English");
+        languages.add("Русский");
     }
 
     public void initialiseResources() {
@@ -68,11 +76,15 @@ public class Menu {
             exit = assets.get("play.png", Texture.class);
             options = assets.get("play.png", Texture.class);
             ArrayList<String> list= new ArrayList<String>();
-            list.add("Continue");
-            list.add("Options");
-            list.add("Exit to main menu");
+
             pauseSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
         }
+        ArrayList<String> list2 = new ArrayList<String>();
+        list2.add("Music Volume: " + musicVolume);
+        list2.add("Sound Volume: " + soundVolume);
+        list2.add("Language: " + languages.get(currentLanguage));
+        list2.add("Back");
+        optionsSelector = new MenuListSelector(list2, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true);
     }
 
     public void invalidate() {
@@ -87,6 +99,32 @@ public class Menu {
 
     }
 
+    public void updateLanguage() {
+        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list2 = new ArrayList<String>();
+        if (currentLanguage == 0) {
+            list.add("Music Volume: " + musicVolume);
+            list.add("Sound Volume: " + soundVolume);
+            list.add("Language: " + languages.get(currentLanguage));
+            list.add("Back");
+            list2.add("Continue");
+            list2.add("Options");
+            list2.add("Exit to main menu");
+        } else if (currentLanguage == 1) {
+            list.add("Громкость Музыки: " + musicVolume);
+            list.add("Громкость 3вука: " + soundVolume);
+            list.add("Язык: " + languages.get(currentLanguage));
+            list.add("Назад");
+            list2.add("Продолжить");
+            list2.add("Опции");
+            list2.add("Выйти в Главное Меню");
+        } else {
+            return;
+        }
+        optionsSelector.titles = list;
+        if (allowPause) pauseSelector.titles = list2;
+    }
+
     private void unpause() {
         if (unpausable) {
             paused = false;
@@ -97,7 +135,52 @@ public class Menu {
 
     public void draw(SpriteBatch batch, ShapeRenderer renderer) {
         //System.out.println(paused);
-        if (!paused) {
+        updateLanguage();
+        if (optionsOpen) {
+            batch.setColor(1,1,1,0.5f);
+            batch.begin();
+            batch.draw(assets.get("p.png", Texture.class), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            batch.setColor(1,1,1,1);
+            optionsSelector.draw(batch, false);
+            batch.end();
+            int index = optionsSelector.getSelectedIndex();
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+                if (index == 0) {
+                    musicVolume++;
+                } else if (index == 1) {
+                    soundVolume++;
+                }
+            }else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+                if (index == 0) {
+                    musicVolume--;
+                } else if (index == 1) {
+                    soundVolume--;
+                }
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                if (index == 3) {
+                    optionsOpen = false;
+                }
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+                if (index == 2) {
+                    currentLanguage++;
+                }
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+                if (index == 2) {
+                    currentLanguage--;
+                }
+            }
+            if (musicVolume > 100) musicVolume = 100;
+            if (musicVolume < 0) musicVolume = 0;
+            if (soundVolume > 100) soundVolume = 100;
+            if (soundVolume < 0) soundVolume = 0;
+            if (currentLanguage >= languages.size()) currentLanguage = 0;
+            if (currentLanguage < 0) currentLanguage = languages.size() - 1;
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+                optionsOpen = false;
+            }
+        }
+        else if (!paused) {
             invalidate();
             if (android && allowPause) {
                 //pauseButton.draw(batch);
@@ -121,6 +204,7 @@ public class Menu {
             }
 
         }
+
         if (allowPause) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.P)) {
                 if (paused) {

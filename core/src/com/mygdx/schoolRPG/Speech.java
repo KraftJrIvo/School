@@ -126,7 +126,7 @@ public class Speech {
         if (charCount == phrases.get(currentPhrase).length()) {
             progress.set(currentPhrase, true);
         }
-        font.draw(batch, phrases.get(currentPhrase).substring(0, charCount), textX, textY - 32 * (currentPhrase+1) - 10);
+        font.draw(batch, phrases.get(currentPhrase).substring(0, Math.min(charCount, phrases.get(currentPhrase).length()-1)), textX, textY - 32 * (currentPhrase+1) - 10);
         //batch.setColor(Color.WHITE);
     }
 }
