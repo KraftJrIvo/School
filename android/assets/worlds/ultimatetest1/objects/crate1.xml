@@ -1,0 +1,46 @@
+<object statesCount="2" startState="0" radius="20" offsetX="8" offsetY="4" container="true">
+    <eng name="Crate"/>
+    <rus name="Ящик"/>
+    <state id="0"
+           switchable="true"
+           switchCondition=""
+           tex="crate1"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="false"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           hidePlayer="false"/> 
+    <state id="1"
+           switchable="true"
+           switchCondition=""
+           tex="crate1_opened"
+           texType="sprite"
+           fps="0"
+           looping="true"
+           framesCount="1"
+           
+           flagName=""
+           flagVal="true"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           hidePlayer="false"/> 
+    <item name="thing" stack="1"/>
+    <item name="thing" stack="4"/>
+    <item name="thing2" stack="8"/>
+    <item name="thing2" stack="8"/>
+</object>

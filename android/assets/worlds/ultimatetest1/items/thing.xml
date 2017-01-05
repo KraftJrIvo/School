@@ -1,0 +1,12 @@
+<item mass="1" equip_slot="NONE" stackable="true" maxStack="99" flag="hasSquiggle" replaces="">
+    <eng 
+        name = "Squiggle" 
+        description = "Some random squiggle. \n
+                       Why are you even carrying it around?"
+    />    
+    <rus 
+        name = "Коряга" 
+        description = "Какая-то рандомная коряга. \n
+                       Зачем ты вообще ее с собой таскаешь?"
+    />    
+</item>
