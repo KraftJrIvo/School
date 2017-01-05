@@ -26,7 +26,7 @@ public class Menu {
     Texture pause, resume, exit, options;
     AssetManager assets;
     boolean android;
-    BitmapFont mainFont;
+    public BitmapFont mainFont;
     public boolean drawPause = true;
     public boolean unpausable = true;
     MenuListSelector pauseSelector, optionsSelector;

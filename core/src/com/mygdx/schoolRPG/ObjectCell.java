@@ -48,6 +48,7 @@ public class ObjectCell {
 
     public int radius;
     public boolean isObject = false;
+    public boolean isContainer = false;
     public int statesCount = 0;
     public int currentState = -1;
     public int offsetX = 0;
@@ -61,13 +62,15 @@ public class ObjectCell {
     public ArrayList<Boolean> statesFlagVals;
     public ArrayList<Integer> statesParticles;
     public ArrayList<ArrayList<Float>> statesParticlesCoords;
+    public ArrayList<Item> items;
     public ArrayList<Integer> statesIntervals;
     public ArrayList<Boolean> statesHidePlayer;
     public ArrayList<Integer> statesFPS;
     public ArrayList<Boolean> statesLooping;
     public ArrayList<Integer> statesFramesCount;
+    ArrayList<String> names;
 
-    public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY) {
+    public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items) {
         this.type = type;
         this.id = id;
         this.entity = entity;
@@ -79,6 +82,7 @@ public class ObjectCell {
         cellOffsetX = 0;
         cellOffsetY = 0;
         this.hIsY = hIsY;
+        this.items = items;
     }
 
     public boolean isTransfer() {
@@ -203,12 +207,14 @@ public class ObjectCell {
             radius = Integer.parseInt(doc.getDocumentElement().getAttribute("radius"));
             offsetX = Integer.parseInt(doc.getDocumentElement().getAttribute("offsetX"));
             offsetY = Integer.parseInt(doc.getDocumentElement().getAttribute("offsetY"));
+            isContainer = Boolean.parseBoolean(doc.getDocumentElement().getAttribute("container"));
             NodeList nList = doc.getElementsByTagName("state");
             statesSwitchables = new ArrayList<Boolean>();
             statesConditionFlags = new ArrayList<String>();
             statesConditionFlagVals = new ArrayList<Boolean>();
             statesTexTypes = new ArrayList<String>();
             statesTex = new ArrayList<String>();
+            names = new ArrayList<String>();
             statesFlags = new ArrayList<String>();
             statesFlagVals = new ArrayList<Boolean>();
             statesParticles = new ArrayList<Integer>();
@@ -244,6 +250,30 @@ public class ObjectCell {
                 statesFPS.add(Integer.parseInt(eElement.getAttribute("fps")));
                 statesLooping.add(Boolean.parseBoolean(eElement.getAttribute("looping")));
                 statesFramesCount.add(Integer.parseInt(eElement.getAttribute("framesCount")));
+            }
+            if (isContainer) {
+                nList = doc.getElementsByTagName("eng");
+                Node nNode = nList.item(0);
+                Element eElement = (Element) nNode;
+                names.add(eElement.getAttribute("name"));
+
+                nList = doc.getElementsByTagName("rus");
+                nNode = nList.item(0);
+                eElement = (Element) nNode;
+                names.add(eElement.getAttribute("name"));
+                if (items == null) {
+                    items = new ArrayList<Item>();
+                    nList = doc.getElementsByTagName("item");
+                    for (int i= 0; i< nList.getLength(); ++i) {
+                        nNode = nList.item(i);
+                        eElement = (Element) nNode;
+                        String name = eElement.getAttribute("name");
+                        int stack = Integer.parseInt(eElement.getAttribute("stack"));
+                        Item item = new Item(assets, worldDir, name);
+                        item.stack = stack;
+                        items.add(item);
+                    }
+                }
             }
             if (statesTexTypes.get(currentState) == "sprite") {
                 entity.anim = null;

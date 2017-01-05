@@ -252,10 +252,10 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1, null);
                     } else {
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
-                                width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1);
+                                width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1, null);
                     }
                 } else if (type == 5) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
@@ -303,10 +303,10 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, world.sprites.get(world.tileIndices.get(img)).getWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1);
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, world.sprites.get(world.tileIndices.get(img)).getWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1, null);
                     } else {
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
-                                width, height, area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1);
+                                width, height, area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1, null);
                     }
                 } else if (type == 11) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
@@ -368,7 +368,7 @@ public class ObjectAdder {
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
                         //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he, -1);
+                        worldObjectsHandler.addSolid(he, -1, null);
                     } else {
                         if (img != -1) {
                             worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y+2, 0, 0, blocks.get(5).get(t).get(i)), -1);
@@ -378,7 +378,7 @@ public class ObjectAdder {
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
                         //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he, -1);
+                        worldObjectsHandler.addSolid(he, -1, null);
                     }
                 } else if ((type >= 20 && type <= 25) && (t == 0 || blocks.get(4).get(t-1).get(i) != type)) {
                     int surfacesCount = 0;
@@ -411,11 +411,11 @@ public class ObjectAdder {
                     int playerHeight = 5;
                     int playerFloor = 10;
                     int dir = blocks.get(5).get(t).get(i);
-                    NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.worldDir + "/chars/" + (type + 56) + "/");
+                    NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.folderPath);
                     characterMaker.setDirection(dir, type + 56);
                     npc.movable = false;
                     worldObjectsHandler.addNPC(npc, world, -1);
-                    worldObjectsHandler.addSolid(npc, -1);
+                    worldObjectsHandler.addSolid(npc, -1, null);
                 }
             }
         }

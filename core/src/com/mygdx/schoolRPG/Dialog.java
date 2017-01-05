@@ -83,7 +83,7 @@ public class Dialog {
         return index;
     }
 
-    public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, AssetManager assets, String charPath, int language) {
+    public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, Player player, AssetManager assets, String charPath, int language) {
         speeches = new ArrayList<Speech>();
         choices = new ArrayList<Choice>();
         choiceTransitionsIds = new ArrayList<ArrayList<Integer>>();
@@ -138,7 +138,7 @@ public class Dialog {
                         line = in.readLine();
                         transId = Integer.parseInt(line);
 
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player));
                         speechTransitionsIds.add(transId);
                         line = in.readLine();
                         c = line.charAt(0);
@@ -155,10 +155,10 @@ public class Dialog {
                         }
                         line = in.readLine();
                         c = line.charAt(0);
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     } else {
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     }
                 } else if (c == '%') {
@@ -177,7 +177,7 @@ public class Dialog {
                         line = in.readLine();
                         c = line.charAt(0);
                     }
-                    choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs));
+                    choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs, player));
                 } else if (c == '$') {
                     speechTransitionsIds.set(speechTransitionsIds.size()-1, 999999);
                     line = in.readLine();

@@ -34,7 +34,7 @@ public class Speech {
     float screenRatioX, screenRatioY;
     Dialog dialog;
 
-    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs) {
+    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player) {
         this.dialog = dialog;
         this.speaker = speaker;
         this.phrases = phrases;
@@ -47,9 +47,11 @@ public class Speech {
         texture = assets.get(texPath, Texture.class);
 
         overlay = assets.get("dialog_overlay2.png", Texture.class);
-        //font = new BitmapFont(Gdx.files.internal("palatino12.fnt"), Gdx.files.internal("palatino12.png"), false);
         font = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
         this.flagId = flagId;
+        if (charId == 0) {
+            target = player;
+        }
         if (npcs != null) {
             for (int i =0; i < npcs.size(); ++i) {
                 if (npcs.get(i).charId == charId) {
@@ -77,7 +79,6 @@ public class Speech {
         batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth() /2, Gdx.graphics.getHeight()/screenRatioY/8);
         if (target != null) {
             font.setColor(target.charColor);
-
         }
         font.draw(batch, speaker, textX, textY);
         font.setColor(Color.WHITE);

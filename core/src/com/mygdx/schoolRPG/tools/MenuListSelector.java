@@ -20,12 +20,14 @@ public class MenuListSelector {
     int selectedIndex = 0;
     float cursorAngle = 0;
     float height;
-    float xOffset;
-    float yOffset;
+    public float xOffset;
+    public float yOffset;
     boolean centerAlign;
     float titlesGap;
     float centerX;
     float centerY;
+    public boolean enabled;
+    public boolean looping;
 
     public MenuListSelector(ArrayList<String> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign) {
         this.centerAlign = centerAlign;
@@ -38,7 +40,10 @@ public class MenuListSelector {
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         titlesGap = font.getLineHeight();// * 2;
+        enabled = true;
+        looping = true;
     }
+
 
     public void addItem(String item) {
         titles.add(item);
@@ -59,16 +64,22 @@ public class MenuListSelector {
         centerY = height/2;
         //System.out.println(centerY);
         centerX = Gdx.graphics.getWidth()/screenRatioX/2;
-        if (!paused) {
+        if (!paused && enabled) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
                 selectedIndex++;
             } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP))  {
                 selectedIndex--;
             }
             if (selectedIndex < 0) {
-                selectedIndex = titles.size()-1;
+                selectedIndex = titles.size() - 1;
+                if (!looping) {
+                    enabled = false;
+                }
             } else if (selectedIndex > titles.size() - 1) {
                 selectedIndex = 0;
+                if (!looping) {
+                    enabled = false;
+                }
             }
             cursorAngle += 0.5f;
         }
@@ -80,10 +91,13 @@ public class MenuListSelector {
                 font.draw(batch, titles.get(i), xOffset, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
             }
         }
-        if (centerAlign) {
-            batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
-        } else {
-            batch.draw(new TextureRegion(cursor), xOffset - 20, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+        if (enabled) {
+            if (centerAlign) {
+                batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+                batch.draw(new TextureRegion(cursor), xOffset + centerX + font.getBounds( titles.get(selectedIndex)).width/2 + 10, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+            } else {
+                batch.draw(new TextureRegion(cursor), xOffset - 20, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+            }
         }
     }
 }

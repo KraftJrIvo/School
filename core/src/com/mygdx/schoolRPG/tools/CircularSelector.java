@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * Created by Kraft on 30.08.2016.
  */
 public class CircularSelector {
-    ArrayList<String> titles;
+    public ArrayList<String> titles;
     ArrayList<Texture> sprites;
     ArrayList<Float> ys;
     Array<Integer> ids;
@@ -24,13 +24,15 @@ public class CircularSelector {
     int selectedIndex = 0;
     float scale;
     float titlesGap;
-    float centerX;
-    float centerY;
+    public float centerX;
+    public float centerY;
     float currentAngle, targetAngle, prevAngle;
     boolean isAtTarget;
     float angleStep, width, height;
-    String curTitle;
+    public String curTitle;
     float fontAlpha;
+    public boolean drawTitles;
+    public boolean enabled;
 
 
     public CircularSelector(ArrayList<String> titles, ArrayList<Texture> sprites, BitmapFont font, float centerX, float centerY, float width, float height, float scale) {
@@ -51,8 +53,14 @@ public class CircularSelector {
             ys.add(0.0f);
             ids.add(0);
         }
-        curTitle = titles.get(selectedIndex);
+        if (titles.size() > 0) {
+            curTitle = titles.get(selectedIndex);
+        } else {
+            curTitle = "---";
+        }
         fontAlpha = 1.0f;
+        drawTitles = true;
+        enabled = true;
     }
 
     public void addItem(Texture sprite, String title) {
@@ -67,17 +75,43 @@ public class CircularSelector {
     }
 
     public int getSelectedIndex() {
+
         return selectedIndex;
     }
 
+    public void reset() {
+        if (selectedIndex >= sprites.size()) {
+            selectedIndex = 0;
+        }
+        currentAngle = 0;
+        targetAngle = 0;
+        prevAngle = 0;
+        ys = new ArrayList<Float>();
+        ids = new Array<Integer>();
+        for (int i = 0; i < sprites.size(); ++i) {
+            ys.add(0.0f);
+            ids.add(0);
+        }
+        if (titles.size() > 0) {
+            curTitle = titles.get(selectedIndex);
+        } else {
+            curTitle = "---";
+        }
+    }
+
     public void draw(SpriteBatch batch, boolean paused) {
+        if (titles.size() > 0) {
+            curTitle = titles.get(selectedIndex);
+        } else {
+            curTitle = "---";
+        }
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         isAtTarget = (Math.abs(Math.sin(targetAngle) - Math.sin(currentAngle)) < 0.01f) && (Math.abs(Math.cos(targetAngle) - Math.cos(currentAngle)) < 0.01f);
         if (isAtTarget) {
             currentAngle = targetAngle;
         }
-        if (!paused && isAtTarget && sprites.size() > 1) {
+        if (!paused && enabled && isAtTarget && sprites.size() > 1) {
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 prevAngle = currentAngle;
                 targetAngle += 2.0f * (float)Math.PI / sprites.size();
@@ -97,9 +131,9 @@ public class CircularSelector {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+        /*if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
             addItem(sprites.get(0), "hah");
-        }
+        }*/
 
 
         if (!isAtTarget) {
@@ -142,13 +176,15 @@ public class CircularSelector {
         for (int i = 0; i < ys.size(); ++i) {
             float angle = -(float)Math.PI/2 + ids.get(i) * (2.0f*(float)Math.PI/sprites.size()) + currentAngle;
             float x = centerX + width * (float)Math.cos(angle) - scale * sprites.get(ids.get(i)).getWidth()/2.0f;
-            float alpha = Math.max(-((float)Math.sin(angle) - 1.0f)/2.0f, 0.1f);
+            float alpha = Math.max(-((float)Math.sin(angle) - 1.0f)/2.0f, 0.5f);
             batch.setColor(new Color(1.0f,1.0f,1.0f,alpha));
             batch.draw(sprites.get(ids.get(i)), x, ys.get(i), sprites.get(ids.get(i)).getWidth()*scale, sprites.get(ids.get(i)).getHeight()*scale);
             batch.setColor(Color.WHITE);
         }
         font.setColor(new Color(1.0f,1.0f,1.0f,fontAlpha));
-        font.draw(batch, titles.get(selectedIndex), centerX - font.getBounds(titles.get(selectedIndex)).width/2.0f, centerY - sprites.get(ids.get(0)).getHeight()/1.5f*scale);
+        if (drawTitles) {
+            font.draw(batch, titles.get(selectedIndex), centerX - font.getBounds(titles.get(selectedIndex)).width/2.0f, centerY - sprites.get(ids.get(0)).getHeight()/2*scale);
+        }
         font.setColor(Color.WHITE);
     }
 }

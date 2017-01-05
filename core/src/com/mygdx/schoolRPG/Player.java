@@ -15,8 +15,8 @@ import com.mygdx.schoolRPG.tools.*;
 public class Player extends NPC {
 
 
-    public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker) {
-        super(assets, baseName, x, y, width, height, floorHeight, movable, characterMaker, 0, null);
+    public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, String worldDir) {
+        super(assets, baseName, x, y, width, height, floorHeight, movable, characterMaker, 0, worldDir);
     }
 
     public void move(JoyStick leftGameJoy) {

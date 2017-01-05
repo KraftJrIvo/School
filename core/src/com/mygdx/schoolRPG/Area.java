@@ -152,9 +152,9 @@ public class Area {
 
             if (player == null) {
                 if (platformMode) {
-                    player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                    player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world.folderPath);
                 } else {
-                    player = new Player(assets, null, (playerTileX * TILE_WIDTH), ((playerTileY) * TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                    player = new Player(assets, null, (playerTileX * TILE_WIDTH), ((playerTileY) * TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world.folderPath);
                 }
                 lastSpawnPos = 0;
             }
@@ -222,9 +222,9 @@ public class Area {
     public void respawnPlayerZ(String worldDir, AssetManager assets, int tileX, int tileY, CharacterMaker characterMaker) {
         if (player == null) {
             if (platformMode) {
-                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
             } else {
-                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
             }
         }
         player.hitBox.x = tileX;
@@ -250,9 +250,9 @@ public class Area {
         if (player == null) {
 
             if (platformMode) {
-                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
             } else {
-                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker);
+                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
             }
         }
         if (tileX != 0 || tileY != 0 || pos != 0) {

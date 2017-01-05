@@ -43,8 +43,9 @@ public class NPC extends HittableEntity {
     public int flagsCount = 0;
     public Color charColor;
     boolean isRunning = false;
+    public ArrayList<Item> inventory;
 
-    public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String charPath) {
+    public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String worldDir) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
         //wh = 10;
         this.charId = charId;
@@ -58,7 +59,11 @@ public class NPC extends HittableEntity {
         this.characterMaker = characterMaker;
         flags = new ArrayList<Boolean>();
         flagNames = new ArrayList<String>();
-        if (charPath != null) {
+        ArrayList<String> itemsNames = new ArrayList<String>();
+        ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
+        inventory = new ArrayList<Item>();
+        String charPath = worldDir + "/chars/" + charId;
+        if (baseName == null) {
             try {
                 float r, g, b;
                 BufferedReader in = new BufferedReader(new FileReader(charPath + "/stats"));
@@ -83,6 +88,17 @@ public class NPC extends HittableEntity {
                 line = in.readLine();
                 b = Float.parseFloat(line);
                 charColor = new Color(r, g, b, 1.0f);
+                line = in.readLine();
+                int itemsCount = Integer.parseInt(line);
+                for (int j =0; j < itemsCount; ++j) {
+                    line = in.readLine();
+                    itemsNames.add(line);
+                    line = in.readLine();
+                    itemsCounts.add(Integer.parseInt(line));
+                    Item item = new Item(assets, worldDir, itemsNames.get(j));
+                    item.stack = itemsCounts.get(j);
+                    inventory.add(item);
+                }
                 in.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -92,7 +108,15 @@ public class NPC extends HittableEntity {
         }
     }
 
-
+    public void takeItem(Item item) {
+        for (int i = 0; i < inventory.size(); ++i) {
+            if (inventory.get(i).stackable && inventory.get(i).fileName.equals(item.fileName) && inventory.get(i).stack < inventory.get(i).maxStack) {
+                inventory.get(i).stack++;
+                return;
+            }
+        }
+        inventory.add(item);
+    }
 
     @Override
     public void dropShadow(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, Texture shadow) {

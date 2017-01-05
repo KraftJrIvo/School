@@ -17,8 +17,8 @@ public class Choice extends Speech {
     int transitionId;
     String question;
 
-    public Choice(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs) {
-        super(dialog, speaker, phrases, assets, texPath, charId, -1, -1, false, npcs);
+    public Choice(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player) {
+        super(dialog, speaker, phrases, assets, texPath, charId, -1, -1, false, npcs, player);
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         System.out.println();
         question = phrases.get(0);

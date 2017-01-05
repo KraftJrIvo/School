@@ -308,6 +308,18 @@ public class World{
                 tileIndices.add(tilesetsCount);
                 tilesetsCount++;
             }
+            worldDir = Gdx.files.internal(folderPath+"/items/icons");
+            for (FileHandle entry: worldDir.list()) {
+                assets.load(entry.path(), Texture.class);
+            }
+            worldDir = Gdx.files.internal(folderPath+"/items/big_icons");
+            for (FileHandle entry: worldDir.list()) {
+                assets.load(entry.path(), Texture.class);
+            }
+            worldDir = Gdx.files.internal(folderPath+"/items/sides");
+            for (FileHandle entry: worldDir.list()) {
+                assets.load(entry.path(), Texture.class);
+            }
             worldDir = Gdx.files.internal(folderPath+"/anim");
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
@@ -464,7 +476,7 @@ public class World{
                     offX = inRoomXCoord + 1;
                     offY = inRoomYCoord;
                     horizontal = true;
-                } else if (solid.hitBox.y+solid.hitBox.getHeight() < -solid.hitBox.getHeight()/2) {
+                } else if (solid.hitBox.y+solid.hitBox.getHeight()/2 < -solid.hitBox.getHeight()/2) {
                     offX = inRoomXCoord;
                     offY = inRoomYCoord;
                 } else if (solid.hitBox.y > a.TILE_HEIGHT*(a.height-1)) {
@@ -473,7 +485,7 @@ public class World{
                 } else {
                     continue;
                 }
-                int state = a.worldObjectsHandler.removeSolid(i);
+                ObjectCell cell = a.worldObjectsHandler.removeSolid(i);
                 Area toArea = areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ));
                 float pos = 0;
                 if (horizontal) {
@@ -493,7 +505,7 @@ public class World{
                     }
                     solid.hitBox.x = pos;
                 }
-                toArea.worldObjectsHandler.addSolid(solid, state);
+                toArea.worldObjectsHandler.addSolid(solid, cell.currentState, cell.items);
             }
         }
     }
@@ -609,11 +621,16 @@ public class World{
             oldAreaX = curAreaX;
             oldAreaY = curAreaY;
             oldAreaZ = curAreaZ;
-            curAreaX = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).x;
-            curAreaY = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).y;
-            curAreaZ = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ)).z;
+            Area oldArea = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
+            Area curArea = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ));
+            curAreaX = curArea.x;
+            curAreaY = curArea.y;
+            curAreaZ = curArea.z;
             //initialised = false;
-            if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.invalidatePose(true, true);
+            if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) {
+                curArea.player.invalidatePose(true, true);
+                curArea.player.inventory = oldArea.player.inventory;
+            }
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
         }
@@ -654,13 +671,23 @@ public class World{
         }
     }
 
+    public void checkInventory(Area area) {
+        if (!menu.paused && area.worldObjectsHandler.currentInventory == null && Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+            area.worldObjectsHandler.openInventory(menu, folderPath, assets, this);
+        } else if (area.worldObjectsHandler.currentInventory != null && menu.currentLanguage != area.worldObjectsHandler.currentInventory.language) {
+            area.worldObjectsHandler.currentInventory.reload(menu.currentLanguage);
+        }
+    }
+
     public void draw(SpriteBatch batch) {
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
             checkAreaObjects(curArea);
         } else if (curArea.worldObjectsHandler.currentDialog != null) {
             checkDialog(curArea);
-        }
+        } //else if (curArea.worldObjectsHandler.currentInventory != null) {
+        checkInventory(curArea);
+        //}
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {
                 curArea.draw(batch, this, 0, 0, true, true, true);
@@ -684,7 +711,18 @@ public class World{
                     menu.unpausable = true;
                 }
             }
-
+            if (curArea.worldObjectsHandler.currentInventory != null) {
+                curArea.worldObjectsHandler.currentInventory.draw(batch, menu.drawPause);
+                if (curArea.worldObjectsHandler.currentInventory.closed) {
+                    if (curArea.worldObjectsHandler.currentInventory.containerMode) {
+                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea);
+                    }
+                    curArea.worldObjectsHandler.currentInventory = null;
+                    menu.drawPause = true;
+                    menu.paused = false;
+                    menu.unpausable = true;
+                }
+            }
         } else {
             Area area1, area2;
             Area oldArea = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
