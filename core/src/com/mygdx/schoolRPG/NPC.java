@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.mygdx.schoolRPG.tools.GlobalSequence;
 import com.mygdx.schoolRPG.tools.JoyStick;
 
 import java.io.BufferedReader;
@@ -44,6 +45,10 @@ public class NPC extends HittableEntity {
     public Color charColor;
     boolean isRunning = false;
     public ArrayList<Item> inventory;
+
+    public GlobalSequence headWear;
+    public GlobalSequence bodyWear;
+    public GlobalSequence objectInHands;
 
     public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String worldDir) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
@@ -99,6 +104,33 @@ public class NPC extends HittableEntity {
                     item.stack = itemsCounts.get(j);
                     inventory.add(item);
                 }
+                in.readLine();
+                line = in.readLine();
+                if (!line.equals("no")) {
+                    for (int i =0; i < itemsCount; ++i) {
+                        if (inventory.get(i).fileName.equals(line)) {
+                            headWear = inventory.get(i).sides;
+                        }
+                    }
+                }
+                in.readLine();
+                line = in.readLine();
+                if (!line.equals("no")) {
+                    for (int i =0; i < itemsCount; ++i) {
+                        if (inventory.get(i).fileName.equals(line)) {
+                            bodyWear = inventory.get(i).sides;
+                        }
+                    }
+                }
+                in.readLine();
+                line = in.readLine();
+                if (!line.equals("no")) {
+                    for (int i =0; i < itemsCount; ++i) {
+                        if (inventory.get(i).fileName.equals(line)) {
+                            objectInHands = inventory.get(i).sides;
+                        }
+                    }
+                }
                 in.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -106,6 +138,11 @@ public class NPC extends HittableEntity {
                 e.printStackTrace();
             }
         }
+        setWears();
+    }
+
+    public void setWears() {
+        characterMaker.setWears(charId, headWear, bodyWear);
     }
 
     public void takeItem(Item item) {
@@ -297,7 +334,7 @@ public class NPC extends HittableEntity {
         //System.out.println(speedX + " " + speedY);
         //System.out.println(hitBox.x + " " + hitBox.y);
 
-        characterMaker.draw(batch, charId, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)));
+        characterMaker.draw(batch, charId, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)), headWear, bodyWear, objectInHands);
 
     }
 }

@@ -42,6 +42,7 @@ public class Area {
     int lastSpawnTileX, lastSpawnTileY;
     public String worldPath;
     boolean playerHidden = false;
+    World world;
 
     float lastSpawnPos;
     Texture shadow;
@@ -50,6 +51,7 @@ public class Area {
     public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world) {
         TILE_WIDTH = tileWidth;
         TILE_HEIGHT = tileHeight;
+        this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;

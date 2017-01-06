@@ -88,7 +88,7 @@ public class WorldObjectsHandler {
             tileY = area.height - 1;
         }
         if (!oc.isObject) {
-            oc.objectCheck(area.worldPath, area.assets, state);
+            oc.objectCheck(area.worldPath, area.assets, state, area.world.characterMaker);
         }
         if (oc.isObject) {
             objects.add(oc);
@@ -441,13 +441,13 @@ public class WorldObjectsHandler {
 
     public void activateActiveObject(GameMenu menu, String worldPath, AssetManager assets, World world) {
         if (activeNPC == null && activeObject != null) {
-            activeObject.activate(worldPath, assets, flagNames, flags, area);
+            activeObject.activate(worldPath, assets, flagNames, flags, area, 0);
             world.synchronizeFlags();
             if (activeObject.isContainer) {
                 menu.drawPause = false;
                 menu.paused = true;
                 menu.unpausable = false;
-                currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, activeObject.items, activeObject.names, menu.currentLanguage);
+                currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, activeObject.items, activeObject.names, menu.currentLanguage);
             }
         } else if (activeNPC != null) {
             menu.drawPause = false;
@@ -469,7 +469,7 @@ public class WorldObjectsHandler {
         menu.drawPause = false;
         menu.paused = true;
         menu.unpausable = false;
-        currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, null, null, menu.currentLanguage);
+        currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, null, null, menu.currentLanguage);
     }
 
     public void invalidateObjects(String worldDir, AssetManager assets, World world) {
@@ -500,6 +500,7 @@ public class WorldObjectsHandler {
             return;
         }
         if (area.playerHidden) {
+            activeObject.updateWears();
             return;
             /*for (int i = 0; i < objects.size(); ++i) {
                 if (objects.get(i).statesHidePlayer.get(objects.get(i).currentState)) {

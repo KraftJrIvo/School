@@ -36,5 +36,16 @@
            emitZ="0"
            emitInterval="0"
            
-           hidePlayer="true"/> 
+           hidePlayer="true"
+           drawPlayer="true"/> 
+    <frames id="1">
+        <frame head="left" headX="8" headY="37" body="left" bodyX="5" bodyY="20"/>
+        <frame head="left" headX="12" headY="41" body="left" bodyX="9" bodyY="24"/>
+        <frame head="left" headX="13" headY="48" body="left" bodyX="10" bodyY="31"/>
+        <frame head="left" headX="12" headY="50" body="left" bodyX="10" bodyY="35"/>
+        <frame head="left" headX="12" headY="44" body="left" bodyX="9" bodyY="25"/>
+        <frame head="left" headX="8" headY="37" body="left" bodyX="5" bodyY="20"/>
+        <frame head="left" headX="8" headY="37" body="left" bodyX="5" bodyY="20"/>
+        <frame head="left" headX="8" headY="37" body="left" bodyX="5" bodyY="20"/>
+    </frames>
 </object>

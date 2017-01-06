@@ -21,7 +21,7 @@
     <state id="1"
            switchable="true"
            switchCondition=""
-           tex="orange_chair_sit"
+           tex="orange_chair"
            texType="sprite"
            fps="0"
            looping="false"
@@ -36,5 +36,13 @@
            emitZ="0"
            emitInterval="0"
            
-           hidePlayer="true"/> 
+           hidePlayer="true"
+           drawPlayer="true"
+           head="front"
+           headX="1"
+           headY="36"
+           body="front"
+           bodyX="-3"
+           bodyY="20"
+           /> 
 </object>

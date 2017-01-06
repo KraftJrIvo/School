@@ -4,8 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.XmlReader;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
+import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.mygdx.schoolRPG.tools.GlobalSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -58,6 +61,19 @@ public class ObjectCell {
     public ArrayList<Boolean> statesConditionFlagVals;
     public ArrayList<String> statesTexTypes;
     public ArrayList<String> statesTex;
+    public ArrayList<String> statesCharsTex;
+    public ArrayList<ArrayList<TextureRegion>> statesHeads;
+    public ArrayList<ArrayList<TextureRegion>> statesBodies;
+    public ArrayList<ArrayList<TextureRegion>> statesHeadWears;
+    public ArrayList<ArrayList<TextureRegion>> statesBodyWears;
+    public ArrayList<ArrayList<Integer>> statesHeadWearsDirs;
+    public ArrayList<ArrayList<Integer>> statesBodyWearsDirs;
+    public ArrayList<ArrayList<String>> statesHeadDirs;
+    public ArrayList<ArrayList<String>> statesBodyDirs;
+    public ArrayList<ArrayList<Integer>> statesHeadXOffsets;
+    public ArrayList<ArrayList<Integer>> statesHeadYOffsets;
+    public ArrayList<ArrayList<Integer>> statesBodyXOffsets;
+    public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
     public ArrayList<String> statesFlags;
     public ArrayList<Boolean> statesFlagVals;
     public ArrayList<Integer> statesParticles;
@@ -65,10 +81,13 @@ public class ObjectCell {
     public ArrayList<Item> items;
     public ArrayList<Integer> statesIntervals;
     public ArrayList<Boolean> statesHidePlayer;
+    public ArrayList<Boolean> statesDrawPlayer;
     public ArrayList<Integer> statesFPS;
     public ArrayList<Boolean> statesLooping;
     public ArrayList<Integer> statesFramesCount;
     ArrayList<String> names;
+    int charId;
+    CharacterMaker characterMaker;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items) {
         this.type = type;
@@ -125,7 +144,46 @@ public class ObjectCell {
         if (!isObject) return;
     }
 
-    public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
+    public void updateWears() {
+        for (int i = 0; i < statesHeadWearsDirs.size(); ++i) {
+            statesHeadWears.set(i, new ArrayList<TextureRegion>());
+            statesBodyWears.set(i, new ArrayList<TextureRegion>());
+            if (statesHeadWearsDirs.get(i) == null) continue;
+            for (int j = 0; j < statesHeadWearsDirs.get(i).size(); ++j) {
+                if (statesHeadWearsDirs.get(i).get(j) == null) continue;
+                int headDir = statesHeadWearsDirs.get(i).get(j);
+                if (headDir >= 0 && characterMaker.headWears.get(charId) != null) {
+                    if (headDir < 3) {
+                        statesHeadWears.get(i).add(characterMaker.headWears.get(charId).getFrame(headDir));
+                    } else if (headDir == 3) {
+                        characterMaker.headWears.get(charId).getFrame(2).flip(true, false);
+                        statesHeadWears.get(i).add(new TextureRegion(characterMaker.headWears.get(charId).getFrame(2)));
+                        characterMaker.headWears.get(charId).getFrame(2).flip(true, false);
+                    }
+                } else {
+                    statesHeadWears.get(i).add(null);
+                }
+                int bodyDir = statesBodyWearsDirs.get(i).get(j);
+                if (bodyDir >= 0 && characterMaker.bodyWears.get(charId) != null) {
+                    if (bodyDir < 3) {
+                        statesBodyWears.get(i).add(characterMaker.bodyWears.get(charId).getFrame(bodyDir));
+                    } else if (bodyDir == 3) {
+                        characterMaker.bodyWears.get(charId).getFrame(2).flip(true, false);
+                        statesBodyWears.get(i).add(new TextureRegion(characterMaker.bodyWears.get(charId).getFrame(2)));
+                        characterMaker.bodyWears.get(charId).getFrame(2).flip(true, false);
+                    }
+                } else {
+                    statesBodyWears.get(i).add(null);
+                }
+            }
+        }
+
+
+        entity.headWears = statesHeadWears.get(currentState);
+        entity.bodyWears = statesBodyWears.get(currentState);
+    }
+
+    public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId) {
         if (!statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
                 && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
         currentState++;
@@ -137,10 +195,38 @@ public class ObjectCell {
             entity.tex = null;
             entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
         }
+        this.charId = charId;
         for (int i = 0; i < flagNames.size(); ++i) {
             if (flagNames.get(i).equals(statesFlags.get(currentState))) {
                 flags.set(i, statesFlagVals.get(currentState));
             }
+        }
+        if (statesHidePlayer.get(currentState) && statesDrawPlayer.get(currentState)) {
+            entity.heads = statesHeads.get(currentState);
+            entity.bodies = statesBodies.get(currentState);
+            updateWears();
+            entity.headsOffX = statesHeadXOffsets.get(currentState);
+            entity.headsOffY = statesHeadYOffsets.get(currentState);
+            entity.bodiesOffX = statesBodyXOffsets.get(currentState);
+            entity.bodiesOffY = statesBodyYOffsets.get(currentState);
+            if (statesTexTypes.get(currentState).equals("anim")) {
+                entity.charAnim = new AnimationSequence(assets, assets.get(worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class), statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
+            } else {
+                entity.charTex = assets.get( worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class);
+            }
+            entity.drawChar = true;
+        } else if (entity.heads != null) {
+            entity.drawChar = false;
+            entity.heads = null;
+            entity.bodies = null;
+            entity.headWears = null;
+            entity.bodyWears = null;
+            entity.headsOffX = null;
+            entity.headsOffY = null;
+            entity.bodiesOffX = null;
+            entity.bodiesOffY = null;
+            entity.charAnim = null;
+            entity.charTex = null;
         }
         area.playerHidden = statesHidePlayer.get(currentState);
         startTime = System.currentTimeMillis();
@@ -153,7 +239,7 @@ public class ObjectCell {
 
     public void checkFlags(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
         if ((flagNames.contains(statesConditionFlags.get(currentState)) && statesConditionFlagVals.get(currentState) == flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) {
-            activate(worldDir, assets, flagNames, flags, area);
+            activate(worldDir, assets, flagNames, flags, area, charId);
         }
     }
 
@@ -170,7 +256,53 @@ public class ObjectCell {
         return res;
     }
 
-    public void objectCheck(String worldDir, AssetManager assets, int state) {
+    private TextureRegion getDir(ArrayList<GlobalSequence> list, String dir) {
+        if (charId >= list.size() || list.get(charId) == null) return null;
+        TextureRegion textureRegion;
+        if (dir.equals("front")) {
+            textureRegion = list.get(charId).getFrame(0);
+        } else if (dir.equals("back")) {
+            textureRegion = list.get(charId).getFrame(1);
+        } else if (dir.equals("left")) {
+            list.get(charId).getFrame(2).flip(true, false);
+            textureRegion = new TextureRegion(list.get(0).getFrame(2));
+            list.get(charId).getFrame(2).flip(true, false);
+        } else {
+            textureRegion = list.get(charId).getFrame(2);
+        }
+        return textureRegion;
+    }
+
+    private int getWearDir(String dir) {
+        if (dir.equals("front")) {
+            return 0;
+        } else if (dir.equals("back")) {
+            return 1;
+        } else if (dir.equals("left")) {
+            return 3;
+        } else {
+            return 2;
+        }
+    }
+
+    private int getWearRegionFromDir(String dir, boolean head) {
+        if (head) {
+            return getWearDir(dir);
+        }
+        return getWearDir(dir);
+    }
+
+    private TextureRegion getRegionFromDir(CharacterMaker characterMaker, String dir, boolean head) {
+        TextureRegion textureRegion;
+        if (head) {
+            textureRegion = getDir(characterMaker.heads, dir);
+        } else {
+            textureRegion = getDir(characterMaker.bodies, dir);
+        }
+        return textureRegion;
+    }
+
+    public void objectCheck(String worldDir, AssetManager assets, int state, CharacterMaker characterMaker) {
         if (entity.texPath == null) return;
         String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
 
@@ -224,6 +356,18 @@ public class ObjectCell {
             statesFPS = new ArrayList<Integer>();
             statesLooping = new ArrayList<Boolean>();
             statesFramesCount = new ArrayList<Integer>();
+            statesCharsTex = new ArrayList<String>();
+            statesDrawPlayer = new ArrayList<Boolean>();
+            statesHeads = new ArrayList<ArrayList<TextureRegion>>();
+            statesBodies = new ArrayList<ArrayList<TextureRegion>>();
+            statesHeadWears = new ArrayList<ArrayList<TextureRegion>>();
+            statesBodyWears = new ArrayList<ArrayList<TextureRegion>>();
+            statesHeadWearsDirs = new ArrayList<ArrayList<Integer>>();
+            statesBodyWearsDirs = new ArrayList<ArrayList<Integer>>();
+            statesHeadXOffsets = new ArrayList<ArrayList<Integer>>();
+            statesHeadYOffsets = new ArrayList<ArrayList<Integer>>();
+            statesBodyXOffsets = new ArrayList<ArrayList<Integer>>();
+            statesBodyYOffsets = new ArrayList<ArrayList<Integer>>();
             for (int i= 0; i< nList.getLength(); ++i) {
                 Node nNode = nList.item(i);
                 Element eElement = (Element) nNode;
@@ -236,8 +380,10 @@ public class ObjectCell {
                     statesConditionFlagVals.add(true);
                 }
                 statesConditionFlags.add(condition);
-                statesTex.add(eElement.getAttribute("tex"));
-                statesTexTypes.add(eElement.getAttribute("texType"));
+                String tex = eElement.getAttribute("tex");
+                statesTex.add(tex);
+                String texType = eElement.getAttribute("texType");
+                statesTexTypes.add(texType);
                 statesFlags.add(eElement.getAttribute("flagName"));
                 statesFlagVals.add(Boolean.parseBoolean(eElement.getAttribute("flagVal")));
                 statesParticles.add(Integer.parseInt(eElement.getAttribute("emitsParticle")));
@@ -246,7 +392,57 @@ public class ObjectCell {
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitY")));
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
                 statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
-                statesHidePlayer.add(Boolean.parseBoolean(eElement.getAttribute("hidePlayer")));
+                boolean hidePlayer = Boolean.parseBoolean(eElement.getAttribute("hidePlayer"));
+                statesHidePlayer.add(hidePlayer);
+                boolean drawHiddenPlayer = false;
+                if (hidePlayer) {
+                    drawHiddenPlayer = Boolean.parseBoolean(eElement.getAttribute("drawPlayer"));
+                }
+                statesDrawPlayer.add(drawHiddenPlayer);
+                if (hidePlayer && drawHiddenPlayer) {
+                    this.characterMaker = characterMaker;
+                    statesCharsTex.add(tex + "_char");
+
+                    for (int j =0; j < statesCount; ++j) {
+                        statesHeads.add(new ArrayList<TextureRegion>());
+                        statesBodies.add(new ArrayList<TextureRegion>());
+                        statesHeadWears.add(new ArrayList<TextureRegion>());
+                        statesBodyWears.add(new ArrayList<TextureRegion>());
+                        statesHeadXOffsets.add(new ArrayList<Integer>());
+                        statesHeadYOffsets.add(new ArrayList<Integer>());
+                        statesBodyXOffsets.add(new ArrayList<Integer>());
+                        statesBodyYOffsets.add(new ArrayList<Integer>());
+                        statesHeadWearsDirs.add(new ArrayList<Integer>());
+                        statesBodyWearsDirs.add(new ArrayList<Integer>());
+                    }
+
+                    if (texType.equals("anim")) {
+                        NodeList nList2 = doc.getElementsByTagName("frames");
+                        Element eElement3 = (Element) nList2.item(0);
+                        if (eElement3.getAttribute("id").equals(""+i)) {
+                            NodeList nList3 = doc.getElementsByTagName("frame");
+                            for (int j = 0; j < nList3.getLength(); ++j) {
+                                Node nNode2 = nList3.item(j);
+                                Element eElement2 = (Element) nNode2;
+                                getCharDrawInfoFromElement(characterMaker, eElement2, i);
+                            }
+                        }
+                    } else {
+                        getCharDrawInfoFromElement(characterMaker, eElement, i);
+                    }
+                } else {
+                    statesCharsTex.add(null);
+                    statesHeads.add(null);
+                    statesBodies.add(null);
+                    statesHeadWears.add(null);
+                    statesBodyWears.add(null);
+                    statesHeadXOffsets.add(null);
+                    statesHeadYOffsets.add(null);
+                    statesBodyXOffsets.add(null);
+                    statesBodyYOffsets.add(null);
+                    statesHeadWearsDirs.add(null);
+                    statesBodyWearsDirs.add(null);
+                }
                 statesFPS.add(Integer.parseInt(eElement.getAttribute("fps")));
                 statesLooping.add(Boolean.parseBoolean(eElement.getAttribute("looping")));
                 statesFramesCount.add(Integer.parseInt(eElement.getAttribute("framesCount")));
@@ -285,5 +481,18 @@ public class ObjectCell {
             startTime = System.currentTimeMillis();
             lastSpawned = 0;
         }
+    }
+
+    private void getCharDrawInfoFromElement(CharacterMaker characterMaker, Element eElement, int i) {
+        String headDir = eElement.getAttribute("head");
+        String bodyDir = eElement.getAttribute("body");
+        statesHeads.get(i).add(getRegionFromDir(characterMaker, headDir, true));
+        statesBodies.get(i).add(getRegionFromDir(characterMaker, bodyDir, false));
+        statesHeadWearsDirs.get(i).add(getWearRegionFromDir(headDir, true));
+        statesBodyWearsDirs.get(i).add(getWearRegionFromDir(bodyDir, false));
+        statesHeadXOffsets.get(i).add(Integer.parseInt(eElement.getAttribute("headX")));
+        statesHeadYOffsets.get(i).add(Integer.parseInt(eElement.getAttribute("headY")));
+        statesBodyXOffsets.get(i).add(Integer.parseInt(eElement.getAttribute("bodyX")));
+        statesBodyYOffsets.get(i).add(Integer.parseInt(eElement.getAttribute("bodyY")));
     }
 }

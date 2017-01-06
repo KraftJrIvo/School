@@ -85,7 +85,11 @@ public class AnimationSequence {
 	/*public void setSequence() {
 		gs.setSequence();
 	}*/
-	
+
+	public int getCurrentFrameId() {
+		return currentFrame;
+	}
+
 	public TextureRegion getCurrentFrame(boolean reversed) {
 
 		if (gs == null || (gs.getLength() < 1)) {

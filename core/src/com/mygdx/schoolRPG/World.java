@@ -308,6 +308,13 @@ public class World{
                 tileIndices.add(tilesetsCount);
                 tilesetsCount++;
             }
+            worldDir = Gdx.files.internal(folderPath+"/objects/util");
+            for (FileHandle entry: worldDir.list()) {
+                if (!entry.file().getName().contains(".png")){
+                    continue;
+                }
+                assets.load(entry.path(), Texture.class);
+            }
             worldDir = Gdx.files.internal(folderPath+"/items/icons");
             for (FileHandle entry: worldDir.list()) {
                 assets.load(entry.path(), Texture.class);
@@ -630,6 +637,9 @@ public class World{
             if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) {
                 curArea.player.invalidatePose(true, true);
                 curArea.player.inventory = oldArea.player.inventory;
+                curArea.player.headWear = oldArea.player.headWear;
+                curArea.player.bodyWear = oldArea.player.bodyWear;
+                curArea.player.objectInHands = oldArea.player.objectInHands;
             }
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
@@ -681,7 +691,7 @@ public class World{
 
     public void draw(SpriteBatch batch) {
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
-        if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
+        if ((!menu.paused && curArea.worldObjectsHandler.currentDialog == null) || curArea.playerHidden) {
             checkAreaObjects(curArea);
         } else if (curArea.worldObjectsHandler.currentDialog != null) {
             checkDialog(curArea);
@@ -715,7 +725,7 @@ public class World{
                 curArea.worldObjectsHandler.currentInventory.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentInventory.closed) {
                     if (curArea.worldObjectsHandler.currentInventory.containerMode) {
-                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea);
+                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0);
                     }
                     curArea.worldObjectsHandler.currentInventory = null;
                     menu.drawPause = true;

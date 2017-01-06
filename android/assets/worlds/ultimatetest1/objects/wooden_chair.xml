@@ -21,7 +21,7 @@
     <state id="1"
            switchable="true"
            switchCondition=""
-           tex="wooden_chair_sit"
+           tex="wooden_chair"
            texType="sprite"
            fps="0"
            looping="false"
@@ -36,5 +36,13 @@
            emitZ="0"
            emitInterval="0"
            
-           hidePlayer="true"/> 
+           hidePlayer="true"
+           drawPlayer="true"
+           head="right"
+           headX="2"
+           headY="29"
+           body="right"
+           bodyX="-2"
+           bodyY="13"
+           /> 
 </object>

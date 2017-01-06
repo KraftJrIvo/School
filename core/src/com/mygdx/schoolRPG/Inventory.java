@@ -42,6 +42,7 @@ public class Inventory {
     String inventory1Title;
     String inventory2Title;
     boolean releasedAfterChange;
+    NPC owner;
 
     private void updateItems() {
         titles.clear();
@@ -118,7 +119,8 @@ public class Inventory {
         }
     }
 
-    public Inventory(AssetManager assets, BitmapFont font, ArrayList<Item> items, ArrayList<Item> containerItems, ArrayList<String> inventory2TitlesInLanguages, int language) {
+    public Inventory(AssetManager assets, BitmapFont font, ArrayList<Item> items, NPC owner, ArrayList<Item> containerItems, ArrayList<String> inventory2TitlesInLanguages, int language) {
+        this.owner = owner;
         this.items = items;
         this.font = font;
         this.containerItems = containerItems;
@@ -195,6 +197,35 @@ public class Inventory {
         font.draw(batch, inventory1Title, itemsSelector.centerX - font.getBounds(inventory1Title).width/2, itemsSelector.centerY + 128);
         if (containerMode) {
             font.draw(batch, inventory2Title, containerItemsSelector.centerX - font.getBounds(inventory2Title).width/2, containerItemsSelector.centerY + 128);
+        } else if (items.size() > 0) {
+            Item currentItem = items.get(itemsSelector.getSelectedIndex());
+            if (currentItem.sides == owner.headWear || currentItem.sides == owner.bodyWear) {
+                if (language == 0) {
+                    invenoryOptions.titles.set(1, "Take off");
+                } else {
+                    invenoryOptions.titles.set(1, "Снять");
+                }
+            } else if (currentItem.sides == owner.objectInHands) {
+                if (language == 0) {
+                    invenoryOptions.titles.set(1, "Unequip");
+                } else {
+                    invenoryOptions.titles.set(1, "Убрать из рук");
+                }
+            } else {
+                if (currentItem.equipSlot == Item.EquipSlot.HEAD || currentItem.equipSlot == Item.EquipSlot.BODY) {
+                    if (language == 0) {
+                        invenoryOptions.titles.set(1, "Wear");
+                    } else {
+                        invenoryOptions.titles.set(1, "Надеть");
+                    }
+                } else {
+                    if (language == 0) {
+                        invenoryOptions.titles.set(1, "Equip");
+                    } else {
+                        invenoryOptions.titles.set(1, "Взять в руки");
+                    }
+                }
+            }
         }
         otherOptions.draw(batch, paused);
         itemsSelector.draw(batch, paused);
@@ -291,14 +322,28 @@ public class Inventory {
                         } else {
                             item.stack--;
                         }
+                        if (item.sides == owner.headWear) {
+                            owner.headWear = null;
+                        } else if (item.sides == owner.bodyWear) {
+                            owner.bodyWear = null;
+                        } else if (item.sides == owner.objectInHands) {
+                            owner.objectInHands = null;
+                        }
                         addItem(containerItems, item);
                     } else if (invenoryOptions.getSelectedIndex() == 2) {
-                        for (int i = 0; i < items.size(); ++i) {
-                            for (int j = 0; j < items.get(i).stack; ++j) {
-                                addItem(containerItems, items.get(i));
+                        int offset = 0;
+                        for (int i = 0; offset < items.size(); ++i) {
+                            Item item = items.get(0 + offset);
+                            for (int j = 0; j < item.stack; ++j) {
+                                if (item.sides != owner.headWear && item.sides != owner.bodyWear && item.sides != owner.objectInHands) {
+                                    items.remove(item);
+                                    addItem(containerItems, item);
+                                } else {
+                                    offset++;
+                                }
                             }
                         }
-                        items.clear();
+                        //items.clear();
                     }
                     updateItems();
                 } else if (containerOptions.enabled && containerItemsSelector.getSelectedIndex() < containerItems.size()) {
@@ -314,7 +359,8 @@ public class Inventory {
                     } else if (containerOptions.getSelectedIndex() == 2) {
                         for (int i = 0; i < containerItems.size(); ++i) {
                             for (int j = 0; j < containerItems.get(i).stack; ++j) {
-                                addItem(items, containerItems.get(i));
+                                Item item = containerItems.get(i);
+                                addItem(items, item);
                             }
                         }
                         containerItems.clear();
@@ -327,7 +373,32 @@ public class Inventory {
             rightIsSelected = containerOptions.enabled;
         } else {
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                if (otherOptions.enabled && otherOptions.getSelectedIndex() == 0) {
+                if (invenoryOptions.enabled) {
+                    if (invenoryOptions.getSelectedIndex() == 1) {
+                        int index = itemsSelector.getSelectedIndex();
+                        if (items.get(index).equipSlot == Item.EquipSlot.HEAD) {
+                            if (owner.headWear != items.get(index).sides) {
+                                owner.headWear = items.get(index).sides;
+                            } else {
+                                owner.headWear = null;
+                            }
+                        } else if (items.get(index).equipSlot == Item.EquipSlot.BODY) {
+                            if (owner.bodyWear != items.get(index).sides) {
+                                owner.bodyWear = items.get(index).sides;
+                            } else {
+                                owner.bodyWear = null;
+                            }
+                        } else {
+                            if (owner.objectInHands != items.get(index).sides) {
+                                owner.objectInHands = items.get(index).sides;
+                            } else {
+                                owner.objectInHands = null;
+                            }
+                        }
+                        owner.setWears();
+                    }
+                }
+                else if (otherOptions.enabled && otherOptions.getSelectedIndex() == 0) {
                     closed = true;
                 }
             }

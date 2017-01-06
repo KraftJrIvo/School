@@ -68,8 +68,10 @@ public class Item {
     public Item(AssetManager assets, String worldPath, String name) {
         fileName = name;
         icon = assets.get(worldPath + "/items/icons/" + fileName + ".png");
-        bigIcon = assets.get(worldPath + "/items/big_icons/" + fileName + ".png");
-        sides = new GlobalSequence(assets,worldPath + "/items/sides/" + fileName + ".png", 2);
+        if (assets.isLoaded(worldPath + "/items/big_icons/" + fileName + ".png")) {
+            bigIcon = assets.get(worldPath + "/items/big_icons/" + fileName + ".png");
+        }
+        sides = new GlobalSequence(assets,worldPath + "/items/sides/" + fileName + ".png", 3);
         FileHandle itemDir =  Gdx.files.internal(worldPath + "/items");
         FileHandle itemXML = null;
         for (FileHandle entry: itemDir.list()) {

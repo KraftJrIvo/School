@@ -679,8 +679,17 @@ public class HittableEntity extends Entity {
         } else if (angle == 3) {
             anglee = -270;
         }
+
+        if (anim != null) {
+            texR = anim.getCurrentFrame(false);
+        }
+
         if (tex != null) {
-            if (!platformMode) batch.draw(tex, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z, tex.getWidth(), tex.getHeight());
+            if (!platformMode) {
+                batch.draw(tex, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z, tex.getWidth(), tex.getHeight());
+                TextureRegion drawTex2 = maybeDrawChar(batch, offsetX+graphicX+hitBox.getWidth()/2-tex.getWidth()/2, offsetY - graphicY-floorHeight-z);
+                if (drawTex2 != null) batch.draw(drawTex2, offsetX+graphicX+hitBox.getWidth()/2-drawTex2.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, drawTex2.getRegionWidth(), drawTex2.getRegionHeight());
+            }
             else {
                 //batch.draw(tex, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, tex.getWidth(), tex.getHeight());
                 if (angle%2 == 1) {
@@ -688,13 +697,17 @@ public class HittableEntity extends Entity {
                 } else {
                     batch.draw(tex, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, tex.getWidth()/2, tex.getHeight()/2, tex.getWidth()*scale, tex.getHeight()*scale, 1.0f, 1.0f, anglee, 0, 0, tex.getWidth(), tex.getHeight(), false, false);
                 }
+                //maybeDrawChar(batch, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight);
             }
         } else if (texR != null) {
-            if (!platformMode) batch.draw(texR, offsetX+graphicX+hitBox.getWidth()/2-texR.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, texR.getRegionWidth(), texR.getRegionHeight());
+            if (!platformMode) {
+                batch.draw(texR, offsetX+graphicX+hitBox.getWidth()/2-texR.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, texR.getRegionWidth(), texR.getRegionHeight());
+                TextureRegion drawTex2 = maybeDrawChar(batch, offsetX+graphicX+hitBox.getWidth()/2-texR.getRegionWidth()/2, offsetY - graphicY-floorHeight-z);
+                if (drawTex2 != null) batch.draw(drawTex2, offsetX+graphicX+hitBox.getWidth()/2-drawTex2.getRegionWidth()/2, offsetY - graphicY-floorHeight-z, drawTex2.getRegionWidth(), drawTex2.getRegionHeight());
+            }
             else {
                 batch.draw(texR, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, texR.getRegionWidth()/2, texR.getRegionHeight()/2,
                         texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
-                //batch.draw(texR, offsetX+hitBox.x, offsetY - hitBox.y-2-hitBox.height+tileHeight, texR.getRegionWidth(), texR.getRegionHeight());
             }
         }
 

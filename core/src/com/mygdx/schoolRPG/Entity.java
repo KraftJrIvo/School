@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 
+import java.util.ArrayList;
+
 
 /**
  * Created by Kraft on 27.12.2014.
@@ -33,6 +35,19 @@ public class Entity implements Comparable {
     int angle = 0;
     boolean inWater = false, inGoo = false;
     Texture active = null;
+
+    public ArrayList<TextureRegion> heads = null;
+    public ArrayList<TextureRegion> headWears = null;
+    public ArrayList<Integer> headsOffX = null;
+    public ArrayList<Integer> headsOffY = null;
+    public ArrayList<TextureRegion> bodies = null;
+    public ArrayList<TextureRegion> bodyWears = null;
+    public ArrayList<Integer> bodiesOffX = null;
+    public ArrayList<Integer> bodiesOffY = null;
+    public Texture charTex = null;
+    public TextureRegion charTexR = null;
+    public AnimationSequence charAnim = null;
+    public boolean drawChar = false;
 
     void setFloor(boolean b) {
         floor = b;
@@ -114,6 +129,39 @@ public class Entity implements Comparable {
         }
     }
 
+    protected TextureRegion maybeDrawChar(SpriteBatch batch, float x, float y) {
+        if (!drawChar) return null;
+        TextureRegion tex2;
+        int id;
+        if (charAnim != null) {
+            id = charAnim.getCurrentFrameId();
+            tex2 = charAnim.getCurrentFrame(false);
+        } else {
+            id = 0;
+            tex2 = new TextureRegion(charTex);
+        }
+        TextureRegion head = heads.get(id);
+        TextureRegion headWear = headWears.get(id);
+        int headOffX = headsOffX.get(id);
+        int headOffY = headsOffY.get(id);
+        TextureRegion body = bodies.get(id);
+        TextureRegion bodyWear = bodyWears.get(id);
+        int bodyOffX = bodiesOffX.get(id);
+        int bodyOffY = bodiesOffY.get(id);
+        if (head != null) {
+            batch.draw(body, x + bodyOffX, y + bodyOffY);
+            if (bodyWear != null) {
+                batch.draw(bodyWear, x + bodyOffX, y + bodyOffY);
+            }
+            batch.draw(head, x + headOffX, y + headOffY);
+            if (headWear != null) {
+                batch.draw(headWear, x + headOffX, y + headOffY);
+            }
+        }
+        //batch.draw(tex2, x, y);
+        return tex2;
+    }
+
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         if (floor) {
             h = -999999;
@@ -156,16 +204,13 @@ public class Entity implements Comparable {
             else yy = offsetY - y-floorHeight + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+ x - texx.getRegionWidth()*scale/2;
-            //batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
             batch.draw(texx, xx, yy);
-            /*anglee -= 90;
-            float yy;
-            if (floor) yy = offsetY - y-floorHeight + z + anim.getFirstFrame().getRegionHeight()*scale/2 - anim.getFirstFrame().getRegionHeight();
-            else yy = offsetY - y-floorHeight + z - 3;
-            float xx = offsetX+x - 3;
-            if (centered) xx = offsetX+x - anim.getFirstFrame().getRegionWidth()*scale/2;
-            batch.draw(anim.getCurrentFrame(false), xx, yy, anim.getFirstFrame().getRegionWidth()/2.0f, anim.getFirstFrame().getRegionHeight()/2.0f,
-                    anim.getFirstFrame().getRegionHeight()*scale, anim.getFirstFrame().getRegionWidth()*scale, 1.0f, 1.0f, anglee, false);*/
+            TextureRegion tex2 = maybeDrawChar(batch, xx, yy);
+            if (tex2 != null) {
+                if (floor) yy -= tex2.getRegionHeight()*scale/2 - texx.getRegionHeight()*scale/2;
+                if (centered) xx -= tex2.getRegionWidth()*scale/2-texx.getRegionWidth()*scale/2;
+                batch.draw(tex2, xx, yy);
+            }
         } else if (tex != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - tex.getHeight()*scale/2;
@@ -174,6 +219,12 @@ public class Entity implements Comparable {
             if (centered) xx = offsetX+ x - tex.getWidth()*scale/2;
             //batch.draw(tex, xx, yy, tex.getWidth()*scale, tex.getHeight()*scale);
             batch.draw(tex, xx, yy, tex.getWidth()/2, 0, tex.getWidth()*scale, tex.getHeight()*scale, 1.0f, 1.0f, anglee, 0, 0, tex.getWidth(), tex.getHeight(), false, false);
+            TextureRegion tex2 = maybeDrawChar(batch, xx, yy);
+            if (tex2 != null) {
+                if (floor) yy -= tex2.getRegionHeight()*scale/2 - tex.getHeight()*scale/2;
+                if (centered) xx -= tex2.getRegionWidth()*scale/2-tex.getWidth()*scale/2;
+                batch.draw(tex2, xx, yy);
+            }
         } else if (texR != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - texR.getRegionHeight()*scale/2;

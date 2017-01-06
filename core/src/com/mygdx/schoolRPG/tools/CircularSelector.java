@@ -80,17 +80,23 @@ public class CircularSelector {
     }
 
     public void reset() {
-        if (selectedIndex >= sprites.size()) {
+        if (selectedIndex >= sprites.size() || sprites.size() < ys.size()) {
             selectedIndex = 0;
-        }
-        currentAngle = 0;
-        targetAngle = 0;
-        prevAngle = 0;
-        ys = new ArrayList<Float>();
-        ids = new Array<Integer>();
-        for (int i = 0; i < sprites.size(); ++i) {
-            ys.add(0.0f);
-            ids.add(0);
+            currentAngle = 0;
+            targetAngle = 0;
+            prevAngle = 0;
+            ys.clear();
+            ids.clear();
+            for (int i = 0; i < sprites.size(); ++i) {
+                ys.add(0.0f);
+                ids.add(0);
+            }
+        } else if (sprites.size() > ys.size()) {
+            int diff = sprites.size() - ys.size();
+            for (int i = 0; i < diff; ++i) {
+                ys.add(0.0f);
+                ids.add(0);
+            }
         }
         if (titles.size() > 0) {
             curTitle = titles.get(selectedIndex);
