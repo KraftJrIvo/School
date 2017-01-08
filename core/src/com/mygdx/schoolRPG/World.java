@@ -138,11 +138,13 @@ public class World{
         assets.load("particles/water/2.png", Texture.class);
         assets.load("particles/goo/1.png", Texture.class);
         assets.load("particles/goo/2.png", Texture.class);*/
+        assets.load("item.png", Texture.class);
         assets.load("active.png", Texture.class);
         assets.load("blank.png", Texture.class);
         assets.load("blank2.png", Texture.class);
         assets.load("shadow.png", Texture.class);
         assets.load("prt_shadow.png", Texture.class);
+        assets.load("inventory_overlay1.png", Texture.class);
 
         assets.load(folderPath + "/bg.png", Texture.class);
 
@@ -684,9 +686,18 @@ public class World{
     public void checkInventory(Area area) {
         if (!menu.paused && area.worldObjectsHandler.currentInventory == null && Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             area.worldObjectsHandler.openInventory(menu, folderPath, assets, this);
-        } else if (area.worldObjectsHandler.currentInventory != null && menu.currentLanguage != area.worldObjectsHandler.currentInventory.language) {
-            area.worldObjectsHandler.currentInventory.reload(menu.currentLanguage);
+        } else if (area.worldObjectsHandler.currentInventory != null) {
+            if (menu.currentLanguage != area.worldObjectsHandler.currentInventory.language) {
+                area.worldObjectsHandler.currentInventory.reload(menu.currentLanguage);
+            } else if (area.worldObjectsHandler.currentInventory.droppedItem != null) {
+                Entity itemGlow = new Entity(assets, "item.png", area.player.x, area.player.y, 0 ,0 ,0);
+                //itemGlow.floor = true;
+                itemGlow.containingItem = area.worldObjectsHandler.currentInventory.droppedItem;
+                area.worldObjectsHandler.addNonSolid(itemGlow, -1);
+                area.worldObjectsHandler.currentInventory.droppedItem = null;
+            }
         }
+
     }
 
     public void draw(SpriteBatch batch) {
@@ -696,11 +707,28 @@ public class World{
         } else if (curArea.worldObjectsHandler.currentDialog != null) {
             checkDialog(curArea);
         } //else if (curArea.worldObjectsHandler.currentInventory != null) {
+        curArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
+        synchronizeFlags();
         checkInventory(curArea);
         //}
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {
             if (areas.size() > areaIds.get(curAreaX).get(curAreaY).get(curAreaZ) && curArea != null) {
                 curArea.draw(batch, this, 0, 0, true, true, true);
+                for (int i = 0; i <= curArea.worldObjectsHandler.NPCs.size(); ++i) {
+                    NPC npc;
+                    if (i == curArea.worldObjectsHandler.NPCs.size()) {
+                        npc = curArea.player;
+                    } else {
+                        npc = curArea.worldObjectsHandler.NPCs.get(i);
+                    }
+                    if (npc.changedFlags.size() > 0) {
+                        for (int j = 0; j < npc.changedFlags.size(); ++j) {
+                            if (flagNames.contains(npc.changedFlags.get(j))) {
+                                flags.set(flagNames.indexOf(npc.changedFlags.get(j)), npc.flags.get(npc.flagNames.indexOf(npc.changedFlags.get(j))));
+                            }
+                        }
+                    }
+                }
                 if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
                     checkPlayerPosition();
                     checkSolidsPosition();

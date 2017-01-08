@@ -1,14 +1,10 @@
-<item mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
+<item id = "4" mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
     <eng 
         name = "Shirt and Pants" 
-        description = "Nice shirt! \n
-                       So stylish! \n
-                       (No.)"
+        description = "Nice shirt! So stylish! (No.)"
     />    
     <rus 
         name = "Рубашка и Брюки" 
-        description = "Отличный костюм! \n
-                       Такой стильный! \n
-                       (Нет.)"
+        description = "Отличный костюм! Такой стильный! (Нет.)"
     />    
 </item>

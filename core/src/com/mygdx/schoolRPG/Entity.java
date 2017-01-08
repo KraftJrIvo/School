@@ -35,6 +35,7 @@ public class Entity implements Comparable {
     int angle = 0;
     boolean inWater = false, inGoo = false;
     Texture active = null;
+    public Item containingItem = null;
 
     public ArrayList<TextureRegion> heads = null;
     public ArrayList<TextureRegion> headWears = null;
@@ -56,6 +57,10 @@ public class Entity implements Comparable {
         } else {
             h = -999999;
         }
+    }
+
+    void setItem(Item item) {
+        containingItem = item;
     }
 
     public Entity(AssetManager assets, String texPath, float x, float y, float h, float floorHeight, int angle) {
@@ -168,7 +173,11 @@ public class Entity implements Comparable {
         }
         initialiseIfNeeded();
         if (active) {
-            this.active = assets.get("active.png");
+            if (containingItem != null) {
+                this.active = containingItem.icon;
+            } else {
+                this.active = assets.get("active.png");
+            }
             int height = 0;
             int width = 0;
             if (anim != null) {
@@ -181,7 +190,11 @@ public class Entity implements Comparable {
                 height = texR.getRegionHeight();
                 width = texR.getRegionWidth();
             }
+            if (containingItem != null) {
+                batch.setColor(1, 1, 1, 0.5f);
+            }
             batch.draw(this.active, offsetX + x - this.active.getWidth()/2 + width/2 + activeX, offsetY - y + 3 + height + activeY);
+            batch.setColor(Color.WHITE);
         }
         float baseR = batch.getColor().r;
         float baseG = batch.getColor().g;

@@ -1,10 +1,18 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -407,15 +415,53 @@ public class ObjectAdder {
                     }
                     worldObjectsHandler.addLiquidSurface(ls, -1);
                 } else if (type < 0 && type >= -56 && type != -1) {
-                    int playerWidth = 16;
-                    int playerHeight = 5;
-                    int playerFloor = 10;
                     int dir = blocks.get(5).get(t).get(i);
-                    NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.folderPath);
-                    characterMaker.setDirection(dir, type + 56);
-                    npc.movable = false;
-                    worldObjectsHandler.addNPC(npc, world, -1);
-                    worldObjectsHandler.addSolid(npc, -1, null);
+                    if (dir == 0) {
+                        int playerWidth = 16;
+                        int playerHeight = 5;
+                        int playerFloor = 10;
+                        NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.folderPath);
+                        characterMaker.setDirection(dir, type + 56);
+                        npc.movable = false;
+                        worldObjectsHandler.addNPC(npc, world, -1);
+                        worldObjectsHandler.addSolid(npc, -1, null);
+                    } else {
+                        //itemGlow.floor = true;
+                        FileHandle itemDir =  Gdx.files.internal(world.folderPath + "/items");
+                        FileHandle itemXML = null;
+                        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder dBuilder = null;
+                        Document xml = null;
+                        try {
+                            dBuilder = dbFactory.newDocumentBuilder();
+                        } catch (ParserConfigurationException e) {
+                            e.printStackTrace();
+                        }
+                        boolean spawned = false;
+                        for (FileHandle entry: itemDir.list()) {
+                            if (entry.extension().equals("xml")) {
+                                itemXML = entry;
+                                try {
+                                    xml = dBuilder.parse(itemXML.file());
+                                } catch (SAXException e) {
+                                    e.printStackTrace();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                xml.getDocumentElement().normalize();
+                                int id = Integer.parseInt(xml.getDocumentElement().getAttribute("id"));
+                                if (id == type + 56) {
+                                    Entity itemGlow = new Entity(assets, "item.png", t*area.TILE_WIDTH + area.TILE_WIDTH/2 - 7, i * area.TILE_HEIGHT, 0 ,0 ,0);
+                                    itemGlow.containingItem = new Item(assets, world.folderPath, entry.nameWithoutExtension());
+                                    area.worldObjectsHandler.addNonSolid(itemGlow, -1);
+                                    spawned = true;
+                                }
+                            }
+                            if (spawned) break;
+                        }
+                        //loadTextInfo(assets, worldPath, language);
+
+                    }
                 }
             }
         }

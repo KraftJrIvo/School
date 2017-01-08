@@ -176,7 +176,7 @@ public class CharacterMaker {
                 }
             } else {
                 if (cdcs.get(id).lookDir != CharacterDirectionChecker.LookDirection.down) {
-                    drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3, id, objectInHands);
+                    drawArm(batch, x, y+legsHeight+armsLevel+bobbing+3, id, null);
                 }
                 drawLegs(batch, x-legsWidth/2, y, speedX, speedY, id);
                 drawBody(batch, id, x-bodyWidth/2, y+legsHeight+bobbing, bodies.get(id));
@@ -351,7 +351,9 @@ public class CharacterMaker {
         if (cdc.lookDir == CharacterDirectionChecker.LookDirection.left) {
             if (push && (!Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) || objectInHands != null)) {
                 if (objectInHands != null) {
-                    batch.draw(objectInHands.getFrame(2), x - 24 + 1, y - 8);
+                    objectInHands.getFrame(2).flip(true, false);
+                    batch.draw(objectInHands.getFrame(2), x - 21, y - 8);
+                    objectInHands.getFrame(2).flip(true, false);
                     batch.draw(arms_push_side_reversed, x-8, y);
                 } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
                     batch.draw(arms_push_side_reversed, x-8, y);
@@ -366,7 +368,7 @@ public class CharacterMaker {
         } else if (cdc.lookDir == CharacterDirectionChecker.LookDirection.right) {
             if (push && (!Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) || objectInHands != null)) {
                 if (objectInHands != null) {
-                    batch.draw(objectInHands.getFrame(2), x - 12 - 1, y - 8);
+                    batch.draw(objectInHands.getFrame(2), x - 11, y - 8);
                     batch.draw(arms_push_side, x - armSideWidth, y);
                 } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right) {
                     batch.draw(arms_push_side, x - armSideWidth, y);
@@ -403,7 +405,7 @@ public class CharacterMaker {
                 if (objectInHands != null) {
                     batch.draw(arms_push_front, x - armFrontWidth - 5, y);
                     batch.draw(arms_push_front_reversed, x + 5, y);
-                    batch.draw(objectInHands.getFrame(0), x - 16, y - 10);
+                    batch.draw(objectInHands.getFrame(0), x - 17, y - 10);
                 } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.down || cdc.walkDir == CharacterDirectionChecker.WalkDirection.up_back) {
                     batch.draw(arms_push_front, x - armFrontWidth - 5, y);
                     batch.draw(arms_push_front_reversed, x + 5, y);

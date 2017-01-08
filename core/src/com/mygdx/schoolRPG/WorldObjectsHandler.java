@@ -19,6 +19,7 @@ public class WorldObjectsHandler {
     ArrayList<ArrayList<ArrayList<Integer>>> blocks;
     ArrayList<Entity> nonSolids;
     ArrayList<Entity> fallingObjects;
+    ArrayList<Entity> items;
     ArrayList<DeathZone> obstacles;
     ArrayList<HittableEntity> solids;
     ArrayList<Particle> particles;
@@ -35,6 +36,7 @@ public class WorldObjectsHandler {
     Inventory currentInventory = null;
     public ObjectCell activeObject = null;
     public NPC activeNPC = null;
+    public Entity activeItem = null;
     //Player player;
     Area area;
     public WorldObjectsHandler(Area area, ArrayList<ArrayList<ArrayList<Integer>>> blocks, ArrayList<String> flagNames, ArrayList<Boolean> flags) {
@@ -42,6 +44,7 @@ public class WorldObjectsHandler {
         this.blocks = blocks;
         objects = new ArrayList<ObjectCell>();
         nonSolids = new ArrayList<Entity>();
+        items = new ArrayList<Entity>();
         obstacles = new ArrayList<DeathZone>();
         checkPoints = new ArrayList<CheckPoint>();
         liquidSurfaces = new ArrayList<LiquidSurface>();
@@ -138,6 +141,9 @@ public class WorldObjectsHandler {
             addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true, null), state);
         }
         nonSolids.add(e);
+        if (e.containingItem != null) {
+            items.add(e);
+        }
     }
 
     public void addObstacle(DeathZone dz, int state) {
@@ -440,7 +446,14 @@ public class WorldObjectsHandler {
     }
 
     public void activateActiveObject(GameMenu menu, String worldPath, AssetManager assets, World world) {
-        if (activeNPC == null && activeObject != null) {
+        if (activeItem != null) {
+            area.player.takeItem(activeItem.containingItem);
+            items.remove(activeItem);
+            nonSolids.remove(activeItem);
+            deleteObjectCellsForEntity(activeItem);
+            activeItem = null;
+        }
+        else if (activeNPC == null && activeObject != null) {
             activeObject.activate(worldPath, assets, flagNames, flags, area, 0);
             world.synchronizeFlags();
             if (activeObject.isContainer) {
@@ -494,7 +507,7 @@ public class WorldObjectsHandler {
     }
 
     public void checkObjects(String worldDir, AssetManager assets, World world) {
-        invalidateObjects(worldDir, assets, world);
+        //invalidateObjects(worldDir, assets, world);
         if (activeNPC != null) {
             activeObject = null;
             return;
@@ -537,14 +550,30 @@ public class WorldObjectsHandler {
 
             if (minDistID >= 0) {
                 activeObject = objects.get(minDistID);
-
-                //objects.get(minDistID).activate(worldPath, assets, flagNames, flags, area);
-                //world.synchronizeFlags();
-                return;
+            } else {
+                activeObject = null;
             }
-            activeObject = null;
+            minDist = 9999;
+            minDistID = -1;
+            for (int i = 0; i < items.size(); ++i) {
+                float px = area.player.x;
+                float py = area.player.y;
+                float ox = items.get(i).x;
+                float oy = items.get(i).y;
+                float dist = (float) Math.sqrt((px - ox) * (px - ox) + (py - oy) * (py - oy));
+                if (dist < 15 && dist < minDist) {
+                    minDist = dist;
+                    minDistID = i;
+                }
+            }
+            if (minDistID >= 0) {
+                activeItem = items.get(minDistID);
+                activeNPC = null;
+                activeObject = null;
+            } else {
+                activeItem = null;
+            }
         }
-
     }
 
     public void checkNPCs(GameMenu menu, String worldPath, AssetManager assets) {
@@ -840,12 +869,17 @@ public class WorldObjectsHandler {
                             area.player.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, false, 0, 0);
                         }
                     }
-                    boolean active = (!area.playerHidden && objectsOnLevel.get(z) == activeObject && activeObject.isSwitchable());
+                    boolean active = (!area.playerHidden && (objectsOnLevel.get(z) == activeObject && activeObject.isSwitchable()) || objectsOnLevel.get(z).entity == activeItem);
                     int activeX = 0;
                     int activeY = 0;
                     if (active) {
-                        activeX = activeObject.offsetX;
-                        activeY = activeObject.offsetY;
+                        if (objectsOnLevel.get(z).entity == activeItem) {
+                            activeX = 0;
+                            activeY = 0;
+                        } else {
+                            activeX = activeObject.offsetX;
+                            activeY = activeObject.offsetY;
+                        }
                     }
 
                     if (objectsOnLevel.get(z).type == ObjectType.NPC) {

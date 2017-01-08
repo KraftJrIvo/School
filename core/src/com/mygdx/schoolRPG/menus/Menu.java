@@ -46,7 +46,7 @@ public class Menu {
 
     public void load(AssetManager assets) {
         assets.load("p.png", Texture.class);
-        mainFont = new BitmapFont(Gdx.files.internal("font1.fnt"), Gdx.files.internal("font1.png"), false);
+        mainFont = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
         this.assets = assets;
         if (allowPause) {
             if (android) {

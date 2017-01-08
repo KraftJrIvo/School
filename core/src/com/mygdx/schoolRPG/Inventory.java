@@ -35,6 +35,7 @@ public class Inventory {
     int language;
     Texture overlay;
     boolean closed;
+    public Item droppedItem;
     BitmapFont font;
     boolean justOpened;
     boolean otherIsSelected;
@@ -58,9 +59,10 @@ public class Inventory {
                 titles2.add(containerItems.get(i).getName(language));
                 sprites2.add(containerItems.get(i).icon);
             }
+            containerItemsSelector.reset();
         }
         itemsSelector.reset();
-        containerItemsSelector.reset();
+
     }
 
     public void reload(int language) {
@@ -83,10 +85,13 @@ public class Inventory {
             } else {
                 inventoryOpts.add("Use");
             }
-            inventoryOpts.add("Info");
+            //inventoryOpts.add("Info");
+            if (!containerMode) {
+                inventoryOpts.add("Drop");
+            }
             containerOpts.add("Take");
             containerOpts.add("Take All");
-            containerOpts.add("Info");
+            //containerOpts.add("Info");
             otherOpts.add("Back");
         } else {
             inventory1Title = "Инвентарь";
@@ -96,10 +101,13 @@ public class Inventory {
             } else {
                 inventoryOpts.add("Использовать");
             }
-            inventoryOpts.add("Инфо");
+            //inventoryOpts.add("Инфо");
+            if (!containerMode) {
+                inventoryOpts.add("Выбросить");
+            }
             containerOpts.add("Взять");
             containerOpts.add("Взять Все");
-            containerOpts.add("Инфо");
+            //containerOpts.add("Инфо");
             otherOpts.add("Назад");
         }
         if (containerMode) {
@@ -171,7 +179,7 @@ public class Inventory {
             containerItemsSelector = new CircularSelector( titles2, sprites2, font, centerX2, centerY2, 128, 64, 2);
             containerItemsSelector.drawTitles = false;
         }
-        overlay = assets.get("p.png", Texture.class);
+        overlay = assets.get("inventory_overlay1.png", Texture.class);
         closed = false;
         justOpened = true;
         otherIsSelected = false;
@@ -192,7 +200,11 @@ public class Inventory {
     public void draw(SpriteBatch batch, boolean paused) {
         boolean rightIsSelected = false;
         batch.setColor(new Color(1, 1, 1, 0.5f));
-        batch.draw(overlay, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
+        float screenRatioY = Gdx.graphics.getHeight()/720.0f;
+        float width = Gdx.graphics.getWidth()/screenRatioX;
+        float height = Gdx.graphics.getHeight()/screenRatioY;
+        batch.draw(overlay, 0, 0, width, height);
         batch.setColor(Color.WHITE);
         font.draw(batch, inventory1Title, itemsSelector.centerX - font.getBounds(inventory1Title).width/2, itemsSelector.centerY + 128);
         if (containerMode) {
@@ -233,6 +245,16 @@ public class Inventory {
         if (containerMode) {
             containerItemsSelector.draw(batch, paused);
             containerOptions.draw(batch, paused);
+        } else if (items.size() > 0) {
+            Item currentItem = items.get(itemsSelector.getSelectedIndex());
+
+            if (currentItem.bigIcon != null) {
+                batch.draw(currentItem.bigIcon, width/4 - 256, 2 * height/3 - 226, 384, 384);
+            }
+            //String name = currentItem.namesInLanguages.get(language);
+            String desc = currentItem.descriptionsInLanguages.get(language);
+            //font.draw(batch, name, width/2 - font.getBounds(name).width/2, 2 * height/3 + 192);
+            font.drawWrapped(batch, desc, 2*width/3, 2 * height/3, 300, BitmapFont.HAlignment.LEFT);
         }
         if (!otherOptions.enabled && otherIsSelected) {
             if (lastLeftSelected) {
@@ -396,6 +418,26 @@ public class Inventory {
                             }
                         }
                         owner.setWears();
+                    } else if (invenoryOptions.getSelectedIndex() == 2 && items.size() > 0) {
+                        Item currentItem = items.get(itemsSelector.getSelectedIndex());
+
+                        if (currentItem.equipSlot == Item.EquipSlot.HEAD) {
+                            if (owner.headWear == currentItem.sides) {
+                                owner.headWear = null;
+                            }
+                        } else if (currentItem.equipSlot == Item.EquipSlot.BODY) {
+                            if (owner.bodyWear == currentItem.sides) {
+                                owner.bodyWear = null;
+                            }
+                        } else {
+                            if (owner.objectInHands == currentItem.sides) {
+                                owner.objectInHands = null;
+                            }
+                        }
+
+                        droppedItem = currentItem;
+                        items.remove(itemsSelector.getSelectedIndex());
+                        updateItems();
                     }
                 }
                 else if (otherOptions.enabled && otherOptions.getSelectedIndex() == 0) {

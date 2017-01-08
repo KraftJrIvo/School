@@ -44,6 +44,9 @@ public class MenuListSelector {
         looping = true;
     }
 
+    public void setFont(BitmapFont font) {
+        this.font = font;
+    }
 
     public void addItem(String item) {
         titles.add(item);

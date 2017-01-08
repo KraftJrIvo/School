@@ -1,0 +1,10 @@
+<item id = "5" mass="1" equip_slot="NONE" stackable="true" maxStack="99" flag="playerHasShit" replaces="">
+    <eng 
+        name = "Shit" 
+        description = "Human feces. What's wrong with you? Seriously."
+    />    
+    <rus 
+        name = "Дерьмо" 
+        description = "Человеческие фекалии. Что с тобой не так? Серьезно."
+    />    
+</item>

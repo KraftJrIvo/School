@@ -41,10 +41,12 @@ public class NPC extends HittableEntity {
     String name = "";
     public ArrayList<Boolean> flags;
     public ArrayList<String> flagNames;
+    public ArrayList<String> changedFlags;
     public int flagsCount = 0;
     public Color charColor;
     boolean isRunning = false;
     public ArrayList<Item> inventory;
+    int lastHoldedFlag = -1;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
@@ -64,6 +66,7 @@ public class NPC extends HittableEntity {
         this.characterMaker = characterMaker;
         flags = new ArrayList<Boolean>();
         flagNames = new ArrayList<String>();
+        changedFlags = new ArrayList<String>();
         ArrayList<String> itemsNames = new ArrayList<String>();
         ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
         inventory = new ArrayList<Item>();
@@ -139,6 +142,35 @@ public class NPC extends HittableEntity {
             }
         }
         setWears();
+        //lastInventorySize = inventory.size();
+    }
+
+    protected void checkInventory() {
+        changedFlags.clear();
+        //if (lastInventorySize == inventory.size()) return;
+        if (lastHoldedFlag == -1 && objectInHands != null) {
+            boolean found = false;
+            for (int i = 0; i < flags.size(); ++i) {
+                if (found) break;
+                for (int j = 0; j < inventory.size(); ++j) {
+                    Item item = inventory.get(j);
+                    if (item.sides == objectInHands && flagNames.contains(item.flagName)/*item.flagName.equals(flagNames.get(i))*/) {
+                        found = true;
+                        int index = flagNames.indexOf(item.flagName);
+                        flags.set(index, true);
+                        changedFlags.add(flagNames.get(index));
+                        lastHoldedFlag = index;
+                        break;
+                    }
+                }
+
+            }
+            //lastInventorySize = inventory.size();
+        } else if (lastHoldedFlag != -1 && objectInHands == null) {
+            flags.set(lastHoldedFlag, false);
+            changedFlags.add(flagNames.get(lastHoldedFlag));
+            lastHoldedFlag = -1;
+        }
     }
 
     public void setWears() {
@@ -211,6 +243,8 @@ public class NPC extends HittableEntity {
     @Override
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         super.initialiseIfNeeded();
+
+        checkInventory();
 
         if (active) {
             this.active = assets.get("active.png");
@@ -304,7 +338,7 @@ public class NPC extends HittableEntity {
 
     public void draw(SpriteBatch batch, float offsetX, float offsetY, boolean active) {
         super.initialiseIfNeeded();
-
+        checkInventory();
         if (active) {
             this.active = assets.get("active.png");
             int height = 50;
