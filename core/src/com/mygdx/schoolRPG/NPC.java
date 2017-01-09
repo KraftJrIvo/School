@@ -148,28 +148,20 @@ public class NPC extends HittableEntity {
     protected void checkInventory() {
         changedFlags.clear();
         //if (lastInventorySize == inventory.size()) return;
-        if (lastHoldedFlag == -1 && objectInHands != null) {
-            boolean found = false;
-            for (int i = 0; i < flags.size(); ++i) {
-                if (found) break;
-                for (int j = 0; j < inventory.size(); ++j) {
-                    Item item = inventory.get(j);
-                    if (item.sides == objectInHands && flagNames.contains(item.flagName)/*item.flagName.equals(flagNames.get(i))*/) {
-                        found = true;
-                        int index = flagNames.indexOf(item.flagName);
+        for (int i = 0; i < flags.size(); ++i) {
+            for (int j = 0; j < inventory.size(); ++j) {
+                Item item = inventory.get(j);
+                if (flagNames.contains(item.flagName)) {
+                    int index = flagNames.indexOf(item.flagName);
+                    if (item.sides == objectInHands || item.sides == headWear || item.sides == bodyWear) {
                         flags.set(index, true);
                         changedFlags.add(flagNames.get(index));
-                        lastHoldedFlag = index;
-                        break;
+                    } else if (flags.get(index)) {
+                        flags.set(index, false);
+                        changedFlags.add(flagNames.get(index));
                     }
                 }
-
             }
-            //lastInventorySize = inventory.size();
-        } else if (lastHoldedFlag != -1 && objectInHands == null) {
-            flags.set(lastHoldedFlag, false);
-            changedFlags.add(flagNames.get(lastHoldedFlag));
-            lastHoldedFlag = -1;
         }
     }
 
