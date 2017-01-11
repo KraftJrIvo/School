@@ -727,6 +727,7 @@ public class World{
                                 flags.set(flagNames.indexOf(npc.changedFlags.get(j)), npc.flags.get(npc.flagNames.indexOf(npc.changedFlags.get(j))));
                             }
                         }
+                        npc.changedFlags.clear();
                     }
                 }
                 if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {

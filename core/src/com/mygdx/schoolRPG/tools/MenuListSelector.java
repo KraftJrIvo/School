@@ -97,7 +97,7 @@ public class MenuListSelector {
         if (enabled) {
             if (centerAlign) {
                 batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
-                batch.draw(new TextureRegion(cursor), xOffset + centerX + font.getBounds( titles.get(selectedIndex)).width/2 + 10, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+                batch.draw(new TextureRegion(cursor), xOffset + centerX + font.getBounds( titles.get(selectedIndex)).width/2 + 10, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, -cursorAngle, true);
             } else {
                 batch.draw(new TextureRegion(cursor), xOffset - 20, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
             }

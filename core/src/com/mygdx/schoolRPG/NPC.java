@@ -145,23 +145,37 @@ public class NPC extends HittableEntity {
         //lastInventorySize = inventory.size();
     }
 
+    public void updateFlagsAfterRemoval(Item droppedItem) {
+        int index = flagNames.indexOf(droppedItem.flagName);
+        if (index < flags.size() && index >= 0 && flags.get(index)) {
+            flags.set(index, false);
+            changedFlags.add(flagNames.get(index));
+        }
+    }
+
     protected void checkInventory() {
-        changedFlags.clear();
+        //changedFlags.clear();
         //if (lastInventorySize == inventory.size()) return;
         for (int i = 0; i < flags.size(); ++i) {
+            boolean found = false;
             for (int j = 0; j < inventory.size(); ++j) {
                 Item item = inventory.get(j);
-                if (flagNames.contains(item.flagName)) {
-                    int index = flagNames.indexOf(item.flagName);
+                if (item.flagName.equals(flagNames.get(i))) {
+                    //int index = flagNames.indexOf(item.flagName);
+                    found = true;
                     if (item.sides == objectInHands || item.sides == headWear || item.sides == bodyWear) {
-                        flags.set(index, true);
-                        changedFlags.add(flagNames.get(index));
-                    } else if (flags.get(index)) {
-                        flags.set(index, false);
-                        changedFlags.add(flagNames.get(index));
+                        flags.set(i, true);
+                        changedFlags.add(flagNames.get(i));
+                    } else if (flags.get(i)) {
+                        flags.set(i, false);
+                        changedFlags.add(flagNames.get(i));
                     }
                 }
             }
+            /*if (!found && flags.get(i)) {
+                flags.set(i, false);
+                changedFlags.add(flagNames.get(i));
+            }*/
         }
     }
 
@@ -363,4 +377,6 @@ public class NPC extends HittableEntity {
         characterMaker.draw(batch, charId, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)), headWear, bodyWear, objectInHands);
 
     }
+
+
 }

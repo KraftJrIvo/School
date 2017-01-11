@@ -341,6 +341,7 @@ public class Inventory {
                         Item item = items.get(itemsSelector.getSelectedIndex());
                         if (item.stack == 1) {
                             items.remove(index);
+                            owner.updateFlagsAfterRemoval(item);
                         } else {
                             item.stack--;
                         }
@@ -359,6 +360,7 @@ public class Inventory {
                             for (int j = 0; j < item.stack; ++j) {
                                 if (item.sides != owner.headWear && item.sides != owner.bodyWear && item.sides != owner.objectInHands) {
                                     items.remove(item);
+                                    owner.updateFlagsAfterRemoval(item);
                                     addItem(containerItems, item);
                                 } else {
                                     offset++;
@@ -437,6 +439,7 @@ public class Inventory {
 
                         droppedItem = currentItem;
                         items.remove(itemsSelector.getSelectedIndex());
+                        owner.updateFlagsAfterRemoval(droppedItem);
                         updateItems();
                     }
                 }
