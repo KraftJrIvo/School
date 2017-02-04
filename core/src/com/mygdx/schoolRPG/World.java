@@ -539,7 +539,7 @@ public class World{
         } else if (a.player.y > a.TILE_HEIGHT*(a.height-1)) {
             changeArea(false, inRoomXCoord, -1, 0);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        if (a.player.movingConfiguration.use == 1) {
             int c = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).chekZPath();
             if (c > 0) {
                 changeArea(false, inRoomXCoord, inRoomYCoord, c);

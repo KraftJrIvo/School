@@ -2,6 +2,7 @@ package com.mygdx.schoolRPG.tools;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.mygdx.schoolRPG.MovingConfiguration;
 
 /**
  * Created by Kraft on 15.03.2015.
@@ -22,13 +23,14 @@ public class CharacterDirectionChecker {
         keepLookingForward = b;
     }
 
-    public boolean update() {
-        if (!keyboardControlled) return false;
-        boolean look = true;
+    public boolean update(MovingConfiguration mc) {
+        //if (!keyboardControlled) return false;
+        boolean look = false;
         WalkDirection newWalkDir = walkDir;
         LookDirection newLookDir = lookDir;
 
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+        keepLookingForward = true;
+        /*if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             newLookDir = LookDirection.up;
             newWalkDir = WalkDirection.up;
         } else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
@@ -44,32 +46,32 @@ public class CharacterDirectionChecker {
             newLookDir = LookDirection.down;
         } else {
             look = false;
-        }
+        }*/
 
         stand = false;
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            if (keepLookingForward && !look) newLookDir = LookDirection.right;
+        if (mc.movingRight > 0 && mc.movingLeft == 0) {
+            if (keepLookingForward) newLookDir = LookDirection.right;
             if (newLookDir == LookDirection.left) {
                 newWalkDir = WalkDirection.right_back;
             } else {
                 newWalkDir = WalkDirection.right;
             }
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            if (keepLookingForward && !look) newLookDir = LookDirection.left;
+        } else if (mc.movingRight == 0 && mc.movingLeft > 0) {
+            if (keepLookingForward) newLookDir = LookDirection.left;
             if (newLookDir == LookDirection.right) {
                 newWalkDir = WalkDirection.left_back;
             } else {
                 newWalkDir = WalkDirection.left;
             }
-        } else if (Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            if (keepLookingForward && !look) newLookDir = LookDirection.up;
+        } else if (mc.movingUp > 0 && mc.movingDown == 0) {
+            if (keepLookingForward) newLookDir = LookDirection.up;
             if (newLookDir == LookDirection.down) {
                 newWalkDir = WalkDirection.up_back;
             } else {
                 newWalkDir = WalkDirection.up;
             }
-        } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && !Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            if (keepLookingForward && !look) newLookDir = LookDirection.down;
+        } else if (mc.movingUp == 0 && mc.movingDown > 0) {
+            if (keepLookingForward) newLookDir = LookDirection.down;
             if (newLookDir == LookDirection.up) {
                 newWalkDir = WalkDirection.down_back;
             } else {

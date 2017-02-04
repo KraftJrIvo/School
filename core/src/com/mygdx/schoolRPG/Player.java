@@ -17,102 +17,20 @@ public class Player extends NPC {
 
     public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, String worldDir) {
         super(assets, baseName, x, y, width, height, floorHeight, movable, characterMaker, 0, worldDir);
+        isControlled = true;
     }
 
-    public void move(JoyStick leftGameJoy) {
-        speedX = (int)((float) leftGameJoy.joyOffsetX() / 16 * 10);
-        speedY = (int)((float) leftGameJoy.joyOffsetY() / 16 * 10);
-        x += (float)speedX/10.0f;
-        y += (float)speedY/10.0f;
-    }
 
     public void blockControls() {
-
         controlsBlocked = true;
     }
 
-    public void move(boolean allowToMove) {
-        //if (!falling) {
-            /*if (!canUp && speedY > 0) speedY = 0;
-            if (!canDown && speedY < 0) speedY = 0;
-            if (!canLeft && speedX < 0) speedX = 0;
-            if (!canRight && speedX > 0) speedX = 0;*/
-        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            isRunning = true;
-        } else {
-            isRunning = false;
-        }
-
-        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !falling) {
-            speedX -= 1;
-            //if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) pushCount = -2;
-            if (!pushLeft) pushCount = -2;
-        }
-        else if (speedX < 0) {
-            if (speedX == -1){
-                speedX = 0;
-            } else {
-                speedX += 2;
-            }
-        }
-        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT) && !falling) {
-            speedX += 1;
-            if (!pushRight) pushCount = -2;
-        }
-        else if (speedX > 0) {
-            if (speedX == 1){
-                speedX = 0;
-            } else {
-                speedX -= 2;
-            }
-        }
-        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN) && !falling) {
-            speedY += 1;
-            if (!pushUp) pushCount = -2;
-        }
-        else if (speedY > 0) speedY -= 1;
-        if (allowToMove && Gdx.input.isKeyPressed(Input.Keys.DOWN) && !Gdx.input.isKeyPressed(Input.Keys.UP) && !falling) {
-            speedY -= 1;
-            if (!pushDown) pushCount = -2;
-        }
-        else if (speedY < 0) speedY += 1;
-        //}
-        int maxSpeedX, maxSpeedY;
-        if (isRunning) {
-            maxSpeedX = 32;
-            maxSpeedY = 20;
-        } else {
-            maxSpeedX = 16;
-            maxSpeedY = 10;
-        }
-        if (Math.abs(speedX) > maxSpeedX) {
-            if (speedX < 0) speedX = -maxSpeedX;
-            else  speedX = maxSpeedX;
-
-        }
-        if (Math.abs(speedY) > maxSpeedY) {
-            if (speedY < 0) speedY = -maxSpeedY;
-            else speedY = maxSpeedY;
-
-        }
-        oldX = hitBox.x;
-        oldY = hitBox.y;
-        float textX = hitBox.x;
-        float textY = hitBox.y;
-        hitBox.x += (float)speedX/10.0f;
-        hitBox.y -= (float)speedY/10.0f;
-        if (hitBox.x-textX > 0) lastRight = true;
-        else if (hitBox.x-textX < 0) lastRight = false;
-        if (hitBox.y-textY > 0) lastDown = true;
-        else if (hitBox.y-textY < 0) lastDown = false;
-    }
-
-
     public void platformMove() {
+        movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, Input.Keys.Z, Input.Keys.E);
         type = 2;
-        if (!controlsBlocked && (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))) speedX -= 2;
+        if (!controlsBlocked && movingConfiguration.movingLeft > 0) speedX -= 2;
         else if (speedX < 0) speedX += 2;
-        if (!controlsBlocked && (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))) speedX += 2f;
+        if (!controlsBlocked && movingConfiguration.movingRight > 0) speedX += 2f;
         else if (speedX > 0) speedX -= 2;
         if (!inWater && !inGoo) {
             if (Math.abs(speedX) > 20) {
@@ -138,7 +56,7 @@ public class Player extends NPC {
         int jumpStep = 35;
         if (inGoo) jumpStep = 14;
 
-        if (!controlsBlocked && Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
+        if (!controlsBlocked && movingConfiguration.jump == 1) {
             if (!jumping) {
                 jumpTicks = maxJumpTicks;
                 jumping = true;
@@ -153,7 +71,7 @@ public class Player extends NPC {
                 additionalJumpTicks = maxAdditionalJumpTicks;
                 canUp = true;
             }
-        } else if (!controlsBlocked && Gdx.input.isKeyPressed(Input.Keys.Z)) {
+        } else if (!controlsBlocked && movingConfiguration.jump > 0) {
             /*if (jumping && startedDoubleJump) {
                 //startedDoubleJump = true;
                 doubleJumpTicks = 0;
@@ -205,7 +123,7 @@ public class Player extends NPC {
             if ((speedX > 0 && canRight) || (speedX < 0 && canLeft)) hitBox.x += (float)speedX/10.0f;
         }
         //hitBox.y -= (float)speedY/10.0f;
-        if (controlsBlocked && (!Gdx.input.isKeyPressed(Input.Keys.A) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)) && !Gdx.input.isKeyPressed(Input.Keys.D) && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
+        if (controlsBlocked && movingConfiguration.allZeroesPlatform()) {
             controlsBlocked = false;
         }
     }

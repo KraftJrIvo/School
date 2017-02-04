@@ -21,6 +21,8 @@ import java.util.ArrayList;
 /**
  * Created by Kraft on 09.06.2016.
  */
+
+
 public class NPC extends HittableEntity {
     int speedX=0, speedY=0;
     float oldX, oldY;
@@ -47,6 +49,8 @@ public class NPC extends HittableEntity {
     boolean isRunning = false;
     public ArrayList<Item> inventory;
     int lastHoldedFlag = -1;
+    boolean isControlled;
+    MovingConfiguration movingConfiguration;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
@@ -54,6 +58,7 @@ public class NPC extends HittableEntity {
 
     public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String worldDir) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
+        movingConfiguration = new MovingConfiguration();
         //wh = 10;
         this.charId = charId;
         type = 2;
@@ -180,7 +185,9 @@ public class NPC extends HittableEntity {
     }
 
     public void setWears() {
-        characterMaker.setWears(charId, headWear, bodyWear);
+        if (characterMaker != null) {
+            characterMaker.setWears(charId, headWear, bodyWear);
+        }
     }
 
     public void takeItem(Item item) {
@@ -203,10 +210,83 @@ public class NPC extends HittableEntity {
         }
     }
 
-    /*Rectangle getTexRect() {
-        return new Rectangle(hitBox.x, hitBox.y, hitBox.width, 0);
-        //return null;
-    }*/
+
+    public void move(boolean allowToMove) {
+        if (isControlled) {
+            movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
+        } else
+        {
+            movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
+        }
+
+        if (allowToMove && movingConfiguration.sprint > 0) {
+            isRunning = true;
+        } else {
+            isRunning = false;
+        }
+
+        if (allowToMove && movingConfiguration.movingLeft > 0 && movingConfiguration.movingRight == 0 && !falling) {
+            speedX -= 1;
+            if (!pushLeft) pushCount = -2;
+        }
+        else if (speedX < 0) {
+            if (speedX == -1){
+                speedX = 0;
+            } else {
+                speedX += 2;
+            }
+        }
+        if (allowToMove && movingConfiguration.movingLeft == 0 && movingConfiguration.movingRight > 0 && !falling) {
+            speedX += 1;
+            if (!pushRight) pushCount = -2;
+        }
+        else if (speedX > 0) {
+            if (speedX == 1){
+                speedX = 0;
+            } else {
+                speedX -= 2;
+            }
+        }
+        if (allowToMove && movingConfiguration.movingUp > 0 && movingConfiguration.movingDown == 0 && !falling) {
+            speedY += 1;
+            if (!pushUp) pushCount = -2;
+        }
+        else if (speedY > 0) speedY -= 1;
+        if (allowToMove && movingConfiguration.movingUp == 0 && movingConfiguration.movingDown > 0 && !falling) {
+            speedY -= 1;
+            if (!pushDown) pushCount = -2;
+        }
+        else if (speedY < 0) speedY += 1;
+        //}
+        int maxSpeedX, maxSpeedY;
+        if (isRunning) {
+            maxSpeedX = 32;
+            maxSpeedY = 20;
+        } else {
+            maxSpeedX = 16;
+            maxSpeedY = 10;
+        }
+        if (Math.abs(speedX) > maxSpeedX) {
+            if (speedX < 0) speedX = -maxSpeedX;
+            else  speedX = maxSpeedX;
+
+        }
+        if (Math.abs(speedY) > maxSpeedY) {
+            if (speedY < 0) speedY = -maxSpeedY;
+            else speedY = maxSpeedY;
+
+        }
+        oldX = hitBox.x;
+        oldY = hitBox.y;
+        float textX = hitBox.x;
+        float textY = hitBox.y;
+        hitBox.x += (float)speedX/10.0f;
+        hitBox.y -= (float)speedY/10.0f;
+        if (hitBox.x-textX > 0) lastRight = true;
+        else if (hitBox.x-textX < 0) lastRight = false;
+        if (hitBox.y-textY > 0) lastDown = true;
+        else if (hitBox.y-textY < 0) lastDown = false;
+    }
 
     public void invalidatePose(boolean stand, boolean notPush) {
         if (characterMaker != null) {
@@ -231,7 +311,7 @@ public class NPC extends HittableEntity {
         }
         if (characterMaker != null) {
             characterMaker.invalidateBobbing(charId, speedX, speedY);
-            if (characterMaker.directionsCheck(charId)) {
+            if (characterMaker.directionsCheck(charId, movingConfiguration)) {
                 pushCount = -2;
             }
             characterMaker.pushes.set(charId, (pushCount > 1 && !notPush));
@@ -292,17 +372,17 @@ public class NPC extends HittableEntity {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 setToJump = true;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.UP) && !jumping) {
+            if (movingConfiguration.movingUp > 0 && !jumping) {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.BACK);
                 setToJump = false;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && !jumping)  {
+            } else if (movingConfiguration.movingDown > 0 && !jumping)  {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 setToJump = false;
             } else {
                 graphicY = y;
             }
             int animDraw = 0;
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            if (movingConfiguration.movingLeft > 0) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_LEFT);
                 } else {
@@ -313,7 +393,7 @@ public class NPC extends HittableEntity {
                     else curPose = poses.getTile(PlayerMultiTile.PlayerPose.LEFT);
                     setToJump = false;
                 }
-            } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            } else if (movingConfiguration.movingRight > 0) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_RIGHT);
                 } else {
@@ -374,7 +454,7 @@ public class NPC extends HittableEntity {
         //System.out.println(speedX + " " + speedY);
         //System.out.println(hitBox.x + " " + hitBox.y);
 
-        characterMaker.draw(batch, charId, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)), headWear, bodyWear, objectInHands);
+        characterMaker.draw(batch, charId, offsetX + graphicX + hitBox.width / 2, offsetY - graphicY - hitBox.height + floorHeight - z, Math.abs((int)Math.floor(diffX*10))/10, Math.abs((int)Math.floor(diffY)), headWear, bodyWear, objectInHands, movingConfiguration);
 
     }
 

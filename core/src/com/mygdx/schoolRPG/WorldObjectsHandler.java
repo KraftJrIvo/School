@@ -428,14 +428,16 @@ public class WorldObjectsHandler {
     }
 
     public void invalidateNPCs() {
-
         for (int i = 0; i < NPCs.size(); ++i) {
-            NPCs.get(i).invalidatePose(false, false);
+            if (NPCs.get(i).getClass() != Player.class) {
+                NPCs.get(i).move(true);
+                NPCs.get(i).invalidatePose(false, false);
+                invalidateCollisions( NPCs.get(i),  NPCs.get(i).oldX, NPCs.get(i).oldY);
+            }
         }
     }
 
     public String getActiveDialogPath(GameMenu menu, String worldPath) {
-
         String diagPath = worldPath + "/chars/" + activeNPC.charId + "/dialog/";
         if (menu.currentLanguage == 0) {
             diagPath += "eng/";
@@ -497,7 +499,7 @@ public class WorldObjectsHandler {
                 }
             }
             float oy = objects.get(i).entity.y + objects.get(i).offsetY;// + area.TILE_HEIGHT/2;
-            if (objects.get(i).checkParticleEmission()) {
+            if (!world.menu.paused && objects.get(i).checkParticleEmission()) {
                 ox += objects.get(i).getParticleCoord(0);
                 oy += objects.get(i).getParticleCoord(1);
                 Particle prt = new Particle(assets, world.particles.get(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
@@ -508,6 +510,11 @@ public class WorldObjectsHandler {
 
     public void checkObjects(String worldDir, AssetManager assets, World world) {
         //invalidateObjects(worldDir, assets, world);
+
+        if (activeItem != null) {
+            activeNPC = null;
+            activeObject = null;
+        }
         if (activeNPC != null) {
             activeObject = null;
             return;

@@ -422,7 +422,7 @@ public class ObjectAdder {
                         int playerFloor = 10;
                         NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.folderPath);
                         characterMaker.setDirection(dir, type + 56);
-                        npc.movable = false;
+                        npc.movable = true;
                         worldObjectsHandler.addNPC(npc, world, -1);
                         worldObjectsHandler.addSolid(npc, -1, null);
                     } else {

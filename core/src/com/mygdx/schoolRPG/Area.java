@@ -342,8 +342,6 @@ public class Area {
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, alpha));
         }
 
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.PLUS) && zoom < 5) zoom += 1;
-        //else if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS) && zoom > 1) zoom -= 1;
         Matrix4 transform = new Matrix4();
         transform.scale(zoom, zoom, 1);
         batch.setTransformMatrix(transform);
@@ -361,15 +359,6 @@ public class Area {
         offsetX += -cameraX + SCREEN_WIDTH /2;
         offsetY += cameraY + SCREEN_HEIGHT /2;
 
-        /*if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-            Particle prt = new Particle(assets, new ParticleProperties(assets, world.particles.get(0)), platformMode, (float)cameraX+(Gdx.input.getX()-Gdx.graphics.getWidth()/2)/zoom, (float)cameraY+(Gdx.input.getY()-Gdx.graphics.getHeight()/2)/zoom, 1);
-            worldObjectsHandler.addParticle(prt);
-        }*/
-        //if (Gdx.input.isTouched()) {
-            //ParticleProperties pp = new WaterSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
-            //ParticleProperties pp = new GooSplash(assets, (float)cameraX+(Gdx.input.getX()-SCREEN_WIDTH/2)/zoom, (float)cameraY+(Gdx.input.getY()-SCREEN_HEIGHT/2)/zoom, 1);
-            //objects.add(prt);
-        //}
 
         worldObjectsHandler.draw(world.menu, batch, world, offsetX, offsetY, drawPlayer, alpha);
         transform = new Matrix4();
