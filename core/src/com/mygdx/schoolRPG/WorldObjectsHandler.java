@@ -1,6 +1,7 @@
 package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -223,8 +224,8 @@ public class WorldObjectsHandler {
 
     public void invalidateCollisions(HittableEntity he, float oldX, float oldY) {
         boolean isPlayer = false;
+        boolean isNPC = (he.getClass() == Player.class || he.getClass() == NPC.class);
         if (he.getClass() == Player.class) isPlayer = true;
-
         int tileX1 = (int)(he.hitBox.x/(area.TILE_WIDTH))+2;
         int tileY1 = (int)(he.hitBox.y/(area.TILE_HEIGHT))+2;
         int tileX2 = (int)((he.hitBox.x + he.hitBox.width)/(area.TILE_WIDTH))-2;
@@ -235,6 +236,16 @@ public class WorldObjectsHandler {
         if (tileX2 < 1 || tileY2 < 1 || tileX2 >= blocks.get(2).size()+1 || tileY2 >= blocks.get(0).size()) {
             return;
         }*/
+        if (isNPC) {
+            int tileX = (int)((he.hitBox.x + he.hitBox.width/2)/(area.TILE_WIDTH));
+            int tileY = (int)((he.hitBox.y + 2 * he.hitBox.height)/(area.TILE_HEIGHT));
+            int n = blocks.get(0).get(tileX).get(tileY);
+            NPC npc = (NPC)(he);
+            Sound s = area.world.getSound(n);
+            if (s != null) {
+                area.world.characterMaker.sounds.set(npc.charId, s);
+            }
+        }
         if (area.platformMode && he.pSpeed >= 0) {
             tileY2++;
         }
@@ -456,13 +467,13 @@ public class WorldObjectsHandler {
             activeItem = null;
         }
         else if (activeNPC == null && activeObject != null) {
-            activeObject.activate(worldPath, assets, flagNames, flags, area, 0);
+            activeObject.activate(worldPath, assets, flagNames, flags, area, 0, menu, true);
             world.synchronizeFlags();
             if (activeObject.isContainer) {
                 menu.drawPause = false;
                 menu.paused = true;
                 menu.unpausable = false;
-                currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, activeObject.items, activeObject.names, menu.currentLanguage);
+                currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, activeObject.items, activeObject.names, menu.currentLanguage, area.world.menu);
             }
         } else if (activeNPC != null) {
             menu.drawPause = false;
@@ -476,7 +487,7 @@ public class WorldObjectsHandler {
                     str += 0;
                 }
             }
-            currentDialog = new Dialog(getActiveDialogPath(menu, worldPath), str, false, NPCs, area.player, assets, worldPath + "/chars", menu.currentLanguage);
+            currentDialog = new Dialog(getActiveDialogPath(menu, worldPath), str, false, NPCs, area.player, assets, worldPath + "/chars", menu.currentLanguage, area.world.menu);
         }
     }
 
@@ -484,12 +495,12 @@ public class WorldObjectsHandler {
         menu.drawPause = false;
         menu.paused = true;
         menu.unpausable = false;
-        currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, null, null, menu.currentLanguage);
+        currentInventory = new Inventory(assets, menu.mainFont, area.player.inventory, area.player, null, null, menu.currentLanguage, area.world.menu);
     }
 
     public void invalidateObjects(String worldDir, AssetManager assets, World world) {
         for (int i = 0; i < objects.size(); ++i) {
-            objects.get(i).checkFlags(worldDir, assets, world.flagNames, world.flags, area);
+            objects.get(i).checkFlags(worldDir, assets, world.flagNames, world.flags, area, world.menu);
             float ox = objects.get(i).entity.x + objects.get(i).offsetX;
             if (objects.get(i).entity.getClass() != HittableEntity.class) {
                 if (objects.get(i).entity.anim != null) {

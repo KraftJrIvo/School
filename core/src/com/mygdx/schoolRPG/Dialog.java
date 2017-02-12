@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.mygdx.schoolRPG.menus.Menu;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -83,7 +84,7 @@ public class Dialog {
         return index;
     }
 
-    public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, Player player, AssetManager assets, String charPath, int language) {
+    public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, Player player, AssetManager assets, String charPath, int language, Menu parent) {
         speeches = new ArrayList<Speech>();
         choices = new ArrayList<Choice>();
         choiceTransitionsIds = new ArrayList<ArrayList<Integer>>();
@@ -177,7 +178,7 @@ public class Dialog {
                         line = in.readLine();
                         c = line.charAt(0);
                     }
-                    choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs, player));
+                    choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs, player, parent));
                 } else if (c == '$') {
                     speechTransitionsIds.set(speechTransitionsIds.size()-1, 999999);
                     line = in.readLine();

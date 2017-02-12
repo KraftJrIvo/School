@@ -17,6 +17,10 @@
            emitZ="0"
            emitInterval="0"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+           
            hidePlayer="false"/> 
     <state id="1"
            switchable="true"
@@ -36,6 +40,10 @@
            emitZ="0"
            emitInterval="0"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="true"
            drawPlayer="true"/> 
     <frames id="1">

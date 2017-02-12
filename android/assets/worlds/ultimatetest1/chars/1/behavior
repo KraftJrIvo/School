@@ -1,0 +1,25 @@
+*time_0 
+go 2 3 2
+use made_bed
+
+*time_8
+use made_bed
+? TVisOn
+use tv
+-
+go 3 3 2
+walk 3 3
+turn down
+
+*time_10
+go 2 6 2
+patrol 6 5 11 5
+
+*time_15 
+go 2 6 0
+walk 8 4
+turn up
+
+*time_16
+go 2 6 2
+patrol 6 5 11 5

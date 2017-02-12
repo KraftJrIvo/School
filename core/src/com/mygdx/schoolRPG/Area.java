@@ -43,6 +43,7 @@ public class Area {
     public String worldPath;
     boolean playerHidden = false;
     World world;
+    public boolean isCurrent = false;
 
     float lastSpawnPos;
     Texture shadow;

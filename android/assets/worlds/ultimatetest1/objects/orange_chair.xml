@@ -17,6 +17,10 @@
            emitZ="0"
            emitInterval="0"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="1"
            switchable="true"
@@ -35,6 +39,11 @@
            emitY="0"
            emitZ="0"
            emitInterval="0"
+           
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            
            hidePlayer="true"
            drawPlayer="true"

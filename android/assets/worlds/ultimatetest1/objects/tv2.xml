@@ -16,7 +16,11 @@
            emitY="0"
            emitZ="0"
            emitInterval="0"
-           
+
+           switchSound="click.wav"
+           loopSound=""
+           loopVolume="0"
+          
            hidePlayer="false"/> 
     <state id="1"
            switchable="false"
@@ -30,6 +34,10 @@
            flagName=""
            flagVal="true"
            
+           switchSound="click.wav"
+           loopSound="noise.wav"
+           loopVolume="20"
+
            emitsParticle="-1"
            emitX="0"
            emitY="0"

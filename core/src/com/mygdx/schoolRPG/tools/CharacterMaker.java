@@ -3,17 +3,19 @@ package com.mygdx.schoolRPG.tools;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.MovingConfiguration;
+import com.mygdx.schoolRPG.menus.GameMenu;
 
 import java.security.Key;
 import java.util.ArrayList;
 
 /**
- * Created by Kraft on 15.03.2015.
+ * Created by Kraft on 10.03.2010.
  */
 public class CharacterMaker {
     enum BodyPartRotation{
@@ -32,6 +34,7 @@ public class CharacterMaker {
     //public CharacterDirectionChecker cdc;
     public ArrayList<CharacterDirectionChecker> cdcs;
     public ArrayList<Boolean> pushes;
+    public ArrayList<Sound> sounds;
     //public boolean push = true;
     public boolean go = false;
     int legsHeight = 10;
@@ -43,8 +46,9 @@ public class CharacterMaker {
     //float bobbing = 0;
     ArrayList<Float> bobbings;
     int charsCount = 0;
+    GameMenu menu;
 
-    public CharacterMaker(AssetManager assets, String worldPath) {
+    public CharacterMaker(AssetManager assets, String worldPath, GameMenu menu) {
         FileHandle curDir = Gdx.files.internal(worldPath + "/chars");
         for (FileHandle entry: curDir.list()) {
             if (entry.file().isDirectory()) {
@@ -67,6 +71,7 @@ public class CharacterMaker {
                 }
             }
         }
+        this.menu = menu;
         assets.load("char/body_male.png", Texture.class);
         assets.load("char/body_female.png", Texture.class);
         assets.load("char/stand_front.png", Texture.class);
@@ -94,6 +99,7 @@ public class CharacterMaker {
         heads = new ArrayList<GlobalSequence>();
         headWears = new ArrayList<GlobalSequence>();
         sprites = new ArrayList<Texture>();
+        sounds = new ArrayList<Sound>();
         for (int i =0; i < charsCount; ++i) {
             if (assets.isLoaded(worldPath + "/chars/" + i + "/sprite.png")) {
                 sprites.add(assets.get(worldPath + "/chars/" + i + "/sprite.png", Texture.class));
@@ -110,6 +116,7 @@ public class CharacterMaker {
             }
             headWears.add(null);
             bodyWears.add(null);
+            sounds.add(null);
         }
         for (int i =0; i < heads.size()-1; ++i) {
             cdcs.add(new CharacterDirectionChecker(false));
@@ -132,7 +139,7 @@ public class CharacterMaker {
         arms_push_back_reversed.flip(true, false);
         arms_push_side_back_reversed = new TextureRegion(arms_push_side_back);
         arms_push_side_back_reversed.flip(true, false);
-        legs_walk_front = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
+        legs_walk_front = new AnimationSequence(assets, "char/walk_front.png", 1, true, 8);
         legs_walk_side = new AnimationSequence(assets, "char/walk_side.png", 20, true, 8);
         legs_run_side = new AnimationSequence(assets, "char/run_side.png", 20, true, 7);
         legs_stand_side_reversed = new TextureRegion(legs_stand_side);
@@ -142,7 +149,7 @@ public class CharacterMaker {
         arms_front_reversed = new TextureRegion(arms_front);
         arms_front_reversed.flip(true, false);
         timer1 = new AnimationSequence(assets, "char/walk_side.png", 20, true, 8);
-        timer2 = new AnimationSequence(assets, "char/walk_front.png", 15, true, 8);
+        timer2 = new AnimationSequence(assets, "char/walk_front.png", 10, true, 8);
     }
 
     public boolean directionsCheck(int id, MovingConfiguration mc) {
@@ -200,32 +207,57 @@ public class CharacterMaker {
     private void drawLegs(SpriteBatch batch, float x, float y, float speedX, float speedY, int id, MovingConfiguration mc) {
         //System.out.println(speedX);
         CharacterDirectionChecker cdc = cdcs.get(id);
+        Sound sound = sounds.get(id);
         if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side_reversed, x, y);
             } else if (mc.movingUp > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.drawReversed(batch, x, y, (int) (15 * speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int) (10 * speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else if (mc.movingDown > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else {
                 if (Math.abs(speedX) > 1.6f) {
                     legs_run_side.draw(batch, x, y, (int)(10*speedX), true);
+                    if (sound != null && legs_run_side.getCurrentFrameId() == 1 && legs_run_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 } else {
                     legs_walk_side.draw(batch, x, y, (int)(20*speedX), true);
+                    if (sound != null && legs_walk_side.getCurrentFrameId() == 1 && legs_walk_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side_reversed, x, y);
             } else if (mc.movingUp > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.drawReversed(batch, x, y, (int) (15 * speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int) (10 * speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else if (mc.movingDown > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else {
                 if (Math.abs(speedX) > 1.6f) {
                     legs_run_side.drawReversed(batch, x, y, (int)(10*speedX), false);
+                    if (sound != null && legs_run_side.getCurrentFrameId() == 1 && legs_run_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 } else {
                     legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), false);
+                    if (sound != null && legs_walk_side.getCurrentFrameId() == 1 && legs_walk_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 }
 
             }
@@ -233,28 +265,52 @@ public class CharacterMaker {
             if (cdc.stand) {
                 batch.draw(legs_stand_side, x, y);
             } else if (mc.movingUp > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.drawReversed(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else if (mc.movingDown > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             }  else {
                 if (Math.abs(speedX) > 1.6f) {
                     legs_run_side.draw(batch, x, y, (int)(10*speedX), false);
+                    if (sound != null && legs_run_side.getCurrentFrameId() == 1 && legs_run_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 } else {
                     legs_walk_side.draw(batch, x, y, (int)(20*speedX), false);
+                    if (sound != null && legs_walk_side.getCurrentFrameId() == 1 && legs_walk_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_side, x, y);
             } else if (mc.movingUp > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.drawReversed(batch, x, y, (int) (15 * speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int) (10 * speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else if (mc.movingDown > 0 && Math.abs(speedX)<=1 && speedY > speedX) {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             } else {
                 if (Math.abs(speedX) > 1.6f) {
                     legs_run_side.drawReversed(batch, x, y, (int)(10*speedX), true);
+                    if (sound != null && legs_run_side.getCurrentFrameId() == 1 && legs_run_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 } else {
                     legs_walk_side.drawReversed(batch, x, y, (int)(20*speedX), true);
+                    if (sound != null && legs_walk_side.getCurrentFrameId() == 1 && legs_walk_side.justChangedFrame) {
+                        sound.play(menu.soundVolume/100.0f);
+                    }
                 }
 
             }
@@ -262,25 +318,37 @@ public class CharacterMaker {
             if (cdc.stand) {
                 batch.draw(legs_stand_front, x, y);
             } else {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.up_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_front, x, y);
             } else {
-                legs_walk_front.drawReversed(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.down) {
             if (cdc.stand) {
                 batch.draw(legs_stand_front, x, y);
             } else {
-                legs_walk_front.draw(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.draw(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             }
         } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.down_back) {
             if (cdc.stand) {
                 batch.draw(legs_stand_front, x, y);
             } else {
-                legs_walk_front.drawReversed(batch, x, y, (int)(15*speedY), false);
+                legs_walk_front.drawReversed(batch, x, y, (int)(10*speedY), false);
+                if (sound != null && (legs_walk_front.getCurrentFrameId() == 0 || legs_walk_front.getCurrentFrameId() == 4) && legs_walk_front.justChangedFrame) {
+                    sound.play(menu.soundVolume/100.0f);
+                }
             }
         }
     }
@@ -296,8 +364,25 @@ public class CharacterMaker {
         } else if (dir == 3) {
             cdc.walkDir = CharacterDirectionChecker.WalkDirection.right;
             cdc.lookDir = CharacterDirectionChecker.LookDirection.right;
+        } else {
+            cdc.walkDir = CharacterDirectionChecker.WalkDirection.down;
+            cdc.lookDir = CharacterDirectionChecker.LookDirection.down;
         }
     }
+
+    public int getDirection(int id) {
+        CharacterDirectionChecker cdc = cdcs.get(id);
+        if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.left) {
+            return 1;
+        } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.up) {
+            return 2;
+        } else if (cdc.walkDir == CharacterDirectionChecker.WalkDirection.right) {
+            return 3;
+        } else {
+            return 0;
+        }
+    }
+
 
     public void invalidateBobbing(int id, float speedX, float speedY) {
         CharacterDirectionChecker cdc = cdcs.get(id);

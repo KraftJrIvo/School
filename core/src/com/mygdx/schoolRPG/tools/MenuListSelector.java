@@ -3,10 +3,12 @@ package com.mygdx.schoolRPG.tools;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.schoolRPG.menus.Menu;
 
 import java.util.ArrayList;
 
@@ -28,8 +30,10 @@ public class MenuListSelector {
     float centerY;
     public boolean enabled;
     public boolean looping;
+    Menu parent;
+    Sound click1;
 
-    public MenuListSelector(ArrayList<String> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign) {
+    public MenuListSelector(ArrayList<String> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign, Menu parent) {
         this.centerAlign = centerAlign;
         this.titles = titles;
         this.cursor = assets.get(cursor, Texture.class);
@@ -42,6 +46,8 @@ public class MenuListSelector {
         titlesGap = font.getLineHeight();// * 2;
         enabled = true;
         looping = true;
+        this.parent = parent;
+        click1 = assets.get("menu_click_2.wav", Sound.class);
     }
 
     public void setFont(BitmapFont font) {
@@ -70,8 +76,10 @@ public class MenuListSelector {
         if (!paused && enabled) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
                 selectedIndex++;
+                click1.play(parent.soundVolume / 100.0f);
             } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP))  {
                 selectedIndex--;
+                click1.play(parent.soundVolume / 100.0f);
             }
             if (selectedIndex < 0) {
                 selectedIndex = titles.size() - 1;

@@ -3,6 +3,7 @@ package com.mygdx.schoolRPG;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -41,6 +42,8 @@ public class World{
     ArrayList<String> newNames;
     ArrayList<Integer> tileTypes;
     ArrayList<Integer> tileIndices;
+    ArrayList<String> stepSounds;
+    ArrayList<String> areasAmbients;
     ArrayList<ParticleProperties> particles;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
@@ -50,6 +53,10 @@ public class World{
     ShapeRenderer shapeRenderer;
     int animsLoaded = 0;
     GameMenu menu;
+    Sound currentSound;
+    long currentSoundId = -1;
+    String currentSoundPath;
+    boolean startedAmbient = false;
 
     public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
         this.menu = menu;
@@ -126,18 +133,8 @@ public class World{
     public void load(AssetManager assets) {
 
         this.assets = assets;
-
-        /*assets.load("particles/test/1.png", Texture.class);
-        assets.load("particles/skull/1.png", Texture.class);
-        assets.load("particles/body/1.png", Texture.class);
-        assets.load("particles/bone/1.png", Texture.class);
-        assets.load("particles/blood/1.png", Texture.class);
-        assets.load("particles/test/2.png", Texture.class);
-        assets.load("particles/shadow.png", Texture.class);
-        assets.load("particles/water/1.png", Texture.class);
-        assets.load("particles/water/2.png", Texture.class);
-        assets.load("particles/goo/1.png", Texture.class);
-        assets.load("particles/goo/2.png", Texture.class);*/
+        stepSounds = new ArrayList<String>();
+        areasAmbients = new ArrayList<String>();
         assets.load("item.png", Texture.class);
         assets.load("active.png", Texture.class);
         assets.load("blank.png", Texture.class);
@@ -147,13 +144,6 @@ public class World{
         assets.load("inventory_overlay1.png", Texture.class);
 
         assets.load(folderPath + "/bg.png", Texture.class);
-
-        //assets.load(folderPath + "/chars/0/chargo.png", Texture.class);
-        //assets.load(folderPath + "/chars/0/char.png", Texture.class);
-
-        //if (platformMode) {
-
-        //}
         flags = new ArrayList<Boolean>();
         flagNames = new ArrayList<String>();
         if (tlw == null) {
@@ -262,6 +252,7 @@ public class World{
                     fis.read(buff);
                     if (curCoordX != 246) {
                         areas.add(new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this));
+                        areasAmbients.add(null);
                         int areaRoomsHor = (int)Math.ceil(areaWidth/firtsAreaWidth);
                         int areaRoomsVer = (int)Math.ceil(areaHeight/firtsAreaHeight);
                         for (int i = curCoordX; i < curCoordX+areaRoomsHor; ++i) {
@@ -298,6 +289,7 @@ public class World{
                 tileTypes.add(0);
                 tileIndices.add(spritesCount);
                 spritesCount++;
+                stepSounds.add(null);
             }
             worldDir = Gdx.files.internal(folderPath+"/tiles");
             for (FileHandle entry: worldDir.list()) {
@@ -309,6 +301,7 @@ public class World{
                 tileTypes.add(1);
                 tileIndices.add(tilesetsCount);
                 tilesetsCount++;
+                stepSounds.add(null);
             }
             worldDir = Gdx.files.internal(folderPath+"/objects/util");
             for (FileHandle entry: worldDir.list()) {
@@ -329,6 +322,16 @@ public class World{
             for (FileHandle entry: worldDir.list()) {
                 assets.load(entry.path(), Texture.class);
             }
+            worldDir = Gdx.files.internal(folderPath+"/sounds");
+            for (FileHandle entry: worldDir.list()) {
+                if (entry.isDirectory()) {
+                    for (FileHandle entry2: entry.list()) {
+                        assets.load(entry2.path(), Sound.class);
+                    }
+                } else {
+                    assets.load(entry.path(), Sound.class);
+                }
+            }
             worldDir = Gdx.files.internal(folderPath+"/anim");
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
@@ -339,11 +342,39 @@ public class World{
                 tileTypes.add(2);
                 tileIndices.add(animsLoaded);
                 animsLoaded++;
+                stepSounds.add(null);
             }
             worldDir = Gdx.files.internal(folderPath);
 
             updateTiles();
         }
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(worldDir.path() + "/sound"));
+            String line;
+            int numTileSteps = Integer.parseInt(in.readLine());
+            for (int i = 0; i < numTileSteps; ++i) {
+                line = in.readLine();
+                int n = names.indexOf(line);
+                if (n >= 0) {
+                    stepSounds.set(n, in.readLine());
+                } else {
+                    in.readLine();
+                }
+            }
+            int numAmbients = Integer.parseInt(in.readLine());
+            for (int i = 0; i < numAmbients; ++i) {
+                int x = Integer.parseInt(in.readLine());
+                int y = Integer.parseInt(in.readLine());
+                int z = Integer.parseInt(in.readLine());
+                int n = areaIds.get(x).get(y).get(z);
+                areasAmbients.set(n, in.readLine());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         particles = new ArrayList<ParticleProperties>();
         FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
         int dirsCount = 0;
@@ -369,7 +400,7 @@ public class World{
             assets.load(folderPath + "/save1.png", Texture.class);
             assets.load(folderPath + "/save2.png", Texture.class);
         } else {
-            characterMaker = new CharacterMaker(assets, folderPath);
+            characterMaker = new CharacterMaker(assets, folderPath, menu);
             characterMaker.cdcs.get(0).setLookingForward(true);
         }
         /*int minAreaArea = 99999;
@@ -465,6 +496,14 @@ public class World{
 
         if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
+        }
+        int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
+        areas.get(n).isCurrent = true;
+        if (areasAmbients.get(n) != null) {
+            currentSoundPath = areasAmbients.get(n);
+            currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
+            currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
+            startedAmbient = true;
         }
     }
 
@@ -631,17 +670,34 @@ public class World{
             oldAreaY = curAreaY;
             oldAreaZ = curAreaZ;
             Area oldArea = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
-            Area curArea = areas.get(areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ));
+            oldArea.isCurrent = false;
+            oldArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
+            int n = areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ);
+            Area curArea = areas.get(n);
+            curArea.isCurrent = true;
+            if (areasAmbients.get(n)!= null && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
+                currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
+                currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
+                startedAmbient = true;
+            } else if (currentSound != null) {
+                currentSound.stop();
+                currentSound = null;
+                currentSoundPath = null;
+                //startedAmbient = false;
+            }
             curAreaX = curArea.x;
             curAreaY = curArea.y;
             curAreaZ = curArea.z;
             //initialised = false;
             if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) {
-                curArea.player.invalidatePose(true, true);
-                curArea.player.inventory = oldArea.player.inventory;
-                curArea.player.headWear = oldArea.player.headWear;
-                curArea.player.bodyWear = oldArea.player.bodyWear;
-                curArea.player.objectInHands = oldArea.player.objectInHands;
+                Player player = curArea.player;
+                player.characterMaker.setDirection(player.characterMaker.getDirection(player.charId), player.charId);
+                player.movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
+                player.invalidatePose(true, true);
+                player.inventory = oldArea.player.inventory;
+                player.headWear = oldArea.player.headWear;
+                player.bodyWear = oldArea.player.bodyWear;
+                player.objectInHands = oldArea.player.objectInHands;
             }
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
@@ -657,6 +713,19 @@ public class World{
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate(this);
         }
+
+    }
+
+    public Sound getSound(int id) {
+        if (id < 0 || stepSounds.get(id) == null) {
+            return assets.get(folderPath + "/sounds/default.wav", Sound.class);
+        }
+        if (stepSounds.get(id).contains(".")) {
+            return assets.get(folderPath + "/sounds/" + stepSounds.get(id), Sound.class);
+        }
+        int r = (int)Math.floor(Math.random() * 3);
+        return assets.get(folderPath + "/sounds/" + stepSounds.get(id) + "/" + r + ".wav", Sound.class);
+
     }
 
     public void synchronizeFlags() {
@@ -701,6 +770,9 @@ public class World{
     }
 
     public void draw(SpriteBatch batch) {
+        if (currentSound != null) {
+            currentSound.setVolume(currentSoundId, menu.musicVolume/100.0f);
+        }
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if ((!menu.paused && curArea.worldObjectsHandler.currentDialog == null) || curArea.playerHidden) {
             checkAreaObjects(curArea);
@@ -754,7 +826,7 @@ public class World{
                 curArea.worldObjectsHandler.currentInventory.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentInventory.closed) {
                     if (curArea.worldObjectsHandler.currentInventory.containerMode) {
-                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0);
+                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0, menu, true);
                     }
                     curArea.worldObjectsHandler.currentInventory = null;
                     menu.drawPause = true;

@@ -2,10 +2,12 @@ package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.XmlReader;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.GlobalSequence;
@@ -85,9 +87,13 @@ public class ObjectCell {
     public ArrayList<Integer> statesFPS;
     public ArrayList<Boolean> statesLooping;
     public ArrayList<Integer> statesFramesCount;
+    public ArrayList<Sound> statesSwitchSounds;
+    public ArrayList<Sound> statesSoundLoops;
+    public ArrayList<Integer> statesLoopsVolumes;
     ArrayList<String> names;
     int charId;
     CharacterMaker characterMaker;
+    boolean soundsAreStopped = false;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items) {
         this.type = type;
@@ -183,11 +189,20 @@ public class ObjectCell {
         entity.bodyWears = statesBodyWears.get(currentState);
     }
 
-    public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId) {
+    public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId, GameMenu menu, boolean playerActivated) {
         if (!statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
                 && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
+        if (statesSwitchSounds.get(currentState) != null && !menu.paused && playerActivated) {
+            statesSwitchSounds.get(currentState).play(menu.soundVolume / 100.0f);
+        }
+        if (statesSoundLoops.get(currentState) != null) {
+            statesSoundLoops.get(currentState).stop();
+        }
         currentState++;
         currentState = currentState % statesCount;
+        if (statesSoundLoops.get(currentState) != null) {
+            statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
+        }
         if (statesTexTypes.get(currentState).equals("sprite")) {
             entity.anim = null;
             entity.tex = assets.get(worldDir + "/" + statesTex.get(currentState) + ".png", Texture.class);
@@ -237,9 +252,22 @@ public class ObjectCell {
         return statesParticlesCoords.get(currentState).get(n);
     }
 
-    public void checkFlags(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area) {
+    public void checkFlags(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, GameMenu menu) {
         if ((flagNames.contains(statesConditionFlags.get(currentState)) && statesConditionFlagVals.get(currentState) == flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) {
-            activate(worldDir, assets, flagNames, flags, area, charId);
+            activate(worldDir, assets, flagNames, flags, area, charId, menu, false);
+        }
+        if (statesSoundLoops.get(currentState) != null) {
+            if (menu.paused || !area.isCurrent) {
+                statesSoundLoops.get(currentState).stop();
+                soundsAreStopped = true;
+            } else {
+                if (soundsAreStopped) {
+                    statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
+                } else {
+                    statesSoundLoops.get(currentState).setVolume(0, menu.soundVolume / 100.0f);
+                }
+                soundsAreStopped = false;
+            }
         }
     }
 
@@ -368,6 +396,9 @@ public class ObjectCell {
             statesHeadYOffsets = new ArrayList<ArrayList<Integer>>();
             statesBodyXOffsets = new ArrayList<ArrayList<Integer>>();
             statesBodyYOffsets = new ArrayList<ArrayList<Integer>>();
+            statesSwitchSounds = new ArrayList<Sound>();
+            statesSoundLoops = new ArrayList<Sound>();
+            statesLoopsVolumes = new ArrayList<Integer>();
             for (int i= 0; i< nList.getLength(); ++i) {
                 Node nNode = nList.item(i);
                 Element eElement = (Element) nNode;
@@ -391,6 +422,19 @@ public class ObjectCell {
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitX")));
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitY")));
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
+                String switchSoundPath = eElement.getAttribute("switchSound");
+                if (!switchSoundPath.equals("")) {
+                    statesSwitchSounds.add(assets.get(worldDir + "/sounds/" + switchSoundPath, Sound.class));
+                } else {
+                    statesSwitchSounds.add(null);
+                }
+                String soundLoopPath = eElement.getAttribute("loopSound");
+                if (!soundLoopPath.equals("")) {
+                    statesSoundLoops.add(assets.get(worldDir + "/sounds/" + eElement.getAttribute("loopSound"), Sound.class));
+                } else {
+                    statesSoundLoops.add(null);
+                }
+                statesLoopsVolumes.add(Integer.parseInt(eElement.getAttribute("loopVolume")));
                 statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
                 boolean hidePlayer = Boolean.parseBoolean(eElement.getAttribute("hidePlayer"));
                 statesHidePlayer.add(hidePlayer);

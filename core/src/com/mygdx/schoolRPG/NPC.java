@@ -329,7 +329,6 @@ public class NPC extends HittableEntity {
     @Override
     public void draw(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, boolean platformMode, boolean active, int activeX, int activeY) {
         super.initialiseIfNeeded();
-
         checkInventory();
 
         if (active) {
@@ -356,14 +355,15 @@ public class NPC extends HittableEntity {
             h = 999999;
         }
 
-        if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
+        if (charId == 0) {
+            if (Math.abs(hitBox.x-oldX)>0.3f || Math.abs(speedX) > 2) {
+                graphicX = x;
+            }
+            if ((Math.abs(hitBox.y-oldY)>0.5f || Math.abs(speedY) > 1)) {
+                graphicY = y;
+            }
+        } else {
             graphicX = x;
-        }
-        /*if (Math.abs(hitBox.y - oldY2) < 0.3f) {
-            hitBox.y = oldY2;
-            graphicY = hitBox.y;
-        }*/
-        if ((Math.abs(hitBox.y-oldY)>0.5f || Math.abs(speedY) > 1)) {
             graphicY = y;
         }
         if (spritesPath != null) {

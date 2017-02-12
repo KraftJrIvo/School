@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.menus.Menu;
 import com.mygdx.schoolRPG.tools.CircularSelector;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
@@ -44,6 +45,7 @@ public class Inventory {
     String inventory2Title;
     boolean releasedAfterChange;
     NPC owner;
+    Menu parent;
 
     private void updateItems() {
         titles.clear();
@@ -127,10 +129,11 @@ public class Inventory {
         }
     }
 
-    public Inventory(AssetManager assets, BitmapFont font, ArrayList<Item> items, NPC owner, ArrayList<Item> containerItems, ArrayList<String> inventory2TitlesInLanguages, int language) {
+    public Inventory(AssetManager assets, BitmapFont font, ArrayList<Item> items, NPC owner, ArrayList<Item> containerItems, ArrayList<String> inventory2TitlesInLanguages, int language, Menu parent) {
         this.owner = owner;
         this.items = items;
         this.font = font;
+        this.parent = parent;
         this.containerItems = containerItems;
         containerMode = (containerItems != null);
         this.inventory2TitlesInLanguages = inventory2TitlesInLanguages;
@@ -158,7 +161,7 @@ public class Inventory {
             xOffset2 = width/3.0f;
             yOffset2 = height/2.0f - 128;
             xOffset3 = -width/6.0f;
-            containerOptions = new MenuListSelector(containerOpts, assets, "cursor.png", font, 64, -xOffset3, yOffset2, true);
+            containerOptions = new MenuListSelector(containerOpts, assets, "cursor.png", font, 64, -xOffset3, yOffset2, true, parent);
             containerOptions.looping = false;
             containerOptions.enabled = false;
         } else {
@@ -168,15 +171,15 @@ public class Inventory {
             yOffset = height/2.0f - 128;
             xOffset3 = xOffset;
         }
-        invenoryOptions = new MenuListSelector(inventoryOpts, assets, "cursor.png", font, 64, xOffset3, yOffset, true);
+        invenoryOptions = new MenuListSelector(inventoryOpts, assets, "cursor.png", font, 64, xOffset3, yOffset, true, parent);
         invenoryOptions.looping = false;
-        otherOptions = new MenuListSelector(otherOpts, assets, "cursor.png", font, 64, 0, yOffset - 128, true);
+        otherOptions = new MenuListSelector(otherOpts, assets, "cursor.png", font, 64, 0, yOffset - 128, true, parent);
         otherOptions.looping = false;
         otherOptions.enabled = false;
-        itemsSelector = new CircularSelector( titles, sprites, font, centerX, centerY, 128, 64, 2);
+        itemsSelector = new CircularSelector(assets, titles, sprites, font, centerX, centerY, 128, 64, 2, parent);
         itemsSelector.drawTitles = false;
         if (containerMode) {
-            containerItemsSelector = new CircularSelector( titles2, sprites2, font, centerX2, centerY2, 128, 64, 2);
+            containerItemsSelector = new CircularSelector(assets, titles2, sprites2, font, centerX2, centerY2, 128, 64, 2, parent);
             containerItemsSelector.drawTitles = false;
         }
         overlay = assets.get("inventory_overlay1.png", Texture.class);
@@ -398,7 +401,7 @@ public class Inventory {
         } else {
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
                 if (invenoryOptions.enabled) {
-                    if (invenoryOptions.getSelectedIndex() == 1) {
+                    if (invenoryOptions.getSelectedIndex() == 1 && items.size() > 0) {
                         int index = itemsSelector.getSelectedIndex();
                         if (items.get(index).equipSlot == Item.EquipSlot.HEAD) {
                             if (owner.headWear != items.get(index).sides) {

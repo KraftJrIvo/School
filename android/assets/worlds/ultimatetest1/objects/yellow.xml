@@ -17,6 +17,10 @@
            emitZ="0"
            emitInterval="0"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="1"
            switchable="true"
@@ -36,6 +40,10 @@
            emitZ="18"
            emitInterval="500"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="2"
            switchable="true"
@@ -55,6 +63,10 @@
            emitZ="18"
            emitInterval="100"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="3"
            switchable="true"
@@ -73,6 +85,10 @@
            emitY="0"
            emitZ="18"
            emitInterval="10"
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            
            hidePlayer="false"/> 
     <state id="4"
@@ -93,6 +109,10 @@
            emitZ="18"
            emitInterval="10"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="5"
            switchable="true"
@@ -111,6 +131,10 @@
            emitY="0"
            emitZ="18"
            emitInterval="500"
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            
            hidePlayer="false"/> 
     <state id="6"
@@ -131,6 +155,10 @@
            emitZ="18"
            emitInterval="10"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
     <state id="7"
            switchable="true"
@@ -150,5 +178,9 @@
            emitZ="18"
            emitInterval="10"
            
+           switchSound=""
+           loopSound=""
+           loopVolume="0"
+
            hidePlayer="false"/> 
 </object>

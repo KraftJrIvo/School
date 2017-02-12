@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.menus.Menu;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
 import java.util.ArrayList;
@@ -16,15 +17,17 @@ public class Choice extends Speech {
     MenuListSelector selector;
     int transitionId;
     String question;
+    Menu parent;
 
-    public Choice(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player) {
+    public Choice(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player, Menu parent) {
         super(dialog, speaker, phrases, assets, texPath, charId, -1, -1, false, npcs, player);
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         System.out.println();
         question = phrases.get(0);
         phrases.remove(0);
-        selector = new MenuListSelector(phrases, assets, "cursor.png", font, overlay.getHeight() - 20, 350, 175, false);
+        selector = new MenuListSelector(phrases, assets, "cursor.png", font, overlay.getHeight() - 20, 350, 175, false, parent);
         transitionId = -1;
+        this.parent = parent;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class Choice extends Speech {
         font.setColor(Color.WHITE);
         font.draw(batch, question, textX, textY - 42);
         selector.draw(batch, paused);
-        if (!paused && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER))) {
             transitionId = selector.getSelectedIndex();
             finished = true;
         }

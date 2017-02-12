@@ -3,12 +3,15 @@ package com.mygdx.schoolRPG.tools;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.SortedIntList;
+import com.mygdx.schoolRPG.menus.Menu;
 
 import java.util.ArrayList;
 
@@ -33,9 +36,11 @@ public class CircularSelector {
     float fontAlpha;
     public boolean drawTitles;
     public boolean enabled;
+    Menu parent;
+    Sound click1;
 
 
-    public CircularSelector(ArrayList<String> titles, ArrayList<Texture> sprites, BitmapFont font, float centerX, float centerY, float width, float height, float scale) {
+    public CircularSelector(AssetManager assets, ArrayList<String> titles, ArrayList<Texture> sprites, BitmapFont font, float centerX, float centerY, float width, float height, float scale, Menu parent) {
         this.titles = titles;
         this.sprites = sprites;
         this.font = font;
@@ -61,6 +66,8 @@ public class CircularSelector {
         fontAlpha = 1.0f;
         drawTitles = true;
         enabled = true;
+        this.parent = parent;
+        click1 = assets.get("menu_click_3.wav", Sound.class);
     }
 
     public void addItem(Texture sprite, String title) {
@@ -126,6 +133,7 @@ public class CircularSelector {
                 if (selectedIndex < 0) {
                     selectedIndex = sprites.size()-1;
                 }
+                click1.play(parent.soundVolume / 100.0f);
             } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 prevAngle = currentAngle;
                 targetAngle -= 2.0f * (float)Math.PI / sprites.size();
@@ -134,6 +142,7 @@ public class CircularSelector {
                 if (selectedIndex >= sprites.size()) {
                     selectedIndex = 0;
                 }
+                click1.play(parent.soundVolume / 100.0f);
             }
         }
 

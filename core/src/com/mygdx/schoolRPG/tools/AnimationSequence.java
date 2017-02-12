@@ -17,6 +17,7 @@ public class AnimationSequence {
 	long animationTime;
 	public String path;
     int firstFrame;
+	public boolean justChangedFrame = false;
 	
 	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping, int framesCount) {
 		path = sName;
@@ -97,7 +98,7 @@ public class AnimationSequence {
 		}	
 		
 		long delta = System.currentTimeMillis() - startTime;
-		
+		int oldFrame = currentFrame;
 		if (!looping && delta >= animationTime) {
 			currentFrame = (gs.getLength() - 1 + seed)%(gs.getLength());
 		} else {
@@ -108,6 +109,7 @@ public class AnimationSequence {
             currentFrame = (gs.getLength() - currentFrame-1 + seed)%(gs.getLength());
             //if (currentFrame)
         }
+		justChangedFrame = (oldFrame != currentFrame);
 		return gs.getFrame(currentFrame);
 	}
 
