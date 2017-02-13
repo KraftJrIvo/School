@@ -467,6 +467,16 @@ public class WorldObjectsHandler {
             activeItem = null;
         }
         else if (activeNPC == null && activeObject != null) {
+            int c = activeObject.zPath;
+            if (c != 0) {
+                int inRoomXCoord = (int)Math.floor(area.player.x/area.TILE_WIDTH/world.firtsAreaWidth);
+                int inRoomYCoord = (int)(Math.floor(area.height/world.firtsAreaHeight-(area.player.y+area.player.hitBox.getHeight()/2)/area.TILE_HEIGHT/world.firtsAreaHeight));
+                if (c > 0) {
+                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c);
+                } else if (c < 0) {
+                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c);
+                }
+            }
             activeObject.activate(worldPath, assets, flagNames, flags, area, 0, menu, true);
             world.synchronizeFlags();
             if (activeObject.isContainer) {
@@ -895,8 +905,8 @@ public class WorldObjectsHandler {
                             activeX = 0;
                             activeY = 0;
                         } else {
-                            activeX = activeObject.offsetX;
-                            activeY = activeObject.offsetY;
+                            activeX = 0;//activeObject.offsetX;
+                            activeY = 0;//activeObject.offsetY;
                         }
                     }
 

@@ -90,6 +90,7 @@ public class ObjectCell {
     public ArrayList<Sound> statesSwitchSounds;
     public ArrayList<Sound> statesSoundLoops;
     public ArrayList<Integer> statesLoopsVolumes;
+    int zPath = 0;
     ArrayList<String> names;
     int charId;
     CharacterMaker characterMaker;
@@ -404,6 +405,9 @@ public class ObjectCell {
                 Element eElement = (Element) nNode;
                 statesSwitchables.add(Boolean.parseBoolean(eElement.getAttribute("switchable")));
                 String condition = eElement.getAttribute("switchCondition");
+                if (!eElement.getAttribute("zLayerChange").equals("")) {
+                    zPath = Integer.parseInt(eElement.getAttribute("zLayerChange"));
+                }
                 if (condition.length() > 0 && condition.charAt(0) == '!') {
                     condition = condition.substring(1);
                     statesConditionFlagVals.add(false);

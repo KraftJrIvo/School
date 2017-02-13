@@ -57,6 +57,7 @@ public class World{
     long currentSoundId = -1;
     String currentSoundPath;
     boolean startedAmbient = false;
+    boolean startedChanging = false;
 
     public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
         this.menu = menu;
@@ -579,12 +580,6 @@ public class World{
             changeArea(false, inRoomXCoord, -1, 0);
         }
         if (a.player.movingConfiguration.use == 1) {
-            int c = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).chekZPath();
-            if (c > 0) {
-                changeArea(false, inRoomXCoord, inRoomYCoord, c);
-            } else if (c < 0) {
-                changeArea(false, inRoomXCoord, inRoomYCoord, c);
-            }
             a.worldObjectsHandler.activateActiveObject(menu, folderPath, assets, this);
         }
         if (a.player.z > a.cameraY + SCREEN_HEIGHT) {
@@ -595,7 +590,7 @@ public class World{
         }
     }
 
-    private void changeArea(boolean horizontal, int offX, int offY, int offZ) {
+    public void changeArea(boolean horizontal, int offX, int offY, int offZ) {
         if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1) {
 
             //areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).resetCheckPoints();
@@ -699,6 +694,7 @@ public class World{
                 player.bodyWear = oldArea.player.bodyWear;
                 player.objectInHands = oldArea.player.objectInHands;
             }
+            startedChanging = false;
         } else {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
         }
@@ -835,6 +831,12 @@ public class World{
                 }
             }
         } else {
+            if (!startedChanging) {
+                //curArea.draw(batch, this, 0, 0, true, true, true);
+                curArea.invalidate(this);
+                startedChanging = true;
+            }
+
             Area area1, area2;
             Area oldArea = areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ));
             if (oldAreaX + areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).w-1 < curAreaX || oldAreaY > curAreaY + curArea.h-1) {

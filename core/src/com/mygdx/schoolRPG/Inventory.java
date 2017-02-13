@@ -337,7 +337,7 @@ public class Inventory {
                 containerItemsSelector.enabled = containerOptions.enabled && containerOptions.getSelectedIndex() == 0 && releasedAfterChange;
             }
 
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (!parent.drawPause && Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
                 if (invenoryOptions.enabled && itemsSelector.getSelectedIndex() < items.size()) {
                     if (invenoryOptions.getSelectedIndex() == 1) {
                         int index = itemsSelector.getSelectedIndex();
@@ -399,7 +399,7 @@ public class Inventory {
             }
             rightIsSelected = containerOptions.enabled;
         } else {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (!parent.drawPause && Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
                 if (invenoryOptions.enabled) {
                     if (invenoryOptions.getSelectedIndex() == 1 && items.size() > 0) {
                         int index = itemsSelector.getSelectedIndex();
