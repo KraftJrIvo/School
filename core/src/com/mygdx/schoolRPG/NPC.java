@@ -3,6 +3,7 @@ package com.mygdx.schoolRPG;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -51,6 +52,7 @@ public class NPC extends HittableEntity {
     int lastHoldedFlag = -1;
     boolean isControlled;
     MovingConfiguration movingConfiguration;
+    Sound speechSound;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
@@ -76,6 +78,7 @@ public class NPC extends HittableEntity {
         ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
         inventory = new ArrayList<Item>();
         String charPath = worldDir + "/chars/" + charId;
+        speechSound = assets.get(charPath + "/speech.wav", Sound.class);
         if (baseName == null) {
             try {
                 float r, g, b;

@@ -813,6 +813,7 @@ public class World{
                         }
                     }
                     curArea.worldObjectsHandler.currentDialog = null;
+                    menu.dialogSkipping = false;
                     menu.drawPause = true;
                     menu.paused = false;
                     menu.unpausable = true;

@@ -631,7 +631,7 @@ public class HittableEntity extends Entity {
         x = hitBox.x;
         y = hitBox.y;
         if (!floor) {
-            h = y;//+floorHeight;
+            h = y+floorHeight;
         } else {
             h = 999999;
         }
@@ -668,7 +668,7 @@ public class HittableEntity extends Entity {
             } else if (texR != null) {
                 height = texR.getRegionHeight();
             }
-            batch.draw(this.active, offsetX + x + this.active.getWidth()/2 + activeX, offsetY - y + 3 + height - activeY);
+            batch.draw(this.active, offsetX + x + hitBox.getWidth()/2 - this.active.getWidth()/2 + activeX, offsetY - y + 3 + height - activeY);
         }
 
         float anglee = 0;

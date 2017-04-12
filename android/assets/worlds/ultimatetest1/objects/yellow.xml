@@ -13,7 +13,7 @@
            
            emitsParticle="-1"
            emitX="0"
-           emitY="0"
+           emitY="-2"
            emitZ="0"
            emitInterval="0"
            
@@ -36,8 +36,8 @@
            
            emitsParticle="0"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="500"
            
            switchSound=""
@@ -59,8 +59,8 @@
            
            emitsParticle="1"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="100"
            
            switchSound=""
@@ -82,8 +82,8 @@
            
            emitsParticle="2"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="10"
            switchSound=""
            loopSound=""
@@ -105,8 +105,8 @@
            
            emitsParticle="3"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="10"
            
            switchSound=""
@@ -128,8 +128,8 @@
            
            emitsParticle="4"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="500"
            switchSound=""
            loopSound=""
@@ -151,8 +151,8 @@
            
            emitsParticle="5"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="10"
            
            switchSound=""
@@ -174,8 +174,8 @@
            
            emitsParticle="6"
            emitX="9"
-           emitY="0"
-           emitZ="20"
+           emitY="-2"
+           emitZ="22"
            emitInterval="10"
            
            switchSound=""

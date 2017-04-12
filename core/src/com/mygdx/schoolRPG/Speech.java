@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.menus.Menu;
 
 import java.util.ArrayList;
 
@@ -24,7 +25,7 @@ public class Speech {
     boolean flagVal;
     int flagCharId = -1;
     NPC flagTarget;
-
+    Menu menu;
     NPC target;
     int currentPhrase;
     boolean finished;
@@ -33,8 +34,12 @@ public class Speech {
     long millsPerChar = 50;
     float screenRatioX, screenRatioY;
     Dialog dialog;
+    int oldCharCount = 0, charCount = 0;
+    ArrayList<NPC> npcs;
 
-    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player) {
+    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
+        this.menu = menu;
+        this.npcs = npcs;
         this.dialog = dialog;
         this.speaker = speaker;
         this.phrases = phrases;
@@ -123,7 +128,12 @@ public class Speech {
             }
             curTime = System.currentTimeMillis() - time;
         }
-        int charCount = (int)Math.floor(curTime / millsPerChar);
+        oldCharCount = charCount;
+        charCount = (int)Math.floor(curTime / millsPerChar);
+
+        if (charCount != oldCharCount && charCount > 0 && phrases.get(currentPhrase).charAt(charCount - 1) != ' ') {
+            target.speechSound.play(menu.soundVolume/100.0f);
+        }
         if (charCount == phrases.get(currentPhrase).length()) {
             progress.set(currentPhrase, true);
         }

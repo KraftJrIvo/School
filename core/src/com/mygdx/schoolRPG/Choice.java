@@ -20,7 +20,7 @@ public class Choice extends Speech {
     Menu parent;
 
     public Choice(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player, Menu parent) {
-        super(dialog, speaker, phrases, assets, texPath, charId, -1, -1, false, npcs, player);
+        super(dialog, speaker, phrases, assets, texPath, charId, -1, -1, false, npcs, player, parent);
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         System.out.println();
         question = phrases.get(0);

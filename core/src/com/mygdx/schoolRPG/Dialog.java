@@ -31,6 +31,7 @@ public class Dialog {
     boolean finished = false;
     public int language;
     public String fileName;
+    Menu parent;
 
     public void reload(String folderPath, int language, int startId) {
         this.language = language;
@@ -85,6 +86,7 @@ public class Dialog {
     }
 
     public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, Player player, AssetManager assets, String charPath, int language, Menu parent) {
+        this.parent = parent;
         speeches = new ArrayList<Speech>();
         choices = new ArrayList<Choice>();
         choiceTransitionsIds = new ArrayList<ArrayList<Integer>>();
@@ -139,7 +141,7 @@ public class Dialog {
                         line = in.readLine();
                         transId = Integer.parseInt(line);
 
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
                         speechTransitionsIds.add(transId);
                         line = in.readLine();
                         c = line.charAt(0);
@@ -156,10 +158,10 @@ public class Dialog {
                         }
                         line = in.readLine();
                         c = line.charAt(0);
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player, parent));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     } else {
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player));
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     }
                 } else if (c == '%') {
@@ -221,12 +223,14 @@ public class Dialog {
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth()/2, 0);
         if (currentSpeech != null) {
+            parent.dialogSkipping = true;
             currentSpeech.draw(batch, paused);
             if (currentSpeech.finished) {
                 int id = speechTransitionsIds.get(speeches.indexOf(currentSpeech));
                 checkFinished(id);
             }
         } else {
+            parent.dialogSkipping = false;
             currentChoice.draw(batch, paused);
             if (currentChoice.finished) {
                 int id = choiceTransitionsIds.get(choices.indexOf(currentChoice)).get(currentChoice.selector.getSelectedIndex());

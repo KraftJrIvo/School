@@ -249,9 +249,9 @@ public class ObjectAdder {
                                 height = tmp;
                                 y-= width/2 - (width - height)*2 - height/2 + area.TILE_HEIGHT/2;
                             }
-                            y+=blocks.get(7).get(t).get(i);
+
                         }
-                        float xx = t*area.TILE_WIDTH + area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2 + blocks.get(6).get(t).get(i);
+                        float xx = t*area.TILE_WIDTH + area.TILE_WIDTH/2-blocks.get(6).get(t).get(i)/2;
                         if (area.platformMode) {
                             if (blocks.get(5).get(t).get(i) == 1) {
                                 xx-=area.TILE_WIDTH/2-(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);
@@ -260,15 +260,30 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
+                        width = blocks.get(6).get(t).get(i);
+                        height = blocks.get(7).get(t).get(i);
+                        if (height >= 15) {
+                            floorHeight = 4;
+                        } else {
+                            floorHeight = -2;
+                        }
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1, null);
                     } else {
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
+                        width = blocks.get(6).get(t).get(i);
+                        height = blocks.get(7).get(t).get(i);
+                        if (height >= 15) {
+                            floorHeight = 4;
+                        } else {
+                            floorHeight = -2;
+                        }
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 -blocks.get(6).get(t).get(i)/2, y,
                                 width, height, floorHeight, false, blocks.get(5).get(t).get(i)), -1, null);
                     }
                 } else if (type == 5) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
                     float width = 0;
                     float height = 0;
+                    float floorHeight = -2;
                     if (area.platformMode) {
                         if(world.tileTypes.get(img) == 0){
                             width = world.sprites.get(world.tileIndices.get(img)).getWidth();
@@ -300,9 +315,9 @@ public class ObjectAdder {
                                 height = tmp;
                                 y-= width/2 - (width - height)*2 - height/2 + area.TILE_HEIGHT/2;
                             }
-                            y+=blocks.get(7).get(t).get(i);
+
                         }
-                        float xx = t*area.TILE_WIDTH + area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2 + blocks.get(6).get(t).get(i);
+                        float xx = t*area.TILE_WIDTH + area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                         if (area.platformMode) {
                             if (blocks.get(5).get(t).get(i) == 1) {
                                 xx-=area.TILE_WIDTH/2-(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);
@@ -311,10 +326,20 @@ public class ObjectAdder {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, world.sprites.get(world.tileIndices.get(img)).getWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1, null);
+                        width = blocks.get(6).get(t).get(i);
+                        height = blocks.get(7).get(t).get(i);
+                        if (height >= 15) {
+                            floorHeight = 4;
+                        }
+                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, true, blocks.get(5).get(t).get(i)), -1, null);
                     } else {
+                        width = blocks.get(6).get(t).get(i);
+                        height = blocks.get(7).get(t).get(i);
+                        if (height >= 15) {
+                            floorHeight = 4;
+                        }
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y,
-                                width, height, area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 4 - 2, true, blocks.get(5).get(t).get(i)), -1, null);
+                                width, height, floorHeight, true, blocks.get(5).get(t).get(i)), -1, null);
                     }
                 } else if (type == 11) {
                     float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);

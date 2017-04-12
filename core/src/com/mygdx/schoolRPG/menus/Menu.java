@@ -23,7 +23,7 @@ public class Menu {
     public boolean allowPause = false;
     public int ID = 0;
     public boolean initialised = false;
-    public boolean paused = false, optionsOpen = false;
+    public boolean paused = false, optionsOpen = false, dialogSkipping = false;
     Texture pause, resume, exit, options;
     AssetManager assets;
     boolean android;
@@ -223,7 +223,7 @@ public class Menu {
             }
 
         }
-        if ((this.getClass() != GameMenu.class || paused) && (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE))) {
+        if ((this.getClass() != GameMenu.class || (paused && !dialogSkipping)) && (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE))) {
             click2.play(soundVolume / 100.0f);
         }
         if (allowPause) {
