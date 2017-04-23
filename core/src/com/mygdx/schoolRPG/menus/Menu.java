@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class Menu {
 
     public int nextMenu, nextMenuSetting;
+    public String nextMenuMessage = "";
     public boolean allowPause = false;
     public int ID = 0;
     public boolean initialised = false;
@@ -82,7 +83,7 @@ public class Menu {
             resume = assets.get("play.png", Texture.class);
             exit = assets.get("play.png", Texture.class);
             options = assets.get("play.png", Texture.class);
-            ArrayList<String> list= new ArrayList<String>();
+            ArrayList<String> list = new ArrayList<String>();
 
             pauseSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
         }

@@ -14,6 +14,8 @@ import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class World{
@@ -26,7 +28,7 @@ public class World{
     File tlw;
     FileInputStream fis;
     public boolean initialised = false, loaded = false, areasCreated = false;
-    FileHandle worldDir = null;
+    public FileHandle worldDir = null;
     int curAreaX = 0, curAreaY = 0, curAreaZ = 0, oldAreaX = 0, oldAreaY = 0, oldAreaZ = 0;
     float areaTransitionX = 0, areaTransitionY = 0, areaTransitionZ = 0;
     String name;
@@ -44,6 +46,13 @@ public class World{
     ArrayList<Integer> tileIndices;
     ArrayList<String> stepSounds;
     ArrayList<String> areasAmbients;
+    ArrayList<NPC> npcs;
+    ArrayList<Integer> npcsAreas;
+    ArrayList<ObjectCell> objects;
+    ArrayList<HittableEntity> movables;
+    ArrayList<Integer> movablesAreas;
+    ArrayList<Entity> itemsOnFloor;
+    ArrayList<Integer> itemsOnFloorAreas;
     ArrayList<ParticleProperties> particles;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
@@ -53,13 +62,15 @@ public class World{
     ShapeRenderer shapeRenderer;
     int animsLoaded = 0;
     GameMenu menu;
-    Sound currentSound;
+    public Sound currentSound;
     long currentSoundId = -1;
     String currentSoundPath;
     boolean startedAmbient = false;
     boolean startedChanging = false;
+    public int save;
+    boolean loadedState = false;
 
-    public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ) {
+    public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ, int save) {
         this.menu = menu;
         areas = new ArrayList<Area>();
         this.folderPath = folderPath;
@@ -77,14 +88,15 @@ public class World{
         curAreaX = startingAreaX;
         curAreaY = startingAreaY;
         curAreaZ = startingAreaZ;
+        this.save = save;
     }
 
-    public World(GameMenu menu, String worldPath) {
+    public World(GameMenu menu, String worldPath, int save) {
         this.menu = menu;
         areas = new ArrayList<Area>();
         folderPath = worldPath;
         tlw = new File(worldPath+"/world.tlw");
-
+        this.save = save;
     }
 
     public void updateTiles() {
@@ -131,8 +143,305 @@ public class World{
         names = preNames;
     }
 
-    public void load(AssetManager assets) {
+    public static byte [] float2ByteArray (float value)
+    {
+        return ByteBuffer.allocate(4).putFloat(value).array();
+    }
 
+    public static float toFloat(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getFloat();
+    }
+
+    private void saveState() {
+        File savesDir = new File(worldDir + "/saves");
+        if (!savesDir.exists()) {
+            savesDir.mkdir();
+        }
+        File currentSave = new File(worldDir + "/saves/state" + save);
+        try {
+            currentSave.createNewFile();
+            FileOutputStream saveFile = new FileOutputStream(currentSave, false);
+
+            for (int i =0; i < flags.size(); ++i) {
+                if (flags.get(i)) {
+                    saveFile.write(1);
+                } else {
+                    saveFile.write(0);
+                }
+            }
+            saveFile.write(curAreaX);
+            saveFile.write(curAreaY);
+            saveFile.write(curAreaZ);
+            Player player = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player;
+            saveFile.write(float2ByteArray(player.hitBox.x));
+            saveFile.write(float2ByteArray(player.hitBox.y));
+            saveFile.write(player.inventory.size());
+            int headWear = -1;
+            int bodyWear = -1;
+            int handsObject = -1;
+            for (int i =0; i < player.inventory.size(); ++i) {
+                saveFile.write(player.inventory.get(i).fileName.length());
+                saveFile.write(player.inventory.get(i).fileName.getBytes());
+                saveFile.write(player.inventory.get(i).stack);
+                if (player.inventory.get(i).sides == player.headWear) {
+                    headWear = i;
+                } else if (player.inventory.get(i).sides == player.bodyWear) {
+                    bodyWear = i;
+                } else if (player.inventory.get(i).sides == player.objectInHands) {
+                    handsObject = i;
+                }
+            }
+            saveFile.write(headWear + 1);
+            saveFile.write(bodyWear + 1);
+            saveFile.write(handsObject + 1);
+            for (int i =0; i < npcs.size(); ++i) {
+                for (int j =0; j < npcs.get(i).flags.size(); ++j) {
+                    if (npcs.get(i).flags.get(j)) {
+                        saveFile.write(1);
+                    } else {
+                        saveFile.write(0);
+                    }
+                }
+                saveFile.write(npcsAreas.get(i));
+                saveFile.write(float2ByteArray(npcs.get(i).hitBox.x));
+                saveFile.write(float2ByteArray(npcs.get(i).hitBox.y));
+                saveFile.write(npcs.get(i).inventory.size());
+                headWear = -1;
+                bodyWear = -1;
+                handsObject = -1;
+                for (int j =0; j < npcs.get(i).inventory.size(); ++j) {
+                    saveFile.write(npcs.get(i).inventory.get(j).fileName.length());
+                    saveFile.write(npcs.get(i).inventory.get(j).fileName.getBytes());
+                    saveFile.write(npcs.get(i).inventory.get(j).stack);
+                    if (npcs.get(i).inventory.get(j).sides == player.headWear) {
+                        headWear = j;
+                    } else if (npcs.get(i).inventory.get(j).sides == npcs.get(i).bodyWear) {
+                        bodyWear = j;
+                    } else if (npcs.get(i).inventory.get(j).sides == npcs.get(i).objectInHands) {
+                        handsObject = j;
+                    }
+                }
+                saveFile.write(headWear + 1);
+                saveFile.write(bodyWear + 1);
+                saveFile.write(handsObject + 1);
+            }
+
+            for (int i =0; i < movables.size(); ++i) {
+                saveFile.write(movablesAreas.get(i));
+                saveFile.write(float2ByteArray(movables.get(i).hitBox.x));
+                saveFile.write(float2ByteArray(movables.get(i).hitBox.y));
+            }
+
+            for (int i =0; i < objects.size(); ++i) {
+                saveFile.write(objects.get(i).currentState);
+                if (objects.get(i).items == null) {
+                    saveFile.write(0);
+                } else {
+                    saveFile.write(objects.get(i).items.size());
+                    for (int j =0; j < objects.get(i).items.size(); ++j) {
+                        saveFile.write(objects.get(i).items.get(j).fileName.length());
+                        saveFile.write(objects.get(i).items.get(j).fileName.getBytes());
+                        saveFile.write(objects.get(i).items.get(j).stack);
+                    }
+                }
+            }
+
+            saveFile.write(itemsOnFloor.size());
+            for (int i =0; i < itemsOnFloor.size(); ++i) {
+                saveFile.write(itemsOnFloorAreas.get(i));
+                saveFile.write(itemsOnFloor.get(i).containingItem.fileName.length());
+                saveFile.write(itemsOnFloor.get(i).containingItem.fileName.getBytes());
+                saveFile.write(itemsOnFloor.get(i).containingItem.stack);
+                saveFile.write(float2ByteArray(itemsOnFloor.get(i).x));
+                saveFile.write(float2ByteArray(itemsOnFloor.get(i).y));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadState() {
+        File currentSave = new File(worldDir + "/saves/state" + save);
+        try {
+            FileInputStream saveFile = new FileInputStream(currentSave);
+            for (int i =0; i < flags.size(); ++i) {
+                int flag = saveFile.read();
+                if (flag == 1) {
+                    flags.set(i, true);
+                } else {
+                   flags.set(i, false);
+                }
+            }
+            curAreaX = saveFile.read();
+            curAreaY = saveFile.read();
+            curAreaZ = saveFile.read();
+            byte[] flo = {0,0,0,0};
+            saveFile.read(flo);
+            Player player = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player;
+            player.hitBox.x = toFloat(flo);
+            saveFile.read(flo);
+            player.hitBox.y = toFloat(flo);
+            int itemsCount = saveFile.read();
+            player.inventory.clear();
+            for (int i =0; i < itemsCount; ++i) {
+                int bytesCount = saveFile.read();
+                byte[] bitfield = new byte[bytesCount];
+                saveFile.read(bitfield);
+                String str = new String(bitfield, StandardCharsets.UTF_8);
+                Item item = new Item(assets, worldDir.path(), str);
+                item.stack = saveFile.read();
+                player.inventory.add(item);
+            }
+            int headWear = saveFile.read();
+            if (headWear > 0) {
+                player.headWear = player.inventory.get(headWear-1).sides;
+            } else {
+                player.headWear = null;
+            }
+            int bodyWear = saveFile.read();
+            if (bodyWear > 0) {
+                player.bodyWear = player.inventory.get(bodyWear-1).sides;
+            } else {
+                player.bodyWear = null;
+            }
+            int handsObject = saveFile.read();
+            if (handsObject > 0) {
+                player.objectInHands = player.inventory.get(handsObject-1).sides;
+            }else {
+                player.objectInHands = null;
+            }
+            for (int i =0; i < npcs.size(); ++i) {
+                for (int j =0; j < npcs.get(i).flags.size(); ++j) {
+                    int flag = saveFile.read();
+                    if (flag == 1) {
+                        npcs.get(i).flags.set(j, true);
+                    } else {
+                        npcs.get(i).flags.set(j, false);
+                    }
+                }
+                npcsAreas.set(i,saveFile.read());
+                saveFile.read(flo);
+                npcs.get(i).hitBox.x = toFloat(flo);
+                saveFile.read(flo);
+                npcs.get(i).hitBox.y = toFloat(flo);
+                if (npcs.get(i).spawnArea != npcsAreas.get(i)) {
+                    ObjectCell cell = areas.get(npcs.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(npcs.get(i).spawnArea).worldObjectsHandler.solids.indexOf(npcs.get(i)));
+                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, cell.currentState);
+                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addSolid(npcs.get(i), this, cell.currentState, cell.items);
+                }
+                itemsCount = saveFile.read();
+                npcs.get(i).inventory.clear();
+                for (int j =0; j < itemsCount; ++j) {
+                    int bytesCount = saveFile.read();
+                    byte[] bitfield = new byte[bytesCount];
+                    saveFile.read(bitfield);
+                    String str = new String(bitfield, StandardCharsets.UTF_8);
+                    Item item = new Item(assets, worldDir.path(), str);
+                    item.stack = saveFile.read();
+                    npcs.get(i).inventory.add(item);
+                }
+                headWear = saveFile.read();
+                if (headWear > 0) {
+                    npcs.get(i).headWear = npcs.get(i).inventory.get(headWear-1).sides;
+                } else {
+                    npcs.get(i).headWear = null;
+                }
+                bodyWear = saveFile.read();
+                if (bodyWear > 0) {
+                    npcs.get(i).bodyWear = npcs.get(i).inventory.get(bodyWear-1).sides;
+                } else {
+                    npcs.get(i).bodyWear = null;
+                }
+                handsObject = saveFile.read();
+                if (handsObject > 0) {
+                    npcs.get(i).objectInHands = npcs.get(i).inventory.get(handsObject-1).sides;
+                } else {
+                    npcs.get(i).objectInHands = null;
+                }
+            }
+
+            for (int i =0; i < movables.size(); ++i) {
+                movablesAreas.set(i,saveFile.read());
+                saveFile.read(flo);
+                movables.get(i).hitBox.x = toFloat(flo);
+                saveFile.read(flo);
+                movables.get(i).hitBox.y = toFloat(flo);
+                if (movables.get(i).spawnArea != movablesAreas.get(i)) {
+                    ObjectCell cell = areas.get(movables.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(movables.get(i).spawnArea).worldObjectsHandler.solids.indexOf(movables.get(i)));
+                    ObjectCell cel2 = areas.get(movablesAreas.get(i)).worldObjectsHandler.addSolid(movables.get(i), this, cell.currentState, cell.items);
+                    for (int j =0; j < objects.size(); ++j) {
+                        if (objects.get(j).entity == movables.get(i)) {
+                            objects.set(j, cel2);
+                        }
+                    }
+                }
+            }
+
+            for (int i =0; i < objects.size(); ++i) {
+                objects.get(i).currentState = saveFile.read();
+                objects.get(i).soundsAreStopped = true;
+                if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).worldObjectsHandler.objects.contains(objects.get(i))) {
+                    //objects.get(i).updateSoundState(menu);
+                }
+                objects.get(i).updateEntityState(assets, worldDir.path());
+                itemsCount = saveFile.read();
+                if (objects.get(i).items != null) {
+                    objects.get(i).items.clear();
+                    for (int j =0; j < itemsCount; ++j) {
+                        int bytesCount = saveFile.read();
+                        byte[] bitfield = new byte[bytesCount];
+                        saveFile.read(bitfield);
+                        String str = new String(bitfield, StandardCharsets.UTF_8);
+                        Item item = new Item(assets, worldDir.path(), str);
+                        item.stack = saveFile.read();
+                        objects.get(i).items.add(item);
+                    }
+                }
+            }
+            //deleteObjectCellsForEntity(activeItem);
+            for (int i =0; i<areas.size(); ++i) {
+                for (int j =0; j<areas.get(i).worldObjectsHandler.items.size(); ++j) {
+                    areas.get(i).worldObjectsHandler.deleteObjectCellsForEntity(areas.get(i).worldObjectsHandler.items.get(j));
+                }
+                areas.get(i).worldObjectsHandler.items.clear();
+            }
+            itemsOnFloor.clear();
+            itemsOnFloorAreas.clear();
+            itemsCount = saveFile.read();
+            for (int i =0; i<itemsCount; ++i) {
+                int areaId = saveFile.read();
+                int bytesCount = saveFile.read();
+                byte[] bitfield = new byte[bytesCount];
+                saveFile.read(bitfield);
+                String str = new String(bitfield, StandardCharsets.UTF_8);
+                Item item = new Item(assets, worldDir.path(), str);
+                item.stack = saveFile.read();
+                saveFile.read(flo);
+                float x = toFloat(flo);
+                saveFile.read(flo);
+                float y = toFloat(flo);
+                Entity itemGlow = new Entity(assets, "item.png", x, y, 0 ,0 ,0);
+                itemGlow.containingItem = item;
+                areas.get(areaId).worldObjectsHandler.addNonSolid(itemGlow, -1);
+                itemsOnFloorAreas.add(areaId);
+                itemsOnFloor.add(itemGlow);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        loadedState = true;
+    }
+
+    public void load(AssetManager assets) {
+        npcs = new ArrayList<NPC>();
+        npcsAreas = new ArrayList<Integer>();
+        objects = new ArrayList<ObjectCell>();
+        movables = new ArrayList<HittableEntity>();
+        movablesAreas = new ArrayList<Integer>();
+        itemsOnFloor = new ArrayList<Entity>();
+        itemsOnFloorAreas = new ArrayList<Integer>();
         this.assets = assets;
         stepSounds = new ArrayList<String>();
         areasAmbients = new ArrayList<String>();
@@ -396,6 +705,7 @@ public class World{
                 if (entry.isDirectory()) {
                     assets.load(entry.path() + "/char.png", Texture.class);
                     assets.load(entry.path() + "/chargo.png", Texture.class);
+                    assets.load(entry.path() + "/speech.wav", Sound.class);
                 }
             }
             assets.load(folderPath + "/save1.png", Texture.class);
@@ -497,6 +807,17 @@ public class World{
 
         if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
+            if (save >= 0) {
+                File saveFile = new File(worldDir + "/saves/state" + save);
+                if (saveFile.exists()) {
+                    loadState();
+                } else {
+                    createNewSave();
+                }
+            } else {
+                createNewSave();
+            }
+
         }
         int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
         areas.get(n).isCurrent = true;
@@ -506,6 +827,18 @@ public class World{
             currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
             startedAmbient = true;
         }
+    }
+
+    private void createNewSave() {
+        File savesDir = new File(worldDir + "/saves");
+        save = 0;
+        if (savesDir.exists()) {
+            FileHandle curDir = Gdx.files.internal(worldDir + "/saves");
+            for (FileHandle entry: curDir.list()) {
+                save++;
+            }
+        }
+        saveState();
     }
 
     private void checkSolidsPosition() {
@@ -554,7 +887,15 @@ public class World{
                     }
                     solid.hitBox.x = pos;
                 }
-                toArea.worldObjectsHandler.addSolid(solid, cell.currentState, cell.items);
+                if (solid.getClass() == HittableEntity.class) {
+                    toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items);
+                    movablesAreas.set(movables.indexOf(solid), areas.indexOf(toArea));
+                } else {
+                    a.worldObjectsHandler.deleteObjectCellsForEntity(solid);
+                    toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1);
+                    toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
+                    npcsAreas.set(npcs.indexOf(solid), areas.indexOf(toArea));
+                }
             }
         }
     }
@@ -686,7 +1027,9 @@ public class World{
             //initialised = false;
             if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player != null) {
                 Player player = curArea.player;
-                player.characterMaker.setDirection(player.characterMaker.getDirection(player.charId), player.charId);
+                if (player.characterMaker != null) {
+                    player.characterMaker.setDirection(player.characterMaker.getDirection(player.charId), player.charId);
+                }
                 player.movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
                 player.invalidatePose(true, true);
                 player.inventory = oldArea.player.inventory;
@@ -703,13 +1046,19 @@ public class World{
         } else {
             initialised = false;
         }*/
+        //saveState();
     }
 
     public void invalidate() {
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate(this);
         }
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
+            saveState();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F9)) {
+            loadState();
+        }
     }
 
     public Sound getSound(int id) {
@@ -759,6 +1108,8 @@ public class World{
                 //itemGlow.floor = true;
                 itemGlow.containingItem = area.worldObjectsHandler.currentInventory.droppedItem;
                 area.worldObjectsHandler.addNonSolid(itemGlow, -1);
+                itemsOnFloor.add(itemGlow);
+                itemsOnFloorAreas.add(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
                 area.worldObjectsHandler.currentInventory.droppedItem = null;
             }
         }
@@ -876,27 +1227,37 @@ public class World{
                     //float freeOff = 0;
                     //if (freeHorCamera1) freeOff = /*area1.zoom **/ area1.camera.getWidth()/2/area1.zoom;
                     if (freeHorCamera1 || freeHorCamera2) {
-                        area1.cameraX = area1.width * area1.TILE_WIDTH - area2.cameraX + 13;
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionX * 2.0f));
-                        area1.draw(batch, this, -1, 0, false, true, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionX * 2.0f));
-                        area2.draw(batch, this, 0, 0, true, false, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        if (platformMode) {
+                            area2.draw(batch, this, area1.TILE_WIDTH*(areaTransitionX), 0, true, true, true);
+                            area1.draw(batch, this, -area1.TILE_WIDTH*(1.0f-areaTransitionX), 0, false, false, true);
+                        } else {
+                            area1.cameraX = area1.width * area1.TILE_WIDTH - area2.cameraX + 13;
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionX * 2.0f));
+                            area1.draw(batch, this, -1, 0, false, true, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionX * 2.0f));
+                            area2.draw(batch, this, 0, 0, true, false, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        }
                     } else {
                         area2.draw(batch, this, SCREEN_WIDTH /area2.zoom*(areaTransitionX), 0, true, true, true);
-                        area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-1.0f+areaTransitionX)-1, 0, false, false, true);
+                        area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-1.0f+areaTransitionX)/*-1*/, 0, false, false, true);
                     }
                 } else {
                     oldArea.cameraY = curArea.cameraY - (area1.y+area1.h-area2.y-area2.h)*firtsAreaHeight*area1.TILE_HEIGHT;
                     if (freeHorCamera1 || freeHorCamera2) {
-                        area2.cameraX = 12;
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionX * 2.0f));
-                        area2.draw(batch, this, 0, 0, false, true, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionX * 2.0f));
-                        area1.draw(batch, this, -4, 0, true, false, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        if (platformMode) {
+                            area2.draw(batch, this, area1.TILE_WIDTH*(1.0f-areaTransitionX), 0, false, true, true);
+                            area1.draw(batch, this, -area1.TILE_WIDTH*(areaTransitionX), 0, true, false, true);
+                        } else {
+                            area2.cameraX = 12;
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionX * 2.0f));
+                            area2.draw(batch, this, 0, 0, false, true, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionX * 2.0f));
+                            area1.draw(batch, this, -4, 0, true, false, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        }
                     } else {
-                        area2.draw(batch, this, SCREEN_WIDTH/area2.zoom*(1.0f-areaTransitionX)+1/* - (area2.w-1)*firtsAreaWidth*area2.TILE_WIDTH*/, 0, false, true, true);
+                        area2.draw(batch, this, SCREEN_WIDTH/area2.zoom*(1.0f-areaTransitionX)/*+1*//* - (area2.w-1)*firtsAreaWidth*area2.TILE_WIDTH*/, 0, false, true, true);
                         area1.draw(batch, this, SCREEN_WIDTH/area1.zoom*(-areaTransitionX), 0, true, false, true);
                     }
                 }
@@ -912,25 +1273,33 @@ public class World{
                 }
                 if (oldAreaY < curAreaY) {
                     oldArea.cameraX = curArea.cameraX + (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
-                    if (freeVerCamera1 || freeVerCamera2) {
+                    if (freeVerCamera1 || freeVerCamera2 ) {
                         //area2.cameraY = 12;
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
-                        area1.draw(batch, this, 0, 0, true, true, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionY * 2.0f));
-                        area2.draw(batch, this, 0, -6, false, false, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        if (platformMode) {
+
+                        }else {
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
+                            area1.draw(batch, this, 0, 0, true, true, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionY * 2.0f));
+                            area2.draw(batch, this, 0, -6, false, false, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        }
                     } else {
                         area1.draw(batch, this, 0, (SCREEN_HEIGHT +off*area1.TILE_HEIGHT+add)/area1.zoom*(areaTransitionY) /*+ area1.FLOOR_HEIGHT+2*/, true, true, true);
                         area2.draw(batch, this, 0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area2.zoom*(1.0f - areaTransitionY)-off2, false, false, true);
                     }
                 } else {
                     if (freeVerCamera1 || freeVerCamera2) {
-                        area1.cameraY = area1.height * area1.TILE_HEIGHT - area2.cameraY - 5;
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionY * 2.0f));
-                        area1.draw(batch, this, 0, 3, false, true, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
-                        area2.draw(batch, this, 0, 0, true, false, false);
-                        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        if (platformMode) {
+
+                        }else {
+                            area1.cameraY = area1.height * area1.TILE_HEIGHT - area2.cameraY - 5;
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, areaTransitionY * 2.0f));
+                            area1.draw(batch, this, 0, 3, false, true, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 2.0f - areaTransitionY * 2.0f));
+                            area2.draw(batch, this, 0, 0, true, false, false);
+                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                        }
                     } else {
                         oldArea.cameraX = curArea.cameraX - (area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH;
                         area1.draw(batch, this, /*(area1.x-area2.x)*firtsAreaWidth*area1.TILE_WIDTH*/0, (SCREEN_HEIGHT+off*area1.TILE_HEIGHT+add)/area1.zoom*(1.0f-areaTransitionY)+off2/* + area1.FLOOR_HEIGHT+2*/, false, true, true);
@@ -938,12 +1307,12 @@ public class World{
                     }
                 }
             }
-            if (freeHorCamera1 || freeHorCamera2 || freeVerCamera1 || freeVerCamera2) {
+            if (!platformMode) {
                 areaTransitionY -= 0.05f;
                 areaTransitionX -= 0.05f;
             } else {
-                areaTransitionY /= 1.1f;
-                areaTransitionX /= 1.1f;
+                areaTransitionY /= 1.2f;
+                areaTransitionX /= 1.2f;
             }
 
             if (areaTransitionX < 0.001f && areaTransitionX != 0) {

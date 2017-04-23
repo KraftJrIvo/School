@@ -40,7 +40,7 @@ public class SchoolRPG extends ApplicationAdapter {
 	@Override
 	public void render () {
 		if (menus.get(curMenuId).nextMenu != curMenuId) {
-			changeMenu(menus.get(curMenuId).nextMenu, menus.get(curMenuId).nextMenuSetting);
+			changeMenu(menus.get(curMenuId).nextMenu, menus.get(curMenuId).nextMenuSetting, menus.get(curMenuId).nextMenuMessage);
 		}
 		if (assets.update()) {
 			menus.get(curMenuId).initialiseResources();
@@ -60,14 +60,19 @@ public class SchoolRPG extends ApplicationAdapter {
 		} return 0;
 	}
 
-	private void changeMenu(int newId, int newSetting) {
+	private void changeMenu(int newId, int newSetting, String message) {
+		int prevMenuId = curMenuId;
 		int language = menus.get(curMenuId).currentLanguage;
 		menus.get(curMenuId).nextMenu = curMenuId;
 		if (newId == 0) {
 			curMenuId = 0;
 			menus.get(curMenuId).currentLanguage = language;
+			if (menus.get(prevMenuId).getClass() == GameMenu.class) {
+				((GameMenu)menus.get(prevMenuId)).stopSounds();
+			}
 			return;
 		}
+		boolean neww = false;
 		if (findId(newId) > 0) {
 			curMenuId = findId(newId);
 		} else {
@@ -78,14 +83,20 @@ public class SchoolRPG extends ApplicationAdapter {
 			} else if (newId == 3) {
 				menus.add(new CreditsMenu(menus.size(), android));
 			}
-			menus.get(menus.size()-1).load(assets);
 			curMenuId = menus.size()-1;
+			neww = true;
+		}
+		Menu curMenu = menus.get(curMenuId);
+		curMenu.currentLanguage = language;
+		curMenu.nextMenuMessage = message;
+		curMenu.changeSetting(newSetting);
+		if (neww) {
+			curMenu.load(assets);
+		}
+		if (menus.get(prevMenuId).getClass() == GameMenu.class) {
+			((GameMenu)menus.get(prevMenuId)).stopSounds();
 		}
 		//System.out.println(menus.get(curMenuId).ID);
-		if (newId == 1) {
-			menus.get(curMenuId).changeSetting(newSetting);
-		}
-		menus.get(curMenuId).currentLanguage = language;
 		//System.out.println(menus.get(curMenuId).nextMenu);
 
 	}

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,7 +15,12 @@ import com.mygdx.schoolRPG.tools.Button;
 import com.mygdx.schoolRPG.tools.CircularSelector;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IVO on 15.07.2014.
@@ -30,6 +36,13 @@ public class MainMenu extends Menu {
     Texture backGround, title, cursor, overlay;
     float overlayAngle = 0;
 
+    boolean gameSelect = false;
+    MenuListSelector gameSelector;
+    public ArrayList<String> worldsNames;
+    public ArrayList<String> worldsPaths;
+    public ArrayList<Integer> worldsIds;
+    public ArrayList<Integer> worldsStates;
+
     MenuListSelector selector;
 
     public MainMenu(int id, boolean android) {
@@ -43,19 +56,66 @@ public class MainMenu extends Menu {
     public void invalidate() {
         super.invalidate();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            int index = selector.getSelectedIndex();
-            if (index == 0) {
-                nextMenuSetting = 0;
-                nextMenu = 1;
-            } else if (index == 1) {
-                optionsOpen = true;
-                //nextMenuSetting = 0;
-                //nextMenu = 2;
+        if (gameSelect && Gdx.input.isKeyJustPressed(Input.Keys.FORWARD_DEL)) {
+            int index = gameSelector.getSelectedIndex();
+            int worldId = worldsIds.get(index);
+            if (index != 0 && worldsIds.get(index-1) == worldId) {
+                int gameNum = 1;
+                for (int i = index + 1; i < worldsIds.size(); ++i) {
+                    if (worldsIds.get(i) != worldId) {
+                        break;
+                    }
+                    gameNum++;
+                }
+                FileHandle file = Gdx.files.local(worldsPaths.get(worldId) + "/saves/state" + (gameNum-1));
+                file.delete();
+                FileHandle savesDir = Gdx.files.internal(worldsPaths.get(worldId) + "/saves");
+                for (FileHandle entry: savesDir.list()) {
+
+                    int saveNum = Integer.parseInt(entry.name().substring(5, entry.name().length()));
+                    if (saveNum >= gameNum) {
+                        FileHandle nfile = Gdx.files.internal(worldsPaths.get(worldId) + "/saves/state" + (saveNum-1));
+                        entry.file().renameTo(nfile.file());
+                    }
+                }
             }
-            else if (index == 2) {
-                nextMenuSetting = 1;
-                nextMenu = 1;
+            int id = gameSelector.getSelectedIndex();
+            refreshSaves();
+            gameSelector.setSelectedIndex(id);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (gameSelect) {
+                int index = gameSelector.getSelectedIndex();
+                if (index == gameSelector.titles.size() - 1) {
+                    gameSelect = false;
+                } else {
+                    int worldId = worldsIds.get(index);
+                    if (index == 0 || worldsIds.get(index-1) != worldId) {
+                        int gameNum = 1;
+                        for (int i = index + 1; i < worldsIds.size(); ++i) {
+                            if (worldsIds.get(i) != worldId) {
+                                break;
+                            }
+                            gameNum++;
+                        }
+                        worldsIds.add(index + gameNum, worldId);
+                        worldsStates.add(index + gameNum, gameNum - 1);
+                        gameSelector.titles.add(index + gameNum, worldsNames.get(worldId) + " - Continue Game " + gameNum);
+                    }
+                    nextMenuMessage = worldsPaths.get(worldId);
+                    nextMenuSetting = worldsStates.get(index);
+                    nextMenu = 1;
+                }
+            } else {
+                int index = selector.getSelectedIndex();
+                if (index == 0) {
+                    gameSelect = true;
+                } else if (index == 1) {
+                    optionsOpen = true;
+                }
+                else if (index == 2) {
+                }
             }
         }
     }
@@ -90,8 +150,12 @@ public class MainMenu extends Menu {
         float centerY = Gdx.graphics.getHeight()/screenRatioY/2;
         batch.draw(new TextureRegion(overlay), centerX - overlay.getWidth()/2, centerY - overlay.getHeight()/2, 750.0f, 750.0f, 1500, 1500, 1, 1, overlayAngle, true);
         overlayAngle += 0.01f;
-        batch.draw(title, Gdx.graphics.getWidth()/screenRatioX/2 - title.getWidth()/2, Gdx.graphics.getHeight()/screenRatioY - title.getHeight() * 1.5f);
-        selector.draw(batch, optionsOpen);
+        if (!gameSelect) {
+            batch.draw(title, Gdx.graphics.getWidth()/screenRatioX/2 - title.getWidth()/2, Gdx.graphics.getHeight()/screenRatioY - title.getHeight() * 1.5f);
+            selector.draw(batch, optionsOpen);
+        } else {
+            gameSelector.draw(batch, optionsOpen);
+        }
         batch.end();
         super.draw(batch, renderer);
     }
@@ -109,6 +173,59 @@ public class MainMenu extends Menu {
         //assets.load("credits.png", Texture.class);
     }
 
+    private void refreshSaves() {
+        worldsStates = new ArrayList<Integer>();
+        worldsIds = new ArrayList<Integer>();
+        worldsNames = new ArrayList<String>();
+        worldsPaths = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<String>();
+        FileHandle worldsDir = Gdx.files.internal("worlds");
+        for (FileHandle entry: worldsDir.list()) {
+            if (entry.isDirectory()) {
+                FileHandle tlwFile = Gdx.files.internal(entry.path() + "/world.tlw");
+                if (tlwFile.exists()) {
+                    String name = "";
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(tlwFile.file());
+                        int namesCount;
+                        namesCount = fis.read();
+                        for (int i =0; i < namesCount; ++i) {
+                            int nameSize = fis.read();
+                            byte[] buff = new byte[nameSize];
+                            fis.read(buff);
+                        }
+                        int size = fis.read();
+                        byte[] buff = new byte[size];
+                        fis.read(buff);
+                        name = new String(buff);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    list.add(name + " - Start New Game");
+                    worldsIds.add(worldsPaths.size());
+                    worldsNames.add(name);
+                    worldsPaths.add(entry.path());
+                    worldsStates.add(-1);
+                    FileHandle statesDir = Gdx.files.internal(entry.path() + "/saves");
+                    if (statesDir.exists()) {
+                        int stateNumber = 1;
+                        for (FileHandle state: statesDir.list()) {
+                            list.add(name + " - Continue Game " + stateNumber);
+                            worldsIds.add(worldsPaths.size()-1);
+                            worldsStates.add(stateNumber-1);
+                            stateNumber++;
+                        }
+                    }
+                }
+            }
+        }
+        list.add("Back");
+        gameSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
+    }
+
     @Override
     public void initialiseResources() {
         if (!initialised) {
@@ -117,6 +234,8 @@ public class MainMenu extends Menu {
             updateLanguage();
             title = assets.get("title.png", Texture.class);
             overlay = assets.get("bg_overlay.png", Texture.class);
+            refreshSaves();
+
             initialised = true;
         }
     }

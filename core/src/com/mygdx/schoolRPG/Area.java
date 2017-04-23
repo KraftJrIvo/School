@@ -184,11 +184,15 @@ public class Area {
         if (player == null) return;
         cameraX += (player.graphicX + player.hitBox.getWidth()/2 - cameraX)/k;
         cameraY += (player.graphicY + player.hitBox.getHeight()/2 - cameraY)/k;
-        if (TILE_WIDTH*(width)*zoom > camera.getWidth()) {
+        if (TILE_WIDTH*(width)*zoom +20 > camera.getWidth()) {
             if (cameraX - SCREEN_WIDTH/zoom/2 < 1) {
                 cameraX = SCREEN_WIDTH/zoom/2+1;
+                if (platformMode) {
+                    cameraX--;
+                }
             } else if (cameraX + SCREEN_WIDTH/zoom/2 > TILE_WIDTH*(width)) {
                 cameraX = TILE_WIDTH*(width) - SCREEN_WIDTH/zoom/2;
+
             }
         }
         float a = TILE_HEIGHT*(height)*zoom;
@@ -197,7 +201,7 @@ public class Area {
         if (platformMode) {
             off = 1;
         }
-        if (TILE_HEIGHT*(height-off)*zoom > camera.getHeight()) {
+        if (TILE_HEIGHT*(height-off)*zoom +20 > camera.getHeight()) {
             if (cameraY - SCREEN_HEIGHT / zoom / 2 + TILE_HEIGHT < 0) {
                 cameraY = SCREEN_HEIGHT / zoom / 2 - TILE_HEIGHT;
             } else if (cameraY + SCREEN_HEIGHT / zoom / 2 + FLOOR_HEIGHT + 2 > TILE_HEIGHT * (height - off)) {
@@ -270,6 +274,7 @@ public class Area {
             if (tileX == -1) {
                 player.hitBox.x = 15;
                 if (platformMode) {
+                    player.hitBox.x = 5;
                     player.speedX = speed;
                 }
                 if (platformMode) player.curPose = player.poses.getTile(PlayerMultiTile.PlayerPose.RIGHT);

@@ -36,6 +36,7 @@ public class Entity implements Comparable {
     boolean inWater = false, inGoo = false;
     Texture active = null;
     public Item containingItem = null;
+    int spawnArea = -1;
 
     public ArrayList<TextureRegion> heads = null;
     public ArrayList<TextureRegion> headWears = null;

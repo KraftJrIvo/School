@@ -40,14 +40,27 @@ public class GameMenu extends Menu {
             rightJoyRect = new Rectangle(Gdx.graphics.getWidth() * 6 / 7 - JOYBASESIZE / 2, Gdx.graphics.getHeight() / 5 - JOYBASESIZE / 2, JOYBASESIZE, JOYBASESIZE);
         }
         worlds = new ArrayList<World>();
-        worlds.add(new World(this, "worlds/ultimatetest1"));
-        //worlds.add(new World("worlds/forest"));
-        worlds.add(new World(this, "worlds/ultimatetest_p1"));
+
+        //worlds.add(new World(this, "worlds/ultimatetest1", -1));
     }
 
     @Override
     public void changeSetting(int id) {
-        changeWorld(id);
+        int found = -1;
+        for (int i =0; i < worlds.size(); ++i) {
+            if (worlds.get(i).worldDir.path().equals(nextMenuMessage)) {
+                found = i;
+            }
+        }
+        if (found == -1) {
+            worlds.add(new World(this, nextMenuMessage, id));
+            curWorld = worlds.size()-1;
+            initialised = false;
+        } else {
+            curWorld = found;
+            worlds.get(curWorld).save = id;
+            worlds.get(curWorld).loadState();
+        }
     }
 
     @Override
@@ -61,12 +74,6 @@ public class GameMenu extends Menu {
         assets.load("dialog_overlay2.png", Texture.class);
         worlds.get(curWorld).load(assets);
         //changeWorld(0);
-    }
-
-    public void changeWorld(int n) {
-        curWorld = n;
-        //worlds.get(n).initialiseResources(assets);
-        initialised = false;
     }
 
     @Override
@@ -125,6 +132,14 @@ public class GameMenu extends Menu {
             rightGameJoy.draw(batch, renderer, 1.0f);
         }
         super.draw(batch, renderer);
+
     }
 
+    public void stopSounds() {
+        if (worlds.get(curWorld).currentSound != null) {
+            worlds.get(curWorld).currentSound.stop();
+        }
+    }
 }
+
+

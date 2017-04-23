@@ -95,6 +95,7 @@ public class ObjectCell {
     int charId;
     CharacterMaker characterMaker;
     boolean soundsAreStopped = false;
+    long loopId = -1;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items) {
         this.type = type;
@@ -190,6 +191,24 @@ public class ObjectCell {
         entity.bodyWears = statesBodyWears.get(currentState);
     }
 
+    public void updateEntityState(AssetManager assets, String worldDir) {
+
+        if (statesTexTypes.get(currentState).equals("sprite")) {
+            entity.anim = null;
+            entity.tex = assets.get(worldDir + "/" + statesTex.get(currentState) + ".png", Texture.class);
+        } else if (statesTexTypes.get(currentState).equals("anim")) {
+            entity.tex = null;
+            entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
+        }
+    }
+
+
+    public void updateSoundState(GameMenu menu) {
+        if (statesSoundLoops.get(currentState) != null) {
+            statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
+        }
+    }
+
     public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId, GameMenu menu, boolean playerActivated) {
         if (!statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
                 && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
@@ -198,19 +217,12 @@ public class ObjectCell {
         }
         if (statesSoundLoops.get(currentState) != null) {
             statesSoundLoops.get(currentState).stop();
+            loopId = -1;
         }
         currentState++;
         currentState = currentState % statesCount;
-        if (statesSoundLoops.get(currentState) != null) {
-            statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
-        }
-        if (statesTexTypes.get(currentState).equals("sprite")) {
-            entity.anim = null;
-            entity.tex = assets.get(worldDir + "/" + statesTex.get(currentState) + ".png", Texture.class);
-        } else if (statesTexTypes.get(currentState).equals("anim")) {
-            entity.tex = null;
-            entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
-        }
+        updateSoundState(menu);
+        updateEntityState(assets, worldDir);
         this.charId = charId;
         for (int i = 0; i < flagNames.size(); ++i) {
             if (flagNames.get(i).equals(statesFlags.get(currentState))) {
@@ -261,6 +273,7 @@ public class ObjectCell {
             if (menu.paused || !area.isCurrent) {
                 statesSoundLoops.get(currentState).stop();
                 soundsAreStopped = true;
+                loopId = -1;
             } else {
                 if (soundsAreStopped) {
                     statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));

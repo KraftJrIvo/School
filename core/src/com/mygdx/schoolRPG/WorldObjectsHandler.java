@@ -38,6 +38,7 @@ public class WorldObjectsHandler {
     public ObjectCell activeObject = null;
     public NPC activeNPC = null;
     public Entity activeItem = null;
+
     //Player player;
     Area area;
     public WorldObjectsHandler(Area area, ArrayList<ArrayList<ArrayList<Integer>>> blocks, ArrayList<String> flagNames, ArrayList<Boolean> flags) {
@@ -108,12 +109,16 @@ public class WorldObjectsHandler {
                     if (objectCells.get(i).get(j).get(k).entity == solids.get(id)) {
                         result = objectCells.get(i).get(j).get(k);
                         objectCells.get(i).get(j).remove(k);
+                        if (NPCs.contains(result.entity)) {
+                            NPCs.remove(result.entity);
+                        }
                     }
                 }
 
             }
         }
-        for (int i =0; i < objects.size(); ++i) {
+
+        for (int i = 0; i < objects.size(); ++i) {
             if (objects.get(i).entity == solids.get(id)) {
                 objects.remove(i);
             }
@@ -122,7 +127,8 @@ public class WorldObjectsHandler {
         return result;
     }
 
-    public void addSolid(HittableEntity he, int state, ArrayList<Item> items) {
+    public ObjectCell addSolid(HittableEntity he, World world, int state, ArrayList<Item> items) {
+        he.spawnArea = world.areas.indexOf(area);
         he.x = he.hitBox.x;
         he.y = he.hitBox.y;
         if (he.floor) {
@@ -133,6 +139,7 @@ public class WorldObjectsHandler {
         ObjectCell cell = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, he, ObjectType.SOLID, solids.size(), true, items);
         addObjectCell(cell, state);
         solids.add(he);
+        return cell;
     }
 
     public void addNonSolid(Entity e, int state) {
@@ -168,9 +175,16 @@ public class WorldObjectsHandler {
     }
 
     public void addNPC(NPC npc, World world, int state) {
+        npc.spawnArea = world.areas.indexOf(area);
         addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null), state);
         NPCs.add(npc);
         world.synchronizeFlags();
+        if (world.npcs.contains(npc)) {
+            world.npcsAreas.set(world.npcs.indexOf(npc), world.areas.indexOf(area));
+        } else {
+            world.npcs.add(npc);
+            world.npcsAreas.add(world.areas.indexOf(area));
+        }
     }
 
     public void invalidateParticlesCollisions(Particle p) {
@@ -242,7 +256,7 @@ public class WorldObjectsHandler {
             int n = blocks.get(0).get(tileX).get(tileY);
             NPC npc = (NPC)(he);
             Sound s = area.world.getSound(n);
-            if (s != null) {
+            if (s != null && area.world.characterMaker != null) {
                 area.world.characterMaker.sounds.set(npc.charId, s);
             }
         }
@@ -462,6 +476,8 @@ public class WorldObjectsHandler {
         if (activeItem != null) {
             area.player.takeItem(activeItem.containingItem);
             items.remove(activeItem);
+            world.itemsOnFloorAreas.remove(world.itemsOnFloor.indexOf(activeItem));
+            world.itemsOnFloor.remove(activeItem);
             nonSolids.remove(activeItem);
             deleteObjectCellsForEntity(activeItem);
             activeItem = null;
@@ -510,6 +526,7 @@ public class WorldObjectsHandler {
 
     public void invalidateObjects(String worldDir, AssetManager assets, World world) {
         for (int i = 0; i < objects.size(); ++i) {
+            //objects.get(i).updateSoundState(world.menu);
             objects.get(i).checkFlags(worldDir, assets, world.flagNames, world.flags, area, world.menu);
             float ox = objects.get(i).entity.x + objects.get(i).offsetX;
             if (objects.get(i).entity.getClass() != HittableEntity.class) {
@@ -793,9 +810,19 @@ public class WorldObjectsHandler {
     }
 
     public void draw(GameMenu menu, SpriteBatch batch, World world, float offsetX, float offsetY, boolean drawPlayer, float baseAlpha) {
+        //area.zoom = 4;
+        if (area.platformMode) {
+            //area.zoom = 4;
+        }
         if (area.zoom == 2.0f) {
             offsetX -= 75;
             offsetY -= 54;
+        }
+        if (area.platformMode) {
+            //offsetX -= 105;
+            //offsetY -= 80;
+            offsetX += 5;
+            offsetY += 3;
         }
         ArrayList<ObjectCell> objectsOnLevel = new ArrayList<ObjectCell>();
         if (!area.platformMode) {
@@ -887,7 +914,7 @@ public class WorldObjectsHandler {
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
                             float w = ((Player)player.entity).hitBox.width * 0.75f;
                             float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
-                            batch.draw(area.shadow, offsetX + ((Player) player.entity).hitBox.x + w2 / 2, offsetY - (((Player)player.entity).hitBox.y + ((Player)player.entity).hitBox.height / 2) + w2 / 2, w * 1.3f, w * 1.3f);
+                            //batch.draw(area.shadow, offsetX + ((Player) player.entity).hitBox.x + w2 / 2, offsetY - (((Player)player.entity).hitBox.y + 2) + w2 / 2, w * 1.3f, w * 1.3f);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                             area.player.draw(batch, offsetX, offsetY, false);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
@@ -972,6 +999,9 @@ public class WorldObjectsHandler {
             }
 
             for (int z =0; z < objectsOnLevel.size(); ++z) {
+                if (!drawPlayer && objectsOnLevel.get(z).entity.getClass() == Player.class) {
+                    continue;
+                }
                 objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectsOnLevel.get(z) == activeObject, 0, 0);
             }
         }

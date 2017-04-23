@@ -1,4 +1,4 @@
-13
+14
 floor_dark_wood_hor
 wood
 floor_dark_wood_hor_end
@@ -25,11 +25,13 @@ floor_plate
 hard_floor
 tiles\black
 concrete.wav
+tiles\grass
+grass2.wav
 3
 2
 6
 1
-shelter.mp3
+thump.wav
 3
 2
 2

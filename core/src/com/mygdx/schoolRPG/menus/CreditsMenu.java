@@ -27,7 +27,7 @@ public class CreditsMenu extends Menu {
     @Override
     public void load(AssetManager assets) {
         super.load(assets);
-        assets.load("back.png", Texture.class);
+        //assets.load("back.png", Texture.class);
     }
 
     @Override
@@ -36,7 +36,7 @@ public class CreditsMenu extends Menu {
             super.initialiseResources();
             //backGround = assets.get(ID + "/bg.png", Texture.class);
             backGround = assets.get("bg.png", Texture.class);
-            back = assets.get("back.png", Texture.class);
+            //back = assets.get("back.png", Texture.class);
             backButton = new Button(new Rectangle(Gdx.graphics.getWidth()/2 - BACKSIZE/2, Gdx.graphics.getHeight()/3 - BACKSIZE/2, BACKSIZE, BACKSIZE), back);
             initialised = true;
         }
