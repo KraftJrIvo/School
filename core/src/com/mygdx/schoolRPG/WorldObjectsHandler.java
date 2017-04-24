@@ -1,5 +1,6 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -31,6 +32,9 @@ public class WorldObjectsHandler {
     ArrayList<ObjectCell> objects;
     ArrayList<String> flagNames;
     ArrayList<Boolean> flags;
+    ArrayList<Entity> signs;
+    ArrayList<ArrayList<String>> signTexts;
+    Texture signOverlay;
     Texture staticFloor;
     Texture dynamicFloor;
     Dialog currentDialog = null;
@@ -65,6 +69,8 @@ public class WorldObjectsHandler {
                 objectCells.get(i+1).add(new ArrayList<ObjectCell>());
             }
         }
+        signs = new ArrayList<Entity>();
+        signTexts = new ArrayList<ArrayList<String>>();
     }
 
 
@@ -332,26 +338,26 @@ public class WorldObjectsHandler {
 
     public void invalidateLiquids() {
 
-        for (int i = 0; i < solids.size(); ++i) {
+        for (int i = 0; i < fallingObjects.size(); ++i) {
             boolean inWater = false;
             boolean inGoo = false;
             for (int t = 0; t < liquidSurfaces.size(); ++t) {
-                float k = solids.get(i).getTexRect().x + solids.get(i).getTexRect().width/2;
+                float k = fallingObjects.get(i).getTexRect().x + fallingObjects.get(i).getTexRect().width/2;
                 if (k < liquidSurfaces.get(t).getRect().x + liquidSurfaces.get(t).getRect().width && k > liquidSurfaces.get(t).getRect().x) {
-                    if (solids.get(i).getTexRect().y < liquidSurfaces.get(t).getRect().y && solids.get(i).getTexRect().y > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
+                    if (fallingObjects.get(i).getTexRect().y < liquidSurfaces.get(t).getRect().y && fallingObjects.get(i).getTexRect().y > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
                         if (liquidSurfaces.get(t).type == LiquidSurface.LiquidType.GOO) inGoo = true;
                         else inWater = true;
-                        if (!solids.get(i).inWater && !solids.get(i).inGoo) {
+                        if (!fallingObjects.get(i).inWater && !fallingObjects.get(i).inGoo) {
                             liquidSurfaces.get(t).splash(k, 6);
                         }
                         break;
-                    } else if (solids.get(i).getPreviousY() < liquidSurfaces.get(t).getRect().y && solids.get(i).getPreviousY() > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
+                    } else if (fallingObjects.get(i).getPreviousY() < liquidSurfaces.get(t).getRect().y && fallingObjects.get(i).getPreviousY() > liquidSurfaces.get(t).getRect().y - liquidSurfaces.get(t).getRect().height) {
                         liquidSurfaces.get(t).splash(k, -6);
                     }
                 }
             }
-            solids.get(i).inWater = inWater;
-            solids.get(i).inGoo = inGoo;
+            fallingObjects.get(i).inWater = inWater;
+            fallingObjects.get(i).inGoo = inGoo;
         }
     }
 
@@ -407,6 +413,7 @@ public class WorldObjectsHandler {
     public void killPlayer(World world) {
         ParticleProperties pp;
         Particle prt;
+        area.player.die.play(world.menu.soundVolume / 100.0f);
         for (int i = 0; i < 20; ++i) {
             prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(6)), area.platformMode, area.player.x+3, area.player.y-6, 1);
             particles.add(prt);
@@ -736,13 +743,17 @@ public class WorldObjectsHandler {
         if (checkPoints == null) return;
         for (int i = 0; i < checkPoints.size(); i++) {
             if (!checkPoints.get(i).on && checkPoints.get(i).collide(area.player.hitBox)) {
-                checkPoints.get(i).turnOn(checkPoints);
-                area.lastSpawnTileX = (int) ((checkPoints.get(i).x) / (area.TILE_WIDTH));
-                area.lastSpawnTileY = (int) ((checkPoints.get(i).y) / (area.TILE_HEIGHT))+1;
-                if (checkPoints.get(i).angle == 2) area.lastSpawnTileY++;
-                area.saved = true;
+                saveOnCheckPoint(checkPoints.get(i));
             }
         }
+    }
+
+    public void saveOnCheckPoint(CheckPoint checkpoint) {
+        checkpoint.turnOn(checkPoints);
+        area.lastSpawnTileX = (int) ((checkpoint.x) / (area.TILE_WIDTH));
+        area.lastSpawnTileY = (int) ((checkpoint.y) / (area.TILE_HEIGHT))+1;
+        if (checkpoint.angle == 2) area.lastSpawnTileY++;
+        area.saved = true;
     }
 
     private void sortObjectCells(ArrayList<ObjectCell> cells) {
@@ -992,17 +1003,49 @@ public class WorldObjectsHandler {
                 }
 
             }
+
+            for (int z =0; z < objectsOnLevel.size(); ++z) {
+                if (objectsOnLevel.get(z).entity.floor) {
+                    Entity e = objectsOnLevel.get(z).entity;
+                    objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectsOnLevel.get(z) == activeObject, 0, 0);
+                }
+            }
+
+            for (int z =0; z < objectsOnLevel.size(); ++z) {
+                if (objectsOnLevel.get(z).entity.getClass() == Particle.class || (!drawPlayer && objectsOnLevel.get(z).entity.getClass() == Player.class)) {
+                    continue;
+                }
+                if (!objectsOnLevel.get(z).entity.floor) {
+                    objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectsOnLevel.get(z) == activeObject, 0, 0);
+                }
+            }
+
+            for (int z =0; z < liquidSurfaces.size(); ++z) {
+                    liquidSurfaces.get(z).draw(batch, 0, 0);
+            }
             for (int i = 0; i < area.height; ++i) {
                 for (int t = 0; t < area.width; ++t) {
                     drawLayer(batch, world, 1, offsetX, offsetY, i, t);
                 }
             }
-
             for (int z =0; z < objectsOnLevel.size(); ++z) {
-                if (!drawPlayer && objectsOnLevel.get(z).entity.getClass() == Player.class) {
-                    continue;
+                if (objectsOnLevel.get(z).entity.getClass() == Particle.class) {
+                    objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectsOnLevel.get(z) == activeObject, 0, 0);
                 }
-                objectsOnLevel.get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectsOnLevel.get(z) == activeObject, 0, 0);
+            }
+        }
+        for (int i =0; i < signs.size(); ++i) {
+            Entity sign = signs.get(i);
+            int signDist = (int)Math.sqrt((sign.x - area.player.x) * (sign.x - area.player.x) + (sign.y - area.player.y) * (sign.y - area.player.y));
+            if (signDist <= 12) {
+                batch.draw(signOverlay, offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + signOverlay.getHeight()/3, signOverlay.getWidth() * 2, signOverlay.getHeight() * 2);
+                area.signFont.setColor(Color.BLACK);
+                area.signFont.draw(batch, " " + signTexts.get(i).get(5 * menu.currentLanguage), offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + signOverlay.getHeight()*2 + 8);
+                area.signFont.draw(batch, " " + signTexts.get(i).get(5 * menu.currentLanguage + 1), offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + 5*signOverlay.getHeight()/3 + 8);
+                area.signFont.draw(batch, " " + signTexts.get(i).get(5 * menu.currentLanguage + 2), offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + 4*signOverlay.getHeight()/3 + 8);
+                area.signFont.draw(batch, " " + signTexts.get(i).get(5 * menu.currentLanguage + 3), offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + 3*signOverlay.getHeight()/3 + 8);
+                area.signFont.draw(batch, " " + signTexts.get(i).get(5 * menu.currentLanguage + 4), offsetX + sign.x + sign.tex.getWidth()/2 - signOverlay.getWidth(), offsetY - sign.y + 2*signOverlay.getHeight()/3 + 8);
+                area.signFont.setColor(Color.WHITE);
             }
         }
     }
@@ -1053,7 +1096,7 @@ public class WorldObjectsHandler {
                 }
             }
         } catch (Exception e) {
-            System.out.println(e);
+            //System.out.println(e);
         }
     }
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
@@ -48,6 +49,9 @@ public class Area {
     float lastSpawnPos;
     Texture shadow;
     boolean saved = false;
+
+    BitmapFont signFont;
+
 
     public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world) {
         TILE_WIDTH = tileWidth;
@@ -155,9 +159,9 @@ public class Area {
 
             if (player == null) {
                 if (platformMode) {
-                    player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world.folderPath);
+                    player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
                 } else {
-                    player = new Player(assets, null, (playerTileX * TILE_WIDTH), ((playerTileY) * TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world.folderPath);
+                    player = new Player(assets, null, (playerTileX * TILE_WIDTH), ((playerTileY) * TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
                 }
                 lastSpawnPos = 0;
             }
@@ -167,6 +171,10 @@ public class Area {
 
         }
         shadow = assets.get("prt_shadow.png");
+        if (assets.isLoaded(worldPath+"/sign.png")) {
+            worldObjectsHandler.signOverlay = assets.get(worldPath+"/sign_overlay.png");
+            signFont = new BitmapFont(Gdx.files.internal(worldPath + "/sign_font.fnt"), Gdx.files.internal(worldPath + "/sign_font.png"), false);
+        }
         initialised = true;
     }
 
@@ -229,9 +237,9 @@ public class Area {
     public void respawnPlayerZ(String worldDir, AssetManager assets, int tileX, int tileY, CharacterMaker characterMaker) {
         if (player == null) {
             if (platformMode) {
-                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
             } else {
-                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
+                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
             }
         }
         player.hitBox.x = tileX;
@@ -257,9 +265,9 @@ public class Area {
         if (player == null) {
 
             if (platformMode) {
-                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
+                player = new Player(assets, worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
             } else {
-                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, worldDir);
+                player = new Player(assets, null, (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
             }
         }
         if (tileX != 0 || tileY != 0 || pos != 0) {

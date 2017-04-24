@@ -53,12 +53,16 @@ public class NPC extends HittableEntity {
     boolean isControlled;
     MovingConfiguration movingConfiguration;
     Sound speechSound;
+    Sound jump, djump, land, step, die;
+    World world;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
     public GlobalSequence objectInHands;
 
-    public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, String worldDir) {
+    int walkingFrames = 0;
+
+    public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, World world) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
         movingConfiguration = new MovingConfiguration();
         //wh = 10;
@@ -66,9 +70,15 @@ public class NPC extends HittableEntity {
         type = 2;
         spritesPath = baseName;
         jumpTicks = maxJumpTicks;
+        this.world = world;
         if (spritesPath != null) {
             poses = new PlayerMultiTile(spritesPath, assets);
             chargo = new AnimationSequence(assets, spritesPath.substring(0, spritesPath.length()-4)+"go.png", 20, true, 5);
+            jump = assets.get("platform_sounds/jump.wav");
+            djump = assets.get("platform_sounds/djump.wav");
+            die = assets.get("platform_sounds/die.wav");
+            step = assets.get("platform_sounds/step.wav");
+            land = assets.get("platform_sounds/land.wav");
         }
         this.characterMaker = characterMaker;
         flags = new ArrayList<Boolean>();
@@ -77,7 +87,7 @@ public class NPC extends HittableEntity {
         ArrayList<String> itemsNames = new ArrayList<String>();
         ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
         inventory = new ArrayList<Item>();
-        String charPath = worldDir + "/chars/" + charId;
+        String charPath = world.worldDir + "/chars/" + charId;
         speechSound = assets.get(charPath + "/speech.wav", Sound.class);
         if (baseName == null) {
             try {
@@ -111,7 +121,7 @@ public class NPC extends HittableEntity {
                     itemsNames.add(line);
                     line = in.readLine();
                     itemsCounts.add(Integer.parseInt(line));
-                    Item item = new Item(assets, worldDir, itemsNames.get(j));
+                    Item item = new Item(assets, world.worldDir.path(), itemsNames.get(j));
                     item.stack = itemsCounts.get(j);
                     inventory.add(item);
                 }
@@ -372,15 +382,17 @@ public class NPC extends HittableEntity {
         if (spritesPath != null) {
             //curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
             if (jumping) {
-                curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
+                //curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 setToJump = true;
             }
             if (movingConfiguration.movingUp > 0 && !jumping) {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.BACK);
                 setToJump = false;
+                walkingFrames = 0;
             } else if (movingConfiguration.movingDown > 0 && !jumping)  {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 setToJump = false;
+                walkingFrames = 0;
             } else {
                 graphicY = y;
             }
@@ -388,6 +400,7 @@ public class NPC extends HittableEntity {
             if (movingConfiguration.movingLeft > 0) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_LEFT);
+                    walkingFrames = 0;
                 } else {
                     if (speedX < -5) {
                         curPose = null;
@@ -395,10 +408,12 @@ public class NPC extends HittableEntity {
                     }
                     else curPose = poses.getTile(PlayerMultiTile.PlayerPose.LEFT);
                     setToJump = false;
+                    walkingFrames++;
                 }
             } else if (movingConfiguration.movingRight > 0) {
                 if (jumping) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_RIGHT);
+                    walkingFrames = 0;
                 } else {
                     if (speedX > 5) {
                         curPose = null;
@@ -406,12 +421,22 @@ public class NPC extends HittableEntity {
                     }
                     else curPose = poses.getTile(PlayerMultiTile.PlayerPose.RIGHT);
                     setToJump = false;
+                    walkingFrames++;
                 }
             } else {
                 graphicX = x;
+                if (jumping) {
+                    curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
+                } else {
+                    curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
+                }
+                walkingFrames = 0;
+            }
+            if (Math.abs(pSpeed) < 15 && Math.abs(speedX) > 2 && walkingFrames != 0 && walkingFrames % 10 == 0) {
+                step.play(world.menu.soundVolume / 100.0f);
             }
             if (animDraw == 0 && (curPose == null || (setToJump && !jumping))) {
-                curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
+                //curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
             }
             if (poses != null && curPose != null) {
                 batch.draw(curPose, offsetX + graphicX , offsetY - graphicY + floorHeight - z + 3, curPose.getRegionWidth(), curPose.getRegionHeight());

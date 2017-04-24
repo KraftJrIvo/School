@@ -15,8 +15,8 @@ import com.mygdx.schoolRPG.tools.*;
 public class Player extends NPC {
 
 
-    public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, String worldDir) {
-        super(assets, baseName, x, y, width, height, floorHeight, movable, characterMaker, 0, worldDir);
+    public Player(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, World world) {
+        super(assets, baseName, x, y, width, height, floorHeight, movable, characterMaker, 0, world);
         isControlled = true;
     }
 
@@ -62,10 +62,12 @@ public class Player extends NPC {
                 jumping = true;
                 //System.out.println(pSpeed);
                 if (pSpeed > 13) {
+                    if (!inWater && !inGoo) djump.play(world.menu.soundVolume / 100.0f);
                     if (additionalJumpsCount > 0) {
                         additionalJumps = additionalJumpsCount-1;
                     }
                 } else {
+                    if (!inWater && !inGoo) jump.play(world.menu.soundVolume / 100.0f);
                     additionalJumps = additionalJumpsCount;
                 }
                 additionalJumpTicks = maxAdditionalJumpTicks;
@@ -84,6 +86,9 @@ public class Player extends NPC {
                 }
             }
             if (additionalJumpTicks > 0 && startedAdditionalJump) {
+                if (!inWater && !inGoo && additionalJumpTicks == maxAdditionalJumpTicks) {
+                    djump.play(world.menu.soundVolume / 100.0f);
+                }
                 pSpeed = -jumpStep;
                 additionalJumpTicks--;
             }
@@ -95,6 +100,7 @@ public class Player extends NPC {
             jumpTicks = 0;
             if (startedAdditionalJump && additionalJumpTicks < maxAdditionalJumpTicks) {
                 additionalJumps--;
+
                 if (additionalJumps <= 0) {
                     startedAdditionalJump = false;
                     additionalJumpTicks = 0;
@@ -111,7 +117,12 @@ public class Player extends NPC {
             }
         }
 
+
+
         if (pSpeed == 0 && jumpTicks == 0) {
+            if (jumping){
+                land.play(world.menu.soundVolume / 100.0f);
+            }
             jumping = false;
             startedAdditionalJump = false;
             additionalJumpTicks = 0;

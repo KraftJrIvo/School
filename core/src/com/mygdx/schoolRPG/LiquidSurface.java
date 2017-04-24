@@ -1,5 +1,6 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -107,7 +108,7 @@ public class LiquidSurface extends Entity{
         }
     }
 
-    public void draw(SpriteBatch batch, float xOfffset, float yOffset) {
+    public void draw(SpriteBatch batch, float xOffset, float yOffset) {
         //shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         //batch.setColor(0, 0, 1, 0.6f);
         if (type == LiquidType.WATER) {
@@ -118,10 +119,12 @@ public class LiquidSurface extends Entity{
             batch.setColor(0, 0, 1, 0.6f);
         }
         if (full) {
-            batch.draw(tex, (int)x + xOfffset, (int)yOffset - y + 4, width, targetPosition);
+            //batch.draw(tex, (int)x + xOffset, (int)yOffset - y + 4, width, targetPosition);
+            batch.draw(tex, 250 + x - 2, Gdx.graphics.getHeight() - y - 243, width + 4, targetPosition);
         } else {
             for (int i = 0; i < width; i++) {
-                batch.draw(tex, (int)x + i + xOfffset, (int)yOffset - y + 4, 1, Math.round(Math.max(targetPosition + positions.get(i), 1)));
+
+                batch.draw(tex, 250 + i + x, Gdx.graphics.getHeight() - y - 243, 1, Math.round(Math.max(targetPosition + positions.get(i), 1)));
             }
         }
         batch.setColor(1, 1, 1, 1);

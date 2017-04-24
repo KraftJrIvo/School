@@ -53,6 +53,11 @@ public class MainMenu extends Menu {
 
     }
 
+    @Override
+    public void changeSetting(int id) {
+        gameSelect = false;
+    }
+
     public void invalidate() {
         super.invalidate();
 
@@ -111,6 +116,7 @@ public class MainMenu extends Menu {
                 int index = selector.getSelectedIndex();
                 if (index == 0) {
                     gameSelect = true;
+                    refreshSaves();
                 } else if (index == 1) {
                     optionsOpen = true;
                 }
@@ -204,7 +210,11 @@ public class MainMenu extends Menu {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    list.add(name + " - Start New Game");
+                    if (currentLanguage == 0) {
+                        list.add(name + " - Start New Game");
+                    } else {
+                        list.add(name + " - Начать Новую Игру");
+                    }
                     worldsIds.add(worldsPaths.size());
                     worldsNames.add(name);
                     worldsPaths.add(entry.path());
@@ -213,7 +223,11 @@ public class MainMenu extends Menu {
                     if (statesDir.exists()) {
                         int stateNumber = 1;
                         for (FileHandle state: statesDir.list()) {
-                            list.add(name + " - Continue Game " + stateNumber);
+                            if (currentLanguage == 0) {
+                                list.add(name + " - Continue Game " + stateNumber);
+                            } else {
+                                list.add(name + " - Продолжить Игру " + stateNumber);
+                            }
                             worldsIds.add(worldsPaths.size()-1);
                             worldsStates.add(stateNumber-1);
                             stateNumber++;
@@ -222,7 +236,11 @@ public class MainMenu extends Menu {
                 }
             }
         }
-        list.add("Back");
+        if (currentLanguage == 0) {
+            list.add("Back");
+        } else {
+            list.add("Назад");
+        }
         gameSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
     }
 

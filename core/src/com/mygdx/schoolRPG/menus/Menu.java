@@ -32,6 +32,7 @@ public class Menu {
     public boolean drawPause = true;
     public boolean unpausable = true;
     MenuListSelector pauseSelector, optionsSelector;
+    int changeSpeed = 0;
 
     public int musicVolume, soundVolume;
     public int currentLanguage;
@@ -154,23 +155,54 @@ public class Menu {
             optionsSelector.draw(batch, false);
             batch.end();
             int index = optionsSelector.getSelectedIndex();
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+            int rate = Math.max(1, (10 - (changeSpeed / 10)));
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
                 if (index == 0) {
                     musicVolume++;
-                    if (musicVolume < 100) click3.play(soundVolume / 100.0f);
+                    click3.play(soundVolume / 100.0f);
                 } else if (index == 1) {
                     soundVolume++;
-                    if (soundVolume < 100)  click3.play(soundVolume / 100.0f);
+                    click3.play(soundVolume / 100.0f);
                 }
-            }else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
                 if (index == 0) {
                     musicVolume--;
-                    if (musicVolume > 0) click3.play(soundVolume / 100.0f);
+                    click3.play(soundVolume / 100.0f);
                 } else if (index == 1) {
                     soundVolume--;
-                    if (soundVolume > 0) click3.play(soundVolume / 100.0f);
+                    click3.play(soundVolume / 100.0f);
                 }
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+                changeSpeed++;
+                if (index == 0) {
+                    if (changeSpeed % rate == 0) {
+                        musicVolume++;
+                        if (musicVolume < 100) click3.play(soundVolume / 100.0f);
+                    }
+                } else if (index == 1) {
+                    if (changeSpeed % rate == 0) {
+                        soundVolume++;
+                        if (soundVolume < 100)  click3.play(soundVolume / 100.0f);
+                    }
+                }
+            }else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+                changeSpeed++;
+                if (index == 0) {
+                    if (changeSpeed % rate == 0) {
+                        musicVolume--;
+                        if (musicVolume > 0) click3.play(soundVolume / 100.0f);
+                    }
+                } else if (index == 1) {
+                    if (changeSpeed % rate == 0) {
+                        soundVolume--;
+                        if (soundVolume > 0) click3.play(soundVolume / 100.0f);
+                    }
+                }
+            } else {
+                changeSpeed = 0;
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                 if (index == 3) {
                     optionsOpen = false;
                     click2.play(soundVolume / 100.0f);

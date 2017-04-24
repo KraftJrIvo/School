@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.sun.crypto.provider.AESCipher;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -172,7 +174,19 @@ public class World{
             saveFile.write(curAreaX);
             saveFile.write(curAreaY);
             saveFile.write(curAreaZ);
-            Player player = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player;
+            Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            int activeCheckpoint = -1;
+            for (int i =0; i < curArea.worldObjectsHandler.checkPoints.size(); ++i) {
+                if (curArea.worldObjectsHandler.checkPoints.get(i).on) {
+                    activeCheckpoint = i;
+                }
+            }
+            saveFile.write(activeCheckpoint);
+            if (activeCheckpoint == -1) {
+                saveFile.write(curArea.lastSpawnTileX);
+                saveFile.write(curArea.lastSpawnTileY);
+            }
+            Player player = curArea.player;
             saveFile.write(float2ByteArray(player.hitBox.x));
             saveFile.write(float2ByteArray(player.hitBox.y));
             saveFile.write(player.inventory.size());
@@ -275,6 +289,15 @@ public class World{
             curAreaX = saveFile.read();
             curAreaY = saveFile.read();
             curAreaZ = saveFile.read();
+            Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            int activeCheckpoint = saveFile.read();
+            if (activeCheckpoint < 255) {
+                curArea.worldObjectsHandler.saveOnCheckPoint(curArea.worldObjectsHandler.checkPoints.get(activeCheckpoint));
+            } else {
+                curArea.worldObjectsHandler.resetCheckPoints();
+                curArea.lastSpawnTileX = saveFile.read();
+                curArea.lastSpawnTileY = saveFile.read();
+            }
             byte[] flo = {0,0,0,0};
             saveFile.read(flo);
             Player player = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player;
@@ -587,6 +610,13 @@ public class World{
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+            if (platformMode) {
+                assets.load("platform_sounds/jump.wav", Sound.class);
+                assets.load("platform_sounds/djump.wav", Sound.class);
+                assets.load("platform_sounds/die.wav", Sound.class);
+                assets.load("platform_sounds/step.wav", Sound.class);
+                assets.load("platform_sounds/land.wav", Sound.class);
             }
             worldDir = Gdx.files.internal(folderPath);
 

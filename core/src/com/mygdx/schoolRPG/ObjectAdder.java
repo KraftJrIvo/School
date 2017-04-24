@@ -12,6 +12,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -43,9 +46,9 @@ public class ObjectAdder {
                 int type = blocks.get(4).get(t).get(i);
                 int img = blocks.get(3).get(t).get(i);
 
-                if (img == -1 && type != 10 && type != 11 && (type < 20 || type > 25) && type > 0) continue;
+                if (img == -1 && type != 10 && type != 11 && type != 13 && (type < 20 || type > 25) && type > 0) continue;
                 float x = 0;
-                if (type != 10 && type != 11 && (type < 20 || type > 25) && type > 0) {
+                if (type != 10 && type != 11 && type != 13 && (type < 20 || type > 25) && type > 0) {
                     if(world.tileTypes.get(img) == 0){
                         x = t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2 + blocks.get(6).get(t).get(i);
                     } else if (world.tileTypes.get(img) == 1) {
@@ -348,6 +351,10 @@ public class ObjectAdder {
                     float width = area.TILE_WIDTH;
                     float height = area.TILE_HEIGHT;
                     float floorHeight = 0;
+                    int surfacesCount = 0;
+                    while (blocks.get(4).get(t + surfacesCount).get(i) == 11) {
+                        surfacesCount++;
+                    }
                     if (img != -1) {
                         if (area.platformMode) {
                             if(world.tileTypes.get(img) == 0){
@@ -397,23 +404,25 @@ public class ObjectAdder {
                             }
                         }
                         if (img != -1) {
-                            worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y + (height - area.TILE_HEIGHT) + 2, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                            Entity e = new Entity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y + (height - area.TILE_HEIGHT) + 2, 0, 0, blocks.get(5).get(t).get(i));
+                            e.floor = true;
+                            worldObjectsHandler.addNonSolid(e, -1);
                         } else y+=2;
-                        HittableEntity he = new HittableEntity(assets, (Texture)null, xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i));
+                        HittableEntity he = new HittableEntity(assets, (Texture)null, xx, y, width * surfacesCount, height, floorHeight, false, blocks.get(5).get(t).get(i));
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
-                        //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he, world, -1, null);
+                        if (t == 0 || blocks.get(4).get(t-1).get(i) != 11) worldObjectsHandler.addSolid(he, world, -1, null);
                     } else {
                         if (img != -1) {
-                            worldObjectsHandler.addNonSolid(new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y+2, 0, 0, blocks.get(5).get(t).get(i)), -1);
+                            Entity e = new Entity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth() / 2, y+2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionHeight()/2, 0, 0, blocks.get(5).get(t).get(i));
+                            e.floor = true;
+                            worldObjectsHandler.addNonSolid(e, -1);
                         } else y+=2;
                         HittableEntity he = new HittableEntity(assets, (TextureRegion)null, t*area.TILE_WIDTH + area.TILE_WIDTH/2-world.tiles.get(world.tileIndices.get(img)).getSingleTile().getRegionWidth()/2, y,
-                                width, height, floorHeight, false, blocks.get(5).get(t).get(i));
+                                width * surfacesCount, height, floorHeight, false, blocks.get(5).get(t).get(i));
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;
-                        //he.setFloor(true);
-                        worldObjectsHandler.addSolid(he, world, -1, null);
+                        if (t == 0 || blocks.get(4).get(t-1).get(i) != 11) worldObjectsHandler.addSolid(he, world, -1, null);
                     }
                 } else if ((type >= 20 && type <= 25) && (t == 0 || blocks.get(4).get(t-1).get(i) != type)) {
                     int surfacesCount = 0;
@@ -441,13 +450,69 @@ public class ObjectAdder {
                         }
                     }
                     worldObjectsHandler.addLiquidSurface(ls, -1);
-                } else if (type < 0 && type >= -56 && type != -1) {
+                } else if (type == 13) {
+                    float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
+                    if (area.platformMode) {
+                        y -= area.FLOOR_HEIGHT/2+1;
+                        /*if (blocks.get(5).get(t).get(i) == 2) {
+                            y-=area.TILE_HEIGHT;
+                        } else if (blocks.get(5).get(t).get(i)%2 == 1) {
+                            y-=area.TILE_HEIGHT/2;
+                        }*/
+                    }
+                    y+=blocks.get(7).get(t).get(i);
+                    Entity e = new Entity(assets, assets.get(world.worldDir.path() + "/sign.png", Texture.class), x, y, 0, 0, 0);
+                    e.floor = true;
+                    worldObjectsHandler.addNonSolid(e, -1);
+                    worldObjectsHandler.signs.add(e);
+                    worldObjectsHandler.signTexts.add(new ArrayList<String>());
+                    try {
+                        BufferedReader in = new BufferedReader(new FileReader(world.worldDir.path() + "/signs"));
+                        int signsCount = Integer.parseInt(in.readLine());
+                        if (signsCount > blocks.get(5).get(t).get(i)) {
+                            int skipCount = 6 * blocks.get(5).get(t).get(i);
+                            for (int ii = 0; ii < skipCount; ++ii) {
+                                String line = in.readLine();
+                            }
+                            String line1 = in.readLine();
+                            String line2 = in.readLine();
+                            String line3 = in.readLine();
+                            String line4 = in.readLine();
+                            String line5 = in.readLine();
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line1);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line2);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line3);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line4);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line5);
+                            String line = in.readLine();
+                            skipCount = 6 * (signsCount -1);
+                            for (int ii = 0; ii < skipCount; ++ii) {
+                                line = in.readLine();
+                            }
+                            line1 = in.readLine();
+                            line2 = in.readLine();
+                            line3 = in.readLine();
+                            line4 = in.readLine();
+                            line5 = in.readLine();
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line1);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line2);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line3);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line4);
+                            worldObjectsHandler.signTexts.get(worldObjectsHandler.signTexts.size()-1).add(line5);
+                        }
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                else if (type < 0 && type >= -56 && type != -1) {
                     int dir = blocks.get(5).get(t).get(i);
                     if (dir == 0) {
                         int playerWidth = 16;
                         int playerHeight = 5;
                         int playerFloor = 10;
-                        NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world.folderPath);
+                        NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world);
                         characterMaker.setDirection(dir, type + 56);
                         npc.movable = true;
                         worldObjectsHandler.addNPC(npc, world, -1);

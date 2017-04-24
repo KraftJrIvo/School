@@ -66,10 +66,13 @@ public class SchoolRPG extends ApplicationAdapter {
 		menus.get(curMenuId).nextMenu = curMenuId;
 		if (newId == 0) {
 			curMenuId = 0;
-			menus.get(curMenuId).currentLanguage = language;
 			if (menus.get(prevMenuId).getClass() == GameMenu.class) {
 				((GameMenu)menus.get(prevMenuId)).stopSounds();
 			}
+			menus.get(curMenuId).currentLanguage = language;
+			menus.get(curMenuId).soundVolume = menus.get(prevMenuId).soundVolume;
+			menus.get(curMenuId).musicVolume = menus.get(prevMenuId).musicVolume;
+			menus.get(curMenuId).changeSetting(0);
 			return;
 		}
 		boolean neww = false;
@@ -87,12 +90,14 @@ public class SchoolRPG extends ApplicationAdapter {
 			neww = true;
 		}
 		Menu curMenu = menus.get(curMenuId);
-		curMenu.currentLanguage = language;
 		curMenu.nextMenuMessage = message;
 		curMenu.changeSetting(newSetting);
 		if (neww) {
 			curMenu.load(assets);
 		}
+		curMenu.soundVolume = menus.get(prevMenuId).soundVolume;
+		curMenu.musicVolume = menus.get(prevMenuId).musicVolume;
+		curMenu.currentLanguage = language;
 		if (menus.get(prevMenuId).getClass() == GameMenu.class) {
 			((GameMenu)menus.get(prevMenuId)).stopSounds();
 		}
