@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public class DeathZone extends Entity {
 
-    class MyPoint2f{
+    static class MyPoint2f{
         public float x, y;
         
         public MyPoint2f(float x, float y) {

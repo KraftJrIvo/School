@@ -10,8 +10,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 //import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.DeathZone.MyPoint2f;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
 
-import javax.vecmath.Point2f;
 import java.util.ArrayList;
 
 /**
@@ -36,7 +37,7 @@ public class HittableEntity extends Entity {
     int checksum = 0;
     float platformOffset = 0;
     boolean isPlatform = false;
-    Point2f point1, point2;
+    MyPoint2f point1, point2;
 
     public HittableEntity(AssetManager assets, String texPath, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
         super(assets, texPath, x, y, height-1, floorHeight, angle);
@@ -54,6 +55,20 @@ public class HittableEntity extends Entity {
 
     public HittableEntity(AssetManager assets, TextureRegion tex, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
         super(assets, tex, x, y, height-1, floorHeight, angle);
+        this.floorHeight = floorHeight;
+        hitBox = new Rectangle(x, y, width, height);
+        this.movable = movable;
+        leftSide = rightSide = downSide = upSide = true;
+        //this.width = width;
+        //this.height = height;
+        oldX = hitBox.x;
+        oldY = -1000;//hitBox.y;
+        graphicX = hitBox.x;
+        graphicY = hitBox.y;
+    }
+
+    public HittableEntity(AssetManager assets, AnimationSequence anim, float x, float y, float width, float height, float floorHeight, boolean movable, int angle) {
+        super(assets, anim, x, y, height-1, floorHeight, angle);
         this.floorHeight = floorHeight;
         hitBox = new Rectangle(x, y, width, height);
         this.movable = movable;
@@ -117,7 +132,7 @@ public class HittableEntity extends Entity {
         return Math.max(lower, Math.min(upper, xx));
     }
 
-    private Point2f getClosestRectanglePoint(float x, float y) {
+    private MyPoint2f getClosestRectanglePoint(float x, float y) {
         float l = hitBox.x;
         float t = hitBox.y - hitBox.height;
         float w = hitBox.width;
@@ -134,18 +149,18 @@ public class HittableEntity extends Entity {
         if (m == dt) {
             //sr.line(l * 2 - 13, 720 - 2 * t, r * 2 - 13, 720 - 2 * t);
 
-            return new Point2f(xxx, t);
+            return new MyPoint2f(xxx, t);
         }
         if (m == db) {
             //sr.line(l * 2 - 13, 720 - 2 * b, r * 2 - 13, 720 - 2 * b);
-            return new Point2f(xxx, b);
+            return new MyPoint2f(xxx, b);
         }
         if (m == dl) {
             //sr.line(l * 2 - 13, 720 - 2 * t, l * 2 - 13, 720 - 2 * b);
-            return new Point2f(l, yyy);
+            return new MyPoint2f(l, yyy);
         }
         //sr.line(r * 2 - 13, 720 - 2 * t, r * 2 - 13, 720 - 2 * b);
-        return new Point2f(r, yyy);
+        return new MyPoint2f(r, yyy);
     }
 
     public Rectangle pushOutSolidObjects(HittableEntity he) {

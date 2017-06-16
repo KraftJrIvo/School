@@ -13,8 +13,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
-import com.sun.crypto.provider.AESCipher;
-
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -269,6 +267,8 @@ public class World{
                 saveFile.write(float2ByteArray(itemsOnFloor.get(i).x));
                 saveFile.write(float2ByteArray(itemsOnFloor.get(i).y));
             }
+
+            saveFile.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -474,7 +474,8 @@ public class World{
         assets.load("blank2.png", Texture.class);
         assets.load("shadow.png", Texture.class);
         assets.load("prt_shadow.png", Texture.class);
-        assets.load("inventory_overlay1.png", Texture.class);
+        assets.load("inventory_overlay3.png", Texture.class);
+        assets.load("inventory_overlay2.png", Texture.class);
 
         assets.load(folderPath + "/bg.png", Texture.class);
         flags = new ArrayList<Boolean>();
@@ -824,7 +825,7 @@ public class World{
                             tileTypes.set(i, 2);
                         }
                     }*/
-                    animations.add(new AnimationSequence(assets, entry.path(), 12, true, 4));
+                    animations.add(new AnimationSequence(assets, entry.path(), 12, true));
                 }
                 worldDir = Gdx.files.internal(folderPath);
             }

@@ -1,0 +1,10 @@
+<item id = "4" mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
+    <eng 
+        name = "Shirt and Pants" 
+        description = "Nice shirt! So stylish! (No.)"
+    />    
+    <rus 
+        name = "Рубашка и Брюки" 
+        description = "Отличный костюм! Такой стильный! (Нет.)"
+    />    
+</item>

@@ -1,0 +1,10 @@
+<item id = "2" mass="1" equip_slot="HEAD" stackable="false" maxStack="1" flag="" replaces="">
+    <eng 
+        name = "Glasses" 
+        description = "At least I can see..."
+    />    
+    <rus 
+        name = "Очки" 
+        description = "Я хотя бы вижу что-то!"
+    />    
+</item>

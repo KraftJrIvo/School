@@ -28,6 +28,15 @@ public class AnimationSequence {
 		seed = (int)Math.floor(Math.random()*gs.getLength());
 	}
 
+	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping) {
+		path = sName;
+		this.fps = fps;
+		this.looping = looping;
+		pos = new Coords();
+		gs = new GlobalSequence(assets, sName);
+		seed = (int)Math.floor(Math.random()*gs.getLength());
+	}
+
 	public AnimationSequence(AssetManager assets, Texture tex, int fps, boolean looping, int framesCount) {
 		this.fps = fps;
 		this.looping = looping;

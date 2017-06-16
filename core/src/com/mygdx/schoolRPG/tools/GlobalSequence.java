@@ -20,6 +20,11 @@ public class GlobalSequence {
 		importSequence(assets, sName, framesCount);
 	}
 
+	public GlobalSequence(AssetManager assets, String sName) {
+		this.sName = sName;
+		importSequence(assets, sName);
+	}
+
 	public GlobalSequence(AssetManager assets, Texture tex, int framesCount) {
 		importSequence(assets, tex, framesCount);
 	}
@@ -77,5 +82,15 @@ public class GlobalSequence {
 			int width = texture.getWidth()/imgCount;
             bImages[i] = new TextureRegion(texture, width*i, 0, width, texture.getHeight());
         }
+	}
+
+	private void importSequence (AssetManager assets, String sName) {
+		texture = assets.get(sName);
+		int imgCount = texture.getWidth()/texture.getHeight();//(int)Math.ceil(texture.getWidth()/texture.getHeight());
+		bImages = new TextureRegion[imgCount];
+		for (int i =0; i < imgCount; ++i) {
+			int width = texture.getWidth()/imgCount;
+			bImages[i] = new TextureRegion(texture, width*i, 0, width, texture.getHeight());
+		}
 	}
 }

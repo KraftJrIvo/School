@@ -176,13 +176,15 @@ public class Inventory {
         otherOptions = new MenuListSelector(otherOpts, assets, "cursor.png", font, 64, 0, yOffset - 128, true, parent);
         otherOptions.looping = false;
         otherOptions.enabled = false;
-        itemsSelector = new CircularSelector(assets, titles, sprites, font, centerX, centerY, 128, 64, 2, parent);
+        itemsSelector = new CircularSelector(assets, titles, sprites, font, centerX, centerY - 12, 128, 64, 2, parent);
         itemsSelector.drawTitles = false;
         if (containerMode) {
-            containerItemsSelector = new CircularSelector(assets, titles2, sprites2, font, centerX2, centerY2, 128, 64, 2, parent);
+            containerItemsSelector = new CircularSelector(assets, titles2, sprites2, font, centerX2, centerY2 - 12, 128, 64, 2, parent);
             containerItemsSelector.drawTitles = false;
+            overlay = assets.get("inventory_overlay3.png", Texture.class);
+        } else {
+            overlay = assets.get("inventory_overlay2.png", Texture.class);
         }
-        overlay = assets.get("inventory_overlay1.png", Texture.class);
         closed = false;
         justOpened = true;
         otherIsSelected = false;
@@ -202,7 +204,7 @@ public class Inventory {
 
     public void draw(SpriteBatch batch, boolean paused) {
         boolean rightIsSelected = false;
-        batch.setColor(new Color(1, 1, 1, 0.5f));
+        batch.setColor(new Color(1, 1, 1, 1.0f));
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         float width = Gdx.graphics.getWidth()/screenRatioX;
