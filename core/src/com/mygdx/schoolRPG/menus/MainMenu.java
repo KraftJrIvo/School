@@ -1,5 +1,6 @@
 package com.mygdx.schoolRPG.menus;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
@@ -45,12 +46,13 @@ public class MainMenu extends Menu {
 
     MenuListSelector selector;
 
-    public MainMenu(int id, boolean android) {
+    ApplicationAdapter adapter;
+
+    public MainMenu(int id, boolean android, ApplicationAdapter adapter) {
         super(id, android);
         ID = 0;
-
+        this.adapter = adapter;
         PLAYSIZE = Gdx.graphics.getHeight()/2.5f;
-
     }
 
     @Override
@@ -122,6 +124,9 @@ public class MainMenu extends Menu {
                 }
                 else if (index == 2) {
                 }
+                else if (index == 3) {
+                    Gdx.app.exit();
+                }
             }
         }
     }
@@ -134,10 +139,12 @@ public class MainMenu extends Menu {
             list.add("Play");
             list.add("Options");
             list.add("Info");
+            list.add("Exit");
         } else {
             list.add("Играть");
             list.add("Опции");
             list.add("Инфо");
+            list.add("Выйти");
         }
         if (selector != null) {
             selector.titles = list;

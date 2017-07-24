@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class SchoolRPG extends ApplicationAdapter {
 	SpriteBatch batch;
 	boolean android;
+	boolean fullScreen;
+	int musicVolume, soundVolume, currentLanguage;
 	Texture img;
 	AssetManager assets;
 	ShapeRenderer renderer;
@@ -20,8 +22,12 @@ public class SchoolRPG extends ApplicationAdapter {
 	LoadingScreen loadingScreen;
 	int curMenuId = 0;
 
-	public SchoolRPG(boolean android) {
+	public SchoolRPG(boolean android, boolean fullScreen, int soundVolume, int musicVolume, int currentLanguage) {
 		this.android = android;
+		this.fullScreen = fullScreen;
+		this.soundVolume = soundVolume;
+		this.musicVolume = musicVolume;
+		this.currentLanguage = currentLanguage;
 	}
 	
 	@Override
@@ -31,9 +37,13 @@ public class SchoolRPG extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		renderer = new ShapeRenderer();
 		menus = new ArrayList<Menu>();
-		menus.add(new MainMenu(0, android));
+		menus.add(new MainMenu(0, android, this));
 		//menus.add(new GameMenu(0));
 		menus.get(0).load(assets);
+		menus.get(0).soundVolume = soundVolume;
+		menus.get(0).musicVolume = musicVolume;
+		menus.get(0).fullScreen = fullScreen;
+		menus.get(0).currentLanguage = currentLanguage;
 		loadingScreen = new LoadingScreen();
 	}
 

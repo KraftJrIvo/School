@@ -36,6 +36,7 @@ public class Speech {
     Dialog dialog;
     int oldCharCount = 0, charCount = 0;
     ArrayList<NPC> npcs;
+    int nextLineChars = 0;
 
     public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
         this.menu = menu;
@@ -111,11 +112,97 @@ public class Speech {
                     progress.set(currentPhrase, true);
                 }
             }
+            nextLineChars = 0;
         }
-
+        boolean roundBracetsStarted = false; //()
+        boolean squareBracetsStarted = false;//[]
+        boolean shakingTextStarted = false;//@@
+        int rainbowTextStarted = -1;//##
+        int nextLineStarted = 0;
         for (int i= 0; i < phrases.size(); ++i) {
-            if (progress.get(i)) {
-                font.draw(batch, phrases.get(i), textX, textY - 32 * (i+1) - 10);
+            if (!progress.get(i)) {
+                nextLineStarted++;
+            }
+            if (progress.get(i) || nextLineStarted == 1) {
+                float phraseOffset = 0;
+                int to;
+                if (nextLineStarted == 1) {
+                    to = nextLineChars;
+                } else {
+                    to = phrases.get(i).length();
+                }
+                for (int j= 0; j < to; ++j) {
+                    char ch = phrases.get(i).charAt(j);
+                    String curChar = ""+ch;
+                    switch (ch) {
+                        case '(':
+                            roundBracetsStarted = true;
+                            break;
+                        case '[':
+                            squareBracetsStarted = true;
+                            break;
+                        case '@':
+                            curChar = "";
+                            shakingTextStarted = !shakingTextStarted;
+                            break;
+                        case '#':
+                            curChar = "";
+                            if (rainbowTextStarted == -1) {
+                                rainbowTextStarted = j+1;
+                            } else {
+                                rainbowTextStarted = -1;
+                            }
+                            break;
+                    }
+                    if (roundBracetsStarted) {
+                        font.setColor(new Color(0.251f, 0.878f, 0.816f, 1.0f));
+                    } else if (squareBracetsStarted) {
+                        font.setColor(new Color(0.941f, 0.502f, 0.502f, 1.0f));
+                    } else if (rainbowTextStarted != -1) {
+                        switch ((j - rainbowTextStarted) % 7) {
+                            case 0:
+                                font.setColor(Color.RED);
+                                break;
+                            case 1:
+                                font.setColor(new Color(1.000f, 0.549f, 0.000f, 1.0f));
+                                break;
+                            case 2:
+                                font.setColor(Color.YELLOW);
+                                break;
+                            case 3:
+                                font.setColor(Color.GREEN);
+                                break;
+                            case 4:
+                                font.setColor(Color.CYAN);
+                                break;
+                            case 5:
+                                font.setColor(new Color(0.255f, 0.412f, 0.882f, 1.0f));
+                                break;
+                            case 6:
+                                font.setColor(new Color(0.600f, 0.196f, 0.800f, 1.0f));
+                                break;
+                        }
+                    } else {
+                        font.setColor(Color.WHITE);
+                    }
+                    float randomXoffset = 0;
+                    float randomYoffset = 0;
+                    if (shakingTextStarted) {
+                        randomXoffset = (float)Math.random() * 2 - 1.0f;
+                        randomYoffset = (float)Math.random() * 2 - 1.0f;
+                    }
+                    font.draw(batch, curChar, textX + phraseOffset + randomXoffset, textY - 32 * (i+1) - 10 + randomYoffset);
+                    phraseOffset += font.getBounds(curChar).width;
+                    switch (ch) {
+                        case ')':
+                            roundBracetsStarted = false;
+                            break;
+                        case ']':
+                            squareBracetsStarted = false;
+                            break;
+                    }
+                }
+                //font.draw(batch, phrases.get(i), textX, textY - 32 * (i+1) - 10);
             } else {
                 break;
             }
@@ -132,12 +219,21 @@ public class Speech {
         charCount = (int)Math.floor(curTime / millsPerChar);
 
         if (charCount != oldCharCount && charCount > 0 && phrases.get(currentPhrase).charAt(charCount - 1) != ' ') {
-            target.speechSound.play(menu.soundVolume/100.0f);
+            float volume = 1.0f;
+            if (roundBracetsStarted || squareBracetsStarted) {
+                volume = 0.5f;
+            }
+            target.speechSound.play(volume * menu.soundVolume/100.0f);
+        }
+        int lineChars = phrases.get(currentPhrase).substring(0, Math.min(charCount, phrases.get(currentPhrase).length()-1)).length();
+        if (!progress.get(currentPhrase) && lineChars > 0) {
+            nextLineChars = lineChars;
         }
         if (charCount == phrases.get(currentPhrase).length()) {
             progress.set(currentPhrase, true);
+            nextLineChars = 0;
         }
-        font.draw(batch, phrases.get(currentPhrase).substring(0, Math.min(charCount, phrases.get(currentPhrase).length()-1)), textX, textY - 32 * (currentPhrase+1) - 10);
+        //font.draw(batch, phrases.get(currentPhrase).substring(0, Math.min(charCount, phrases.get(currentPhrase).length()-1)), textX, textY - 32 * (currentPhrase+1) - 10);
         //batch.setColor(Color.WHITE);
     }
 }

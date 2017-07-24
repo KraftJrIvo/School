@@ -8,12 +8,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
-import com.mygdx.schoolRPG.tools.Button;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-
 /**
  * Created by user on 16.07.2014.
  */
@@ -33,6 +33,7 @@ public class Menu {
     public boolean unpausable = true;
     MenuListSelector pauseSelector, optionsSelector;
     int changeSpeed = 0;
+    public boolean fullScreen;
 
     public int musicVolume, soundVolume;
     public int currentLanguage;
@@ -89,13 +90,14 @@ public class Menu {
             pauseSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
         }
         ArrayList<String> list2 = new ArrayList<String>();
-        list2.add("Music Volume: " + musicVolume);
+        /*list2.add("Music Volume: " + musicVolume);
         list2.add("Sound Volume: " + soundVolume);
         list2.add("Language: " + languages.get(currentLanguage));
-        list2.add("Back");
+        list2.add("Back");*/
         optionsSelector = new MenuListSelector(list2, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
         click2 = assets.get("menu_click_1.wav");
         click3 = assets.get("menu_click_3.wav");
+        updateLanguage();
     }
 
     public void invalidate() {
@@ -117,6 +119,12 @@ public class Menu {
             list.add("Music Volume: " + musicVolume);
             list.add("Sound Volume: " + soundVolume);
             list.add("Language: " + languages.get(currentLanguage));
+            if (fullScreen) {
+                list.add("Fullscreen: On");
+            } else {
+                list.add("Fullscreen: Off");
+            }
+            list.add("Reset to defaults");
             list.add("Back");
             list2.add("Continue");
             list2.add("Options");
@@ -125,6 +133,12 @@ public class Menu {
             list.add("Громкость Музыки: " + musicVolume);
             list.add("Громкость 3вука: " + soundVolume);
             list.add("Язык: " + languages.get(currentLanguage));
+            if (fullScreen) {
+                list.add("Полный экран: Да");
+            } else {
+                list.add("Полный экран: Нет");
+            }
+            list.add("Вернуть настройки по умолчанию");
             list.add("Назад");
             list2.add("Продолжить");
             list2.add("Опции");
@@ -148,7 +162,7 @@ public class Menu {
         //System.out.println(paused);
         updateLanguage();
         if (optionsOpen) {
-            batch.setColor(1,1,1,0.5f);
+            batch.setColor(1,1,1,0.8f);
             batch.begin();
             batch.draw(assets.get("p.png", Texture.class), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             batch.setColor(1,1,1,1);
@@ -203,8 +217,30 @@ public class Menu {
                 changeSpeed = 0;
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                if (index == 3) {
+                if (index == 4) {
+                    fullScreen = true;
+                    currentLanguage = 0;
+                    soundVolume = 50;
+                    musicVolume = 50;
+                    updateLanguage();
+                } else if (index == 5) {
                     optionsOpen = false;
+                    try {
+                        PrintWriter writer = new PrintWriter("../../current.cfg", "UTF-8");
+                        writer.println("fullscreen");
+                        writer.println("" + fullScreen);
+                        writer.println("sound");
+                        writer.println("" + soundVolume);
+                        writer.println("music");
+                        writer.println("" + musicVolume);
+                        writer.println("language");
+                        writer.println("" + currentLanguage);
+                        writer.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
                     click2.play(soundVolume / 100.0f);
                 }
             }
@@ -216,6 +252,17 @@ public class Menu {
             } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
                 if (index == 2) {
                     currentLanguage--;
+                    click3.play(soundVolume / 100.0f);
+                }
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+                if (index == 3) {
+                    fullScreen = !fullScreen;
+                    click3.play(soundVolume / 100.0f);
+                }
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+                if (index == 3) {
+                    fullScreen = !fullScreen;
                     click3.play(soundVolume / 100.0f);
                 }
             }
