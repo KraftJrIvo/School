@@ -187,6 +187,16 @@ public class World{
             Player player = curArea.player;
             saveFile.write(float2ByteArray(player.hitBox.x));
             saveFile.write(float2ByteArray(player.hitBox.y));
+            if (curArea.playerHidden) {
+                saveFile.write(1);
+            } else {
+                saveFile.write(0);
+            }
+            if (curArea.worldObjectsHandler.activeObject != null) {
+                saveFile.write(curArea.worldObjectsHandler.objects.indexOf(curArea.worldObjectsHandler.activeObject) + 1);
+            } else {
+                saveFile.write(0);
+            }
             saveFile.write(player.inventory.size());
             int headWear = -1;
             int bodyWear = -1;
@@ -246,6 +256,11 @@ public class World{
 
             for (int i =0; i < objects.size(); ++i) {
                 saveFile.write(objects.get(i).currentState);
+                if (objects.get(i).entity.drawChar) {
+                    saveFile.write(1);
+                } else {
+                    saveFile.write(0);
+                }
                 if (objects.get(i).items == null) {
                     saveFile.write(0);
                 } else {
@@ -266,6 +281,22 @@ public class World{
                 saveFile.write(itemsOnFloor.get(i).containingItem.stack);
                 saveFile.write(float2ByteArray(itemsOnFloor.get(i).x));
                 saveFile.write(float2ByteArray(itemsOnFloor.get(i).y));
+            }
+
+            Dialog dialog = curArea.worldObjectsHandler.currentDialog;
+            if (dialog != null) {
+                saveFile.write(dialog.fileName.length());
+                saveFile.write(dialog.fileName.getBytes());
+                saveFile.write(dialog.charPath.length());
+                saveFile.write(dialog.charPath.getBytes());
+                if (dialog.currentChoice != null) {
+                    saveFile.write(1);
+                } else {
+                    saveFile.write(0);
+                }
+                saveFile.write(Math.abs(dialog.getCurrentSpeechId()));
+            } else {
+                saveFile.write(0);
             }
 
             saveFile.close();
@@ -301,11 +332,14 @@ public class World{
             byte[] flo = {0,0,0,0};
             saveFile.read(flo);
             Player player = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player;
-            player.hitBox.x = toFloat(flo);
+            float playerX = toFloat(flo);
             saveFile.read(flo);
-            player.hitBox.y = toFloat(flo);
+            float playerY = toFloat(flo);
+            int hidden = saveFile.read();
+            int activeObjectId = saveFile.read();
             int itemsCount = saveFile.read();
             player.inventory.clear();
+            player.movingConfiguration = new MovingConfiguration();
             for (int i =0; i < itemsCount; ++i) {
                 int bytesCount = saveFile.read();
                 byte[] bitfield = new byte[bytesCount];
@@ -402,6 +436,12 @@ public class World{
 
             for (int i =0; i < objects.size(); ++i) {
                 objects.get(i).currentState = saveFile.read();
+                int drawChar = saveFile.read();
+                if (drawChar == 1) {
+                    objects.get(i).entity.drawChar = true;
+                } else {
+                    objects.get(i).entity.drawChar = false;
+                }
                 objects.get(i).soundsAreStopped = true;
                 if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).worldObjectsHandler.objects.contains(objects.get(i))) {
                     //objects.get(i).updateSoundState(menu);
@@ -421,12 +461,27 @@ public class World{
                     }
                 }
             }
+
             //deleteObjectCellsForEntity(activeItem);
             for (int i =0; i<areas.size(); ++i) {
                 for (int j =0; j<areas.get(i).worldObjectsHandler.items.size(); ++j) {
                     areas.get(i).worldObjectsHandler.deleteObjectCellsForEntity(areas.get(i).worldObjectsHandler.items.get(j));
                 }
                 areas.get(i).worldObjectsHandler.items.clear();
+                areas.get(i).worldObjectsHandler.currentDialog = null;
+                areas.get(i).worldObjectsHandler.removeParticles();
+                areas.get(i).playerHidden = false;
+            }
+            if (hidden == 1) {
+                curArea.playerHidden = true;
+            } else {
+                curArea.playerHidden = false;
+            }
+            if (activeObjectId > 0) {
+                curArea.worldObjectsHandler.activeObject = curArea.worldObjectsHandler.objects.get(activeObjectId-1);
+                curArea.worldObjectsHandler.activeObject.updateHiddenPlayer(assets, worldDir.path());
+            } else {
+                curArea.worldObjectsHandler.activeObject = null;
             }
             itemsOnFloor.clear();
             itemsOnFloorAreas.clear();
@@ -449,6 +504,41 @@ public class World{
                 itemsOnFloorAreas.add(areaId);
                 itemsOnFloor.add(itemGlow);
             }
+            curArea.worldObjectsHandler.currentDialog = null;
+            int dialogFileNameLength = saveFile.read();
+            if (dialogFileNameLength > 0) {
+                menu.paused = true;
+
+                byte[] dialogFileNameBytes = new byte[dialogFileNameLength];
+                saveFile.read(dialogFileNameBytes);
+                String dialogFileName = new String(dialogFileNameBytes, StandardCharsets.UTF_8);
+
+                int dialogCharPathLength = saveFile.read();
+                byte[] dialogCharPathBytes = new byte[dialogCharPathLength];
+                saveFile.read(dialogCharPathBytes);
+                String dialogCharPath = new String(dialogCharPathBytes, StandardCharsets.UTF_8);
+
+                int isChoice = saveFile.read();
+                int dialogCurrentId = saveFile.read();
+                Dialog dialog = new Dialog(dialogFileName, "", false, curArea.worldObjectsHandler.NPCs, curArea.player, assets, dialogCharPath, menu.currentLanguage, menu);
+                if (isChoice == 0) {
+                    dialog.reload("", menu.currentLanguage, dialogCurrentId);
+                } else {
+                    dialog.reload("", menu.currentLanguage, -dialogCurrentId);
+                }
+                curArea.invalidate(this);
+                curArea.worldObjectsHandler.currentDialog = dialog;
+            } else {
+                menu.paused = false;
+            }
+            player.hitBox.x = playerX;
+            player.x = playerX;
+            player.graphicX = playerX;
+            player.hitBox.y = playerY;
+            player.y = playerY;
+            player.graphicY = playerY;
+            menu.drawPause = false;
+            menu.unpausable = false;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -1084,12 +1174,6 @@ public class World{
         if (areaTransitionX == 0 && areaTransitionY == 0) {
             areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).invalidate(this);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
-            saveState();
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F9)) {
-            loadState();
-        }
     }
 
     public Sound getSound(int id) {
@@ -1152,6 +1236,14 @@ public class World{
             currentSound.setVolume(currentSoundId, menu.musicVolume/100.0f);
         }
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        if (curArea.worldObjectsHandler.currentInventory == null) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
+                saveState();
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F9)) {
+                loadState();
+            }
+        }
         if ((!menu.paused && curArea.worldObjectsHandler.currentDialog == null) || curArea.playerHidden) {
             checkAreaObjects(curArea);
         } else if (curArea.worldObjectsHandler.currentDialog != null) {

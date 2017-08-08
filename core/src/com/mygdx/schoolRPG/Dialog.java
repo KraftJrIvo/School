@@ -31,6 +31,7 @@ public class Dialog {
     boolean finished = false;
     public int language;
     public String fileName;
+    public String charPath;
     Menu parent;
 
     public void reload(String folderPath, int language, int startId) {
@@ -73,20 +74,23 @@ public class Dialog {
             e.printStackTrace();
         }
         if (startId < 0) {
-            currentSpeech = choices.get(- startId - 1);
+            currentChoice = choices.get(- startId - 1);
+            currentSpeech = null;
         } else {
             currentSpeech = speeches.get(startId);
+            currentChoice = null;
         }
     }
 
     public int getCurrentSpeechId() {
         int index = speeches.indexOf(currentSpeech);
-        if (index == -1) index = -(choices.indexOf(currentSpeech) + 1);
+        if (currentChoice != null) index = -(choices.indexOf(currentChoice) + 1);
         return index;
     }
 
     public Dialog(String folder, String fileName, boolean monologue, ArrayList<NPC> npcs, Player player, AssetManager assets, String charPath, int language, Menu parent) {
         this.parent = parent;
+        this.charPath = charPath;
         speeches = new ArrayList<Speech>();
         choices = new ArrayList<Choice>();
         choiceTransitionsIds = new ArrayList<ArrayList<Integer>>();
@@ -95,7 +99,7 @@ public class Dialog {
         changedFlagsNames = new ArrayList<String>();
         this.monologue = monologue;
         this.language = language;
-        this.fileName = fileName;
+        this.fileName = folder + fileName;
         overlay = assets.get("dialog_overlay1.png", Texture.class);
         try {
             BufferedReader in = new BufferedReader(new FileReader(folder + fileName));

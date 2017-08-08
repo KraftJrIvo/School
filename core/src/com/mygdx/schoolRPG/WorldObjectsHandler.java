@@ -379,10 +379,11 @@ public class WorldObjectsHandler {
             if (!fall) break;
         }
         if (fall) {
-            object.falling = true;
-            object.fallY = object.y;
-            //if (object.getClass() != Player.class)
-            fallingObjects.add(object);
+            if (area.platformMode || object.getClass() != Player.class) {
+                object.fallY = object.y;
+                object.falling = true;
+                fallingObjects.add(object);
+            }
         }
     }
 

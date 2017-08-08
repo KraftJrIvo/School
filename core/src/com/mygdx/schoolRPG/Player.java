@@ -68,6 +68,7 @@ public class Player extends NPC {
                     }
                 } else {
                     if (!inWater && !inGoo) jump.play(world.menu.soundVolume / 100.0f);
+                    if (!inWater && !inGoo) jump.play(world.menu.soundVolume / 100.0f);
                     additionalJumps = additionalJumpsCount;
                 }
                 additionalJumpTicks = maxAdditionalJumpTicks;

@@ -229,33 +229,7 @@ public class ObjectCell {
                 flags.set(i, statesFlagVals.get(currentState));
             }
         }
-        if (statesHidePlayer.get(currentState) && statesDrawPlayer.get(currentState)) {
-            entity.heads = statesHeads.get(currentState);
-            entity.bodies = statesBodies.get(currentState);
-            updateWears();
-            entity.headsOffX = statesHeadXOffsets.get(currentState);
-            entity.headsOffY = statesHeadYOffsets.get(currentState);
-            entity.bodiesOffX = statesBodyXOffsets.get(currentState);
-            entity.bodiesOffY = statesBodyYOffsets.get(currentState);
-            if (statesTexTypes.get(currentState).equals("anim")) {
-                entity.charAnim = new AnimationSequence(assets, assets.get(worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class), statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
-            } else {
-                entity.charTex = assets.get( worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class);
-            }
-            entity.drawChar = true;
-        } else if (entity.heads != null) {
-            entity.drawChar = false;
-            entity.heads = null;
-            entity.bodies = null;
-            entity.headWears = null;
-            entity.bodyWears = null;
-            entity.headsOffX = null;
-            entity.headsOffY = null;
-            entity.bodiesOffX = null;
-            entity.bodiesOffY = null;
-            entity.charAnim = null;
-            entity.charTex = null;
-        }
+        updateHiddenPlayer(assets, worldDir);
         area.playerHidden = statesHidePlayer.get(currentState);
         startTime = System.currentTimeMillis();
         lastSpawned = 0;
@@ -282,6 +256,36 @@ public class ObjectCell {
                 }
                 soundsAreStopped = false;
             }
+        }
+    }
+
+    public void updateHiddenPlayer(AssetManager assets, String worldDir) {
+        if (statesHidePlayer.get(currentState) && statesDrawPlayer.get(currentState)) {
+            entity.heads = statesHeads.get(currentState);
+            entity.bodies = statesBodies.get(currentState);
+            updateWears();
+            entity.headsOffX = statesHeadXOffsets.get(currentState);
+            entity.headsOffY = statesHeadYOffsets.get(currentState);
+            entity.bodiesOffX = statesBodyXOffsets.get(currentState);
+            entity.bodiesOffY = statesBodyYOffsets.get(currentState);
+            if (statesTexTypes.get(currentState).equals("anim")) {
+                entity.charAnim = new AnimationSequence(assets, assets.get(worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class), statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
+            } else {
+                entity.charTex = assets.get( worldDir + "/objects/util/" + statesCharsTex.get(currentState) + ".png", Texture.class);
+            }
+            entity.drawChar = true;
+        } else if (entity.heads != null) {
+            entity.drawChar = false;
+            entity.heads = null;
+            entity.bodies = null;
+            entity.headWears = null;
+            entity.bodyWears = null;
+            entity.headsOffX = null;
+            entity.headsOffY = null;
+            entity.bodiesOffX = null;
+            entity.bodiesOffY = null;
+            entity.charAnim = null;
+            entity.charTex = null;
         }
     }
 

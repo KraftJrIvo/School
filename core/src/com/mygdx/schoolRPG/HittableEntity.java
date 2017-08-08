@@ -173,6 +173,10 @@ public class HittableEntity extends Entity {
             if (he.pSpeed < 0) {
                 return rect;
             } else if (he.getClass() == Player.class && ((Player)he).movingConfiguration.movingDown > 0) {
+                if (rect.overlaps(hitBox)) {
+                    //((Player)he).falling = true;
+                    ((Player)he).jumping = true;
+                }
                 return rect;
             }
         }

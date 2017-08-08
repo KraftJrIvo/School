@@ -145,6 +145,8 @@ public class Entity implements Comparable {
         } else {
             id = 0;
             tex2 = new TextureRegion(charTex);
+            tex2 = new TextureRegion(charTex);
+            tex2 = new TextureRegion(charTex);
         }
         TextureRegion head = heads.get(id);
         TextureRegion headWear = headWears.get(id);
