@@ -120,12 +120,12 @@ public class LiquidSurface extends Entity{
         }
         if (full) {
             //batch.draw(tex, (int)x + xOffset, (int)yOffset - y + 4, width, targetPosition);
-            batch.draw(tex, 250 + x - 2, /*Gdx.graphics.getHeight()*/ 720 - y - 243, width + 4, targetPosition);
+            batch.draw(tex, xOffset + x - 2, /*Gdx.graphics.getHeight()*/ yOffset - y + 4, width + 4, targetPosition);
             //batch.draw(tex, xOffset + x, yOffset - y * 2, width + 4, targetPosition);
         } else {
             for (int i = 0; i < width; i++) {
 
-                batch.draw(tex, 250 + i + x, /*Gdx.graphics.getHeight()*/720 - y - 243, 1, Math.round(Math.max(targetPosition + positions.get(i), 1)));
+                batch.draw(tex, xOffset + i + x, /*Gdx.graphics.getHeight()*/yOffset - y + 4, 1, Math.round(Math.max(targetPosition + positions.get(i), 1)));
             }
         }
         batch.setColor(1, 1, 1, 1);

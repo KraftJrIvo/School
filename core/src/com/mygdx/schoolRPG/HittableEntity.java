@@ -213,12 +213,18 @@ public class HittableEntity extends Entity {
 
         }
 
+        /*if (he.getClass() == NPC.class) {
+            he.x = he.hitBox.x;
+            he.y = he.hitBox.y;
+            he.graphicX = he.hitBox.x;
+            he.graphicY = he.hitBox.y;
+        }*/
 
         return rect;
     }
 
     public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
-
+        if (this == he) return hitBox;
         type = 1;
         boolean overlapX = false, overlapY = false;
         boolean platformMode = area.platformMode;
@@ -434,6 +440,7 @@ public class HittableEntity extends Entity {
                         }
                     }
                 }
+
             }
             if (he.movable && (!movable || (!canMoveHor || !canMoveVer))) {
                 if (rect.width == 64 && diffX != 0) {
@@ -572,6 +579,12 @@ public class HittableEntity extends Entity {
         y = hitBox.y;
         //this.oldX = x;
         //this.oldY = y;
+        /*if (he.getClass() == NPC.class && this.getClass() == NPC.class) {
+            he.x = he.hitBox.x;
+            he.y = he.hitBox.y;
+            he.graphicX = he.hitBox.x;
+            he.graphicY = he.hitBox.y;
+        }*/
         if (Math.abs(oldYY-rect.y)>3) {
             //System.out.println();
         }

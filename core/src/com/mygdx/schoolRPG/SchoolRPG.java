@@ -73,6 +73,7 @@ public class SchoolRPG extends ApplicationAdapter {
 	private void changeMenu(int newId, int newSetting, String message) {
 		int prevMenuId = curMenuId;
 		int language = menus.get(curMenuId).currentLanguage;
+		boolean fullScreen = menus.get(curMenuId).fullScreen;
 		menus.get(curMenuId).nextMenu = curMenuId;
 		if (newId == 0) {
 			curMenuId = 0;
@@ -108,6 +109,7 @@ public class SchoolRPG extends ApplicationAdapter {
 		curMenu.soundVolume = menus.get(prevMenuId).soundVolume;
 		curMenu.musicVolume = menus.get(prevMenuId).musicVolume;
 		curMenu.currentLanguage = language;
+		curMenu.fullScreen = fullScreen;
 		if (menus.get(prevMenuId).getClass() == GameMenu.class) {
 			((GameMenu)menus.get(prevMenuId)).stopSounds();
 		}

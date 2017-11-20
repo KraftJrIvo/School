@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.mygdx.schoolRPG.tools.IntCoords;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +44,7 @@ public class World{
     ArrayList<AnimationSequence> animations;
     ArrayList<String> names;
     ArrayList<String> newNames;
+    ArrayList<String> roomNames;
     ArrayList<Integer> tileTypes;
     ArrayList<Integer> tileIndices;
     ArrayList<String> stepSounds;
@@ -69,6 +72,7 @@ public class World{
     boolean startedChanging = false;
     public int save;
     boolean loadedState = false;
+    RoomsMap map;
 
     public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ, int save) {
         this.menu = menu;
@@ -382,9 +386,11 @@ public class World{
                 saveFile.read(flo);
                 npcs.get(i).hitBox.y = toFloat(flo);
                 if (npcs.get(i).spawnArea != npcsAreas.get(i)) {
-                    ObjectCell cell = areas.get(npcs.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(npcs.get(i).spawnArea).worldObjectsHandler.solids.indexOf(npcs.get(i)));
-                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, cell.currentState);
-                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addSolid(npcs.get(i), this, cell.currentState, cell.items);
+                    //ObjectCell cell = areas.get(npcs.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(npcs.get(i).spawnArea).worldObjectsHandler.solids.indexOf(npcs.get(i)));
+                    //ObjectCell soc = areas.get(npcsAreas.get(i)).worldObjectsHandler.addSolid(npcs.get(i), this, cell.currentState, cell.items);
+                    areas.get(npcs.get(i).spawnArea).worldObjectsHandler.deleteObjectCellsForEntity(npcs.get(i));
+                    areas.get(npcs.get(i).spawnArea).worldObjectsHandler.NPCs.remove(npcs.get(i));
+                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, -1);
                 }
                 itemsCount = saveFile.read();
                 npcs.get(i).inventory.clear();
@@ -670,12 +676,14 @@ public class World{
                 curAreaX = curCoordX;
                 curAreaY = curCoordY;
                 curAreaZ = curCoordZ;
+                map = new RoomsMap(this);
                 while (fis.available() > 1) {
 
                     buff = new byte[areaWidth*areaHeight*7];
                     fis.read(buff);
                     if (curCoordX != 246) {
-                        areas.add(new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this));
+                        Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this);
+                        areas.add(newArea);
                         areasAmbients.add(null);
                         int areaRoomsHor = (int)Math.ceil(areaWidth/firtsAreaWidth);
                         int areaRoomsVer = (int)Math.ceil(areaHeight/firtsAreaHeight);
@@ -710,7 +718,35 @@ public class World{
                 assets.load("platform_sounds/land.wav", Sound.class);
             }
             worldDir = Gdx.files.internal(folderPath);
-
+            FileHandle roomsFile = worldDir.child("rooms");
+            if (roomsFile.exists()) {
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(worldDir.path() + "/rooms"));
+                    int count = Integer.parseInt(in.readLine());
+                    roomNames = new ArrayList<String>();
+                    ArrayList<Integer>roomNamesIds = new ArrayList<Integer>();
+                    for (int i = 0; i < count; ++i) {
+                        int x = Integer.parseInt(in.readLine());
+                        int y = Integer.parseInt(in.readLine());
+                        int z = Integer.parseInt(in.readLine());
+                        roomNames.add(null);
+                        int areaId = areaIds.get(x).get(y).get(z);
+                        roomNamesIds.add(areaId);
+                        String name = in.readLine();
+                        Area area = areas.get(areaId);
+                        area.name = name;
+                        map.addRoom(area, x, y, z, area.width / firtsAreaWidth, area.height / firtsAreaHeight, name);
+                    }
+                    for (int i = 0; i < roomNamesIds.size(); ++i) {
+                        Area curArea = areas.get(roomNamesIds.get(i));
+                        roomNames.set(roomNamesIds.get(i), curArea.name);
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
                     continue;
@@ -948,6 +984,8 @@ public class World{
             currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
             startedAmbient = true;
         }
+        map.connectExits();
+        //System.out.println();
     }
 
     private void createNewSave() {
@@ -964,8 +1002,15 @@ public class World{
 
     private void checkSolidsPosition() {
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
-        for (int i = 0; i < a.worldObjectsHandler.solids.size(); ++i) {
-            HittableEntity solid = a.worldObjectsHandler.solids.get(i);
+        for (int i = 0; i < a.worldObjectsHandler.solids.size() + a.worldObjectsHandler.NPCs.size(); ++i) {
+            HittableEntity solid;
+            boolean isNPC = false;
+            if (i < a.worldObjectsHandler.solids.size()) {
+                solid = a.worldObjectsHandler.solids.get(i);
+            } else {
+                solid = a.worldObjectsHandler.NPCs.get(i - a.worldObjectsHandler.solids.size());
+                isNPC = true;
+            }
             if (solid.movable) {
                 int inRoomXCoord = (int)Math.floor(solid.x/a.TILE_WIDTH/firtsAreaWidth);
                 int inRoomYCoord = (int)(Math.floor(a.height/firtsAreaHeight-(solid.y+solid.hitBox.getHeight()/2)/a.TILE_HEIGHT/firtsAreaHeight));
@@ -988,34 +1033,53 @@ public class World{
                 } else {
                     continue;
                 }
-                ObjectCell cell = a.worldObjectsHandler.removeSolid(i);
+                ObjectCell cell = null;
+                if (!isNPC) cell = a.worldObjectsHandler.removeSolid(i);
+                else {
+                    a.worldObjectsHandler.NPCs.remove(solid);
+                }
                 Area toArea = areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ));
                 float pos = 0;
                 if (horizontal) {
                     pos = solid.hitBox.y + ((toArea.y+toArea.h) - (a.y+a.h)) * firtsAreaHeight * a.TILE_HEIGHT;
                     if (offX > 0) {
                         solid.hitBox.x = toArea.TILE_WIDTH;
+                        if (isNPC) ((NPC)solid).characterMaker.setDirection(3, ((NPC)solid).charId);
                     } else {
                         solid.hitBox.x = (toArea.width - 2) * toArea.TILE_WIDTH ;
+                        if (isNPC) ((NPC)solid).characterMaker.setDirection(1, ((NPC)solid).charId);
                     }
                     solid.hitBox.y = pos;
                 } else {
                     pos = solid.hitBox.x - (areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).x - a.x)*firtsAreaWidth*a.TILE_WIDTH;//a.player.hitBox.y;// - inRoomYCoord;
                     if (offY > 0) {
                         solid.hitBox.y = (toArea.height - 2) * toArea.TILE_HEIGHT - solid.hitBox.height;
+                        if (isNPC) ((NPC)solid).characterMaker.setDirection(2, ((NPC)solid).charId);
                     } else {
                         solid.hitBox.y = toArea.TILE_HEIGHT;
+                        if (isNPC) ((NPC)solid).characterMaker.setDirection(4, ((NPC)solid).charId);
                     }
                     solid.hitBox.x = pos;
                 }
+                solid.x = solid.hitBox.x;
+                solid.y = solid.hitBox.y;
+                solid.h = solid.hitBox.y;
+                solid.graphicX = solid.x;
+                solid.graphicY = solid.y;
                 if (solid.getClass() == HittableEntity.class) {
                     toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items);
                     movablesAreas.set(movables.indexOf(solid), areas.indexOf(toArea));
                 } else {
+                    //ObjectCell soc = toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
+                    ((NPC)solid).speedX = 0;
+                    ((NPC)solid).speedY = 0;
                     a.worldObjectsHandler.deleteObjectCellsForEntity(solid);
                     toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1);
-                    toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
                     npcsAreas.set(npcs.indexOf(solid), areas.indexOf(toArea));
+                    ((NPC)solid).curRoom = map.getRoomByName(toArea.name);
+                    if (((NPC)solid).currentTaskPath != null && ((NPC)solid).currentTaskPath.size() > 0 && ((NPC)solid).currentTaskPath.get(0).otherExit.room == ((NPC)solid).curRoom) {
+                        ((NPC)solid).currentTaskPath.remove(0);
+                    }
                 }
             }
         }
@@ -1206,6 +1270,48 @@ public class World{
         }
     }
 
+    public void handleNPCTasks() {
+        for (int t = 0; t < areas.size(); ++t) {
+            if (t == areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)) continue;
+            Area a = areas.get(t);
+            ArrayList<NPC> npcs = a.worldObjectsHandler.NPCs;
+            for (int i = 0; i < npcs.size(); ++i) {
+                NPC npc = npcs.get(i);
+                Exit pos = npc.handleOffscreenTasks();
+                if (pos != null) {
+                    if (pos.room != npc.curRoom) {
+                        if (pos.direction == ExitDirection.EAST) {
+                            npc.characterMaker.setDirection(1, npc.charId);
+                            npc.dir = 1;
+                        } else if (pos.direction == ExitDirection.SOUTH) {
+                            npc.characterMaker.setDirection(2, npc.charId);
+                            npc.dir = 2;
+                        } else if (pos.direction == ExitDirection.WEST) {
+                            npc.characterMaker.setDirection(3, npc.charId);
+                            npc.dir = 3;
+                        } else if (pos.direction == ExitDirection.NORTH) {
+                            npc.characterMaker.setDirection(4, npc.charId);
+                            npc.dir = 4;
+                        }
+                        npc.currentExitPath = null;
+                        Area toArea = map.getAreaByName(pos.room.name);
+                        a.worldObjectsHandler.deleteObjectCellsForEntity(npc);
+                        npcs.remove(npc);
+                        npc.x = pos.x - pos.offsetX * a.TILE_WIDTH;
+                        npc.y = pos.y - pos.offsetY * a.TILE_HEIGHT/2 - 10;
+                        if (pos.offsetX == 0) npc.x += 10;
+                        else npc.y += 10;
+                        npc.hitBox.x = npc.x;
+                        npc.hitBox.y = npc.y;
+                        toArea.worldObjectsHandler.addNPC(npc, this, -1);
+                        npcsAreas.set(npc.charId, areas.indexOf(toArea));
+                        npc.curRoom = map.getRoomByName(toArea.name);
+                    }
+                }
+            }
+        }
+    }
+
     public void checkDialog(Area area) {
         if (menu.currentLanguage != area.worldObjectsHandler.currentDialog.language) {
             area.worldObjectsHandler.currentDialog.reload(area.worldObjectsHandler.getActiveDialogPath(menu, folderPath), menu.currentLanguage, area.worldObjectsHandler.currentDialog.getCurrentSpeechId());
@@ -1251,6 +1357,7 @@ public class World{
         } //else if (curArea.worldObjectsHandler.currentInventory != null) {
         curArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
         synchronizeFlags();
+        if (!menu.paused) handleNPCTasks();
         checkInventory(curArea);
         //}
         if (areaTransitionX == 0 && areaTransitionY == 0 && areaTransitionZ == 0) {

@@ -96,8 +96,9 @@ public class ObjectCell {
     CharacterMaker characterMaker;
     boolean soundsAreStopped = false;
     long loopId = -1;
+    String areaName;
 
-    public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items) {
+    public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items, Area area) {
         this.type = type;
         this.id = id;
         this.entity = entity;
@@ -110,6 +111,7 @@ public class ObjectCell {
         cellOffsetY = 0;
         this.hIsY = hIsY;
         this.items = items;
+        areaName = area.name;
     }
 
     public boolean isTransfer() {
@@ -348,11 +350,11 @@ public class ObjectCell {
         return textureRegion;
     }
 
-    public void objectCheck(String worldDir, AssetManager assets, int state, CharacterMaker characterMaker) {
+    public void objectCheck(World world, AssetManager assets, int state, CharacterMaker characterMaker) {
         if (entity.texPath == null) return;
         String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
 
-        FileHandle charDir =  Gdx.files.internal(worldDir + "/objects");
+        FileHandle charDir =  Gdx.files.internal(world.worldDir + "/objects");
         FileHandle objectXML = null;
         for (FileHandle entry: charDir.list()) {
             if (entry.nameWithoutExtension().equals(baseTex)) {
@@ -424,6 +426,15 @@ public class ObjectCell {
                 String condition = eElement.getAttribute("switchCondition");
                 if (!eElement.getAttribute("zLayerChange").equals("")) {
                     zPath = Integer.parseInt(eElement.getAttribute("zLayerChange"));
+                    RoomNode room = world.map.getRoomByName(areaName);
+                    Area area = world.map.getAreaByName(areaName);
+                    if (zPath == -1) {
+                        room.addExit(new Exit(room, ExitDirection.DOWN, (int)entity.x, (int)entity.y, 1), area, true);
+                        //world.map.connectExits();
+                    } else if (zPath == 1) {
+                        room.addExit(new Exit(room, ExitDirection.UP, (int)entity.x, (int)entity.y, 1), area, true);
+                        //world.map.connectExits();
+                    }
                 }
                 if (condition.length() > 0 && condition.charAt(0) == '!') {
                     condition = condition.substring(1);
@@ -445,13 +456,13 @@ public class ObjectCell {
                 statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
                 String switchSoundPath = eElement.getAttribute("switchSound");
                 if (!switchSoundPath.equals("")) {
-                    statesSwitchSounds.add(assets.get(worldDir + "/sounds/" + switchSoundPath, Sound.class));
+                    statesSwitchSounds.add(assets.get(world.worldDir + "/sounds/" + switchSoundPath, Sound.class));
                 } else {
                     statesSwitchSounds.add(null);
                 }
                 String soundLoopPath = eElement.getAttribute("loopSound");
                 if (!soundLoopPath.equals("")) {
-                    statesSoundLoops.add(assets.get(worldDir + "/sounds/" + eElement.getAttribute("loopSound"), Sound.class));
+                    statesSoundLoops.add(assets.get(world.worldDir + "/sounds/" + eElement.getAttribute("loopSound"), Sound.class));
                 } else {
                     statesSoundLoops.add(null);
                 }
@@ -530,7 +541,7 @@ public class ObjectCell {
                         eElement = (Element) nNode;
                         String name = eElement.getAttribute("name");
                         int stack = Integer.parseInt(eElement.getAttribute("stack"));
-                        Item item = new Item(assets, worldDir, name);
+                        Item item = new Item(assets, world.folderPath, name);
                         item.stack = stack;
                         items.add(item);
                     }
@@ -538,10 +549,10 @@ public class ObjectCell {
             }
             if (statesTexTypes.get(currentState) == "sprite") {
                 entity.anim = null;
-                entity.tex = assets.get(worldDir + "/" + statesTex.get(currentState) + ".png", Texture.class);
+                entity.tex = assets.get(world.worldDir + "/" + statesTex.get(currentState) + ".png", Texture.class);
             } else if (statesTexTypes.get(currentState) == "anim") {
                 entity.tex = null;
-                entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
+                entity.anim = new AnimationSequence(assets, world.worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
             }
             startTime = System.currentTimeMillis();
             lastSpawned = 0;

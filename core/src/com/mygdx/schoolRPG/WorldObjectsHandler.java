@@ -99,7 +99,7 @@ public class WorldObjectsHandler {
             tileY = area.height - 1;
         }
         if (!oc.isObject) {
-            oc.objectCheck(area.worldPath, area.assets, state, area.world.characterMaker);
+            oc.objectCheck(area.world, area.assets, state, area.world.characterMaker);
         }
         if (oc.isObject) {
             objects.add(oc);
@@ -142,7 +142,7 @@ public class WorldObjectsHandler {
         } else {
             he.h = he.y + he.floorHeight;
         }
-        ObjectCell cell = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, he, ObjectType.SOLID, solids.size(), true, items);
+        ObjectCell cell = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, he, ObjectType.SOLID, solids.size(), true, items, area);
         addObjectCell(cell, state);
         solids.add(he);
         return cell;
@@ -150,9 +150,9 @@ public class WorldObjectsHandler {
 
     public void addNonSolid(Entity e, int state) {
         if (e.floor) {
-            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), false, null), state);
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), false, null, area), state);
         } else {
-            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true, null), state);
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true, null, area), state);
         }
         nonSolids.add(e);
         if (e.containingItem != null) {
@@ -161,28 +161,28 @@ public class WorldObjectsHandler {
     }
 
     public void addObstacle(DeathZone dz, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, dz, ObjectType.OBSTACLE, obstacles.size(), true, null), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, dz, ObjectType.OBSTACLE, obstacles.size(), true, null, area), state);
         obstacles.add(dz);
     }
 
     public void addLiquidSurface(LiquidSurface ls, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, ls, ObjectType.LIQUID, liquidSurfaces.size(), true, null), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, ls, ObjectType.LIQUID, liquidSurfaces.size(), true, null, area), state);
         liquidSurfaces.add(ls);
     }
 
     public void addCheckPoint(CheckPoint cp, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, cp, ObjectType.CHECKPOINT, checkPoints.size(), true, null), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, cp, ObjectType.CHECKPOINT, checkPoints.size(), true, null, area), state);
         checkPoints.add(cp);
     }
 
     public void addParticle(Particle prt, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, prt, ObjectType.PARTICLE, particles.size(), true, null), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, prt, ObjectType.PARTICLE, particles.size(), true, null, area), state);
         particles.add(prt);
     }
 
     public void addNPC(NPC npc, World world, int state) {
         npc.spawnArea = world.areas.indexOf(area);
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null, area), state);
         NPCs.add(npc);
         world.synchronizeFlags();
         if (world.npcs.contains(npc)) {
@@ -285,6 +285,11 @@ public class WorldObjectsHandler {
                 }
             }
         }
+        if (isNPC && !isPlayer) {
+            area.player.hitBox = he.pushOutSolidObjects(area.player, area, area.player.oldX, area.player.oldY);
+            he.graphicX = he.x;
+            he.graphicY = he.y;
+        }
         oldRect = new Rectangle(he.hitBox);
         for (int i = tileY1-2; i <= tileY2+3; ++i) {
             for (int t = tileX1-2; t <= tileX2+2; ++t) {
@@ -333,6 +338,12 @@ public class WorldObjectsHandler {
             he.hitBox.x = Math.round(he.hitBox.x);
             he.hitBox.y = Math.round(he.hitBox.y);
         }*/
+        if (isPlayer) {
+            he.x = he.hitBox.x;
+            he.y = he.hitBox.y;
+            he.graphicX = he.hitBox.x;
+            he.graphicY = he.hitBox.y;
+        }
         return;
     }
 
@@ -466,6 +477,7 @@ public class WorldObjectsHandler {
                 NPCs.get(i).move(true);
                 NPCs.get(i).invalidatePose(false, false);
                 invalidateCollisions( NPCs.get(i),  NPCs.get(i).oldX, NPCs.get(i).oldY);
+                NPCs.get(i).handleTasks();
             }
         }
     }
@@ -759,11 +771,11 @@ public class WorldObjectsHandler {
 
     private void sortObjectCells(ArrayList<ObjectCell> cells) {
         for (int i = 0; i < cells.size(); ++i) {
-            for (int t = cells.size()-1; t >= 1; --t) {
-                if (cells.get(t).entity.h < cells.get(t-1).entity.h) {
-                    ObjectCell temp = cells.get(t);
-                    cells.set(t, cells.get(t-1));
-                    cells.set(t - 1, temp);
+            for (int t = i; t < cells.size(); ++t) {
+                if (cells.get(i).entity.h > cells.get(t).entity.h) {
+                    ObjectCell temp = cells.get(i);
+                    cells.set(i, cells.get(t));
+                    cells.set(t, temp);
                 }
             }
         }
@@ -774,7 +786,17 @@ public class WorldObjectsHandler {
             for (int t = 0; t < area.height; t++) {
                 for (int z = 0; z < objectCells.get(i).get(t).size(); z++) {
                     ObjectCell temp = objectCells.get(i).get(t).get(z);
-                    objectCells.get(i).get(t).get(z).invalidate();
+                    temp.x = i;
+                    temp.y = t;
+                    temp.invalidate();
+                    /*if (temp.type != ObjectType.NONSOLID && ((int)temp.x != i || (int)temp.y != t)) {
+                        if ((int)temp.x >= 0 && (int)temp.y >= 0 && (int)temp.x < area.width && (int)temp.y < area.height) {
+                            objectCells.get((int)temp.x).get((int)temp.y).add(temp);
+                            objectCells.get(i).get(t).remove(temp);
+                            temp.invalidate();
+                        }
+                    }*/
+
                     if (temp.isTransfer()) {
                         if (i + temp.cellOffsetX < area.width && i + temp.cellOffsetX >= 0 && t+temp.cellOffsetY < area.height && t+temp.cellOffsetY >= 0) {
                             objectCells.get(i + temp.cellOffsetX).get(t+temp.cellOffsetY).add(temp);
@@ -890,7 +912,8 @@ public class WorldObjectsHandler {
                                 if (objectCells.get(t).get(i - 1).get(z).entity.floor) {
                                     objectCells.get(t).get(i - 1).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectCells.get(t).get(i - 1).get(z) == activeObject, 0, 0);
                                 } else {
-                                    objectsOnLevel.add(objectCells.get(t).get(i - 1).get(z));
+                                    ObjectCell curCell = objectCells.get(t).get(i - 1).get(z);
+                                    objectsOnLevel.add(curCell);
                                 }
                             }
                         }
@@ -899,20 +922,31 @@ public class WorldObjectsHandler {
                         objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true));
                     }*/
                 }
-                sortObjectCells(objectsOnLevel);
+                ObjectCell playerObject = null;
                 if (!playerDrawn) {
                     for (int z =0; z < objectsOnLevel.size(); ++z) {
                         if ((objectsOnLevel.get(z).hIsY && objectsOnLevel.get(z).entity.h > area.player.h) || (!objectsOnLevel.get(z).hIsY && objectsOnLevel.get(z).entity.y > area.player.h)) {
                             //objectsOnLevel.add();
-                            objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null));
+                            playerObject = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null, area);
+                            objectsOnLevel.add(playerObject);
                             playerDrawNow = z;
                             break;
                         }
                     }
                     if (playerDrawNow == -1 && i == area.playerTileY) {
-                        objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null));
+                        playerObject = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null, area);
+                        objectsOnLevel.add(playerObject);
                         playerDrawNow = objectsOnLevel.size() - 1;
                     }
+                }
+                if (playerObject != null) {
+                    playerObject.entity.x = area.player.x;
+                    playerObject.entity.y = area.player.y;
+                    playerObject.entity.h = area.player.hitBox.y - area.player.hitBox.height;
+                }
+                sortObjectCells(objectsOnLevel);
+                if (playerObject != null) {
+                    playerDrawNow = objectsOnLevel.indexOf(playerObject);
                 }
                 /*if (i == area.height && !playerDrawn) {
                     playerDrawNow = objectsOnLevel.size() - 1;
@@ -922,7 +956,7 @@ public class WorldObjectsHandler {
                     if (drawPlayer && z == playerDrawNow/* && objectsOnLevel.get(z).type == ObjectType.PLAYER*/) {
                         if (!area.platformMode) {
                             //ObjectCell player = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true);
-                            ObjectCell player = objectsOnLevel.get(objectsOnLevel.size() - 1);
+                            ObjectCell player = objectsOnLevel.get(playerDrawNow);
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
                             float w = ((Player)player.entity).hitBox.width * 0.75f;
                             float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
@@ -951,17 +985,17 @@ public class WorldObjectsHandler {
 
                     if (objectsOnLevel.get(z).type == ObjectType.NPC) {
                         if (!area.platformMode) {
-                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-                            float w = ((NPC)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
-                            float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
+                            //batch.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
+                            //float w = ((NPC)objectsOnLevel.get(z).entity).hitBox.width*0.75f;
+                            //float w2 = 0;//((Player)objectsOnLevel.get(z).entity).hitBox.width*0.10f;
                             NPC npc = ((NPC)objectsOnLevel.get(z).entity);
-                            batch.draw(area.shadow, offsetX + npc.hitBox.x+w2/2, offsetY - (((NPC)objectsOnLevel.get(z).entity).hitBox.y + npc.hitBox.height/2)+w2/2, w*1.3f, w*1.3f);
-                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                            //batch.draw(area.shadow, offsetX + npc.hitBox.x+w2/2, offsetY - (((NPC)objectsOnLevel.get(z).entity).hitBox.y + npc.hitBox.height/2)+w2/2, w*1.3f, w*1.3f);
+                            //batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
                             npc.draw(batch, offsetX, offsetY, npc == activeNPC);
-                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
+                            //batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha));
                         } else {
                             NPC npc = ((NPC)objectsOnLevel.get(z).entity);
-                            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                            //batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                             npc.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, npc == activeNPC, 0, 0);
                         }
                     }
@@ -999,7 +1033,7 @@ public class WorldObjectsHandler {
                         //objectCells.get(t).get(i).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode);
                     }
                     if (i == area.playerTileY && t == area.playerTileX) {
-                        objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null));
+                        objectsOnLevel.add(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, area.player, ObjectType.PLAYER, 0, true, null, area));
                     }
                 }
 
@@ -1022,7 +1056,7 @@ public class WorldObjectsHandler {
             }
 
             for (int z =0; z < liquidSurfaces.size(); ++z) {
-                    liquidSurfaces.get(z).draw(batch, 0, 0);
+                    liquidSurfaces.get(z).draw(batch, offsetX, offsetY);
             }
             for (int i = 0; i < area.height; ++i) {
                 for (int t = 0; t < area.width; ++t) {

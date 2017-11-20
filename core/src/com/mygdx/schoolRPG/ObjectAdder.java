@@ -6,6 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
+import com.mygdx.schoolRPG.tools.IntCoords;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -537,8 +538,8 @@ public class ObjectAdder {
                         NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, type + 56, world);
                         characterMaker.setDirection(dir, type + 56);
                         npc.movable = true;
+                        //ObjectCell soc = worldObjectsHandler.addSolid(npc, world, -1, null);
                         worldObjectsHandler.addNPC(npc, world, -1);
-                        worldObjectsHandler.addSolid(npc, world, -1, null);
                     } else {
                         //itemGlow.floor = true;
                         FileHandle itemDir =  Gdx.files.internal(world.folderPath + "/items");
@@ -584,6 +585,7 @@ public class ObjectAdder {
         for (int i =0 ;i < area.worldObjectsHandler.objects.size(); ++i) {
             world.objects.add(area.worldObjectsHandler.objects.get(i));
         }
+
     }
 
 }

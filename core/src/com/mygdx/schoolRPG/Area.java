@@ -175,6 +175,7 @@ public class Area {
             worldObjectsHandler.signOverlay = assets.get(worldPath+"/sign_overlay.png");
             signFont = new BitmapFont(Gdx.files.internal(worldPath + "/sign_font.fnt"), Gdx.files.internal(worldPath + "/sign_font.png"), false);
         }
+
         initialised = true;
     }
 

@@ -65,30 +65,32 @@ public class MainMenu extends Menu {
 
         if (gameSelect && Gdx.input.isKeyJustPressed(Input.Keys.FORWARD_DEL)) {
             int index = gameSelector.getSelectedIndex();
-            int worldId = worldsIds.get(index);
-            if (index != 0 && worldsIds.get(index-1) == worldId) {
-                int gameNum = 1;
-                for (int i = index + 1; i < worldsIds.size(); ++i) {
-                    if (worldsIds.get(i) != worldId) {
-                        break;
+            if (index != 0 && index != gameSelector.titles.size()-1) {
+                int worldId = worldsIds.get(index);
+                if (worldsIds.get(index-1) == worldId) {
+                    int gameNum = 1;
+                    for (int i = index + 1; i < worldsIds.size(); ++i) {
+                        if (worldsIds.get(i) != worldId) {
+                            break;
+                        }
+                        gameNum++;
                     }
-                    gameNum++;
-                }
-                FileHandle file = Gdx.files.local(worldsPaths.get(worldId) + "/saves/state" + (gameNum-1));
-                file.delete();
-                FileHandle savesDir = Gdx.files.internal(worldsPaths.get(worldId) + "/saves");
-                for (FileHandle entry: savesDir.list()) {
+                    FileHandle file = Gdx.files.local(worldsPaths.get(worldId) + "/saves/state" + (gameNum-1));
+                    file.delete();
+                    FileHandle savesDir = Gdx.files.internal(worldsPaths.get(worldId) + "/saves");
+                    for (FileHandle entry: savesDir.list()) {
 
-                    int saveNum = Integer.parseInt(entry.name().substring(5, entry.name().length()));
-                    if (saveNum >= gameNum) {
-                        FileHandle nfile = Gdx.files.internal(worldsPaths.get(worldId) + "/saves/state" + (saveNum-1));
-                        entry.file().renameTo(nfile.file());
+                        int saveNum = Integer.parseInt(entry.name().substring(5, entry.name().length()));
+                        if (saveNum >= gameNum) {
+                            FileHandle nfile = Gdx.files.internal(worldsPaths.get(worldId) + "/saves/state" + (saveNum-1));
+                            entry.file().renameTo(nfile.file());
+                        }
                     }
                 }
+                int id = gameSelector.getSelectedIndex();
+                refreshSaves();
+                gameSelector.setSelectedIndex(id);
             }
-            int id = gameSelector.getSelectedIndex();
-            refreshSaves();
-            gameSelector.setSelectedIndex(id);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {

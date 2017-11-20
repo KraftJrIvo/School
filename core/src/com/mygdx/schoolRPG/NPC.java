@@ -8,10 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.mygdx.schoolRPG.tools.AnimationSequence;
-import com.mygdx.schoolRPG.tools.CharacterMaker;
-import com.mygdx.schoolRPG.tools.GlobalSequence;
-import com.mygdx.schoolRPG.tools.JoyStick;
+import com.mygdx.schoolRPG.tools.*;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -55,12 +52,24 @@ public class NPC extends HittableEntity {
     Sound speechSound;
     Sound jump, djump, land, step, die;
     World world;
+    ArrayList<Task> tasks;
+    Task currentTask = null;
+    ArrayList<Exit> currentTaskPath;
+    ArrayList<IntCoords> currentExitPath;
+    RoomNode curRoom;
+    RoomNode curExitRoom;
+    long lastTransition;
+    boolean lastHandledOffscreen = false;
+    boolean repeatTasks = false;
+    String charPath;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
     public GlobalSequence objectInHands;
 
     int walkingFrames = 0;
+
+    int dir = 0;
 
     public NPC(AssetManager assets, String baseName, float x, float y, float width, float height, float floorHeight, boolean movable, CharacterMaker characterMaker, int charId, World world) {
         super(assets, (String)null, x, y, width, height, floorHeight, movable, 0);
@@ -87,7 +96,7 @@ public class NPC extends HittableEntity {
         ArrayList<String> itemsNames = new ArrayList<String>();
         ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
         inventory = new ArrayList<Item>();
-        String charPath = world.worldDir + "/chars/" + charId;
+        charPath = world.worldDir + "/chars/" + charId;
         speechSound = assets.get(charPath + "/speech.wav", Sound.class);
         if (baseName == null) {
             try {
@@ -160,7 +169,272 @@ public class NPC extends HittableEntity {
             }
         }
         setWears();
+        tasks = new ArrayList<Task>();
+        currentTaskPath = new ArrayList<Exit>();
+        currentExitPath = new ArrayList<IntCoords>();
+        parseTasks();
+
         //lastInventorySize = inventory.size();
+    }
+
+    private void parseTasks() {
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(charPath + "/behavior"));
+            int tasksCount = Integer.parseInt(in.readLine());
+            for (int i =0; i < tasksCount; ++i) {
+                tasks.add(new Task(in, world));
+            }
+            String str = in.readLine();
+            repeatTasks = (str.charAt(0) == 'r');
+        } catch (FileNotFoundException e) {
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateTask() {
+        if (tasks.size() == 0) {
+            currentTask = null;
+            return;
+        }
+        currentTask = tasks.get(0);
+        int npcId = world.npcs.indexOf(this);
+        Area curArea = world.areas.get(world.npcsAreas.get(npcId));
+        curRoom = world.map.getRoomByName(curArea.name);
+        IntCoords myCoords = new IntCoords((int)Math.floor(x/curArea.TILE_WIDTH), (int)Math.floor(y/curArea.TILE_HEIGHT));
+        IntCoords taskCoords;
+        if (currentTask.random) {
+            taskCoords = new IntCoords(-1, -1);
+        } else if (currentTask.objectName != null) {
+            taskCoords = new IntCoords(-1, -1);
+        } else {
+            taskCoords = currentTask.coords.get(0);
+        }
+        if (!currentTask.destinationRoomName.equals(curRoom.name)) {
+            currentTaskPath = world.map.findPathToRoom(curRoom, myCoords, world.map.getRoomByName(currentTask.destinationRoomName), taskCoords);
+        } else {
+            currentTask.destinationReached = true;
+            lastTransition = System.currentTimeMillis();
+        }
+    }
+
+    public Exit handleOffscreenTasks() {
+        Exit pos = null;
+        if (currentTask == null || currentTaskPath == null) {
+            if (tasks.size() > 0) {
+                updateTask();
+                lastTransition = System.currentTimeMillis();
+            } else if (repeatTasks) {
+                parseTasks();
+            }
+        }
+        if (currentTask == null) {
+            movingConfiguration.movingRight = 0;
+            movingConfiguration.movingLeft = 0;
+            movingConfiguration.movingUp = 0;
+            movingConfiguration.movingDown = 0;
+            return null;
+        }
+        if (currentTaskPath == null) {
+            updateTask();
+            lastTransition = System.currentTimeMillis();
+        }
+        if (!lastHandledOffscreen) {
+            lastTransition = System.currentTimeMillis();
+            lastHandledOffscreen = true;
+        }
+        if (!currentTask.destinationReached) {
+            if (System.currentTimeMillis() - lastTransition > 3000) {
+                if (currentTaskPath.size() == 0) {
+                    currentTask.destinationReached = true;
+                } else {
+                    lastTransition = System.currentTimeMillis();
+                    Exit e = currentTaskPath.get(0).otherExit;
+                    pos = e;//new IntCoords(e.x, e.y);
+                    currentTaskPath.remove(0);
+                    if (currentTaskPath.size() == 0) {
+                        currentTask.destinationReached = true;
+                    }
+                }
+            }
+
+        } else {
+            if (currentTask.startPointReached) {
+                if (System.currentTimeMillis() >= currentTask.startedTime + currentTask.time) {
+                    currentTask.finished = true;
+                    tasks.remove(currentTask);
+                    currentTask = null;
+                } else {
+                    currentTask.finished = true;
+                    tasks.remove(currentTask);
+                    currentTask = null;
+                }
+            } else if (System.currentTimeMillis() - lastTransition > 3000) {
+                lastTransition = System.currentTimeMillis();
+                int npcId = world.npcs.indexOf(this);
+                Area curArea = world.areas.get(world.npcsAreas.get(npcId));
+                IntCoords coords = new IntCoords((int)Math.floor(x/curArea.TILE_WIDTH), (int)Math.floor(y/curArea.TILE_HEIGHT));
+                pos = new Exit(world.map.getRoomByName(currentTask.destinationRoomName), ExitDirection.DOWN, coords.x, coords.y, 1);
+                currentTask.startPointReached = true;
+                currentTask.started = true;
+                currentTask.startedTime = System.currentTimeMillis();
+            }
+        }
+        System.out.println(curRoom.name);
+        return pos;
+    }
+
+    public void handleTasks() {
+        if (lastHandledOffscreen) {
+            movingConfiguration.movingRight = 0;
+            movingConfiguration.movingLeft = 0;
+            movingConfiguration.movingUp = 0;
+            movingConfiguration.movingDown = 0;
+            characterMaker.setDirection(dir, charId);
+            speedX = 0;
+            speedY = 0;
+            if (tasks.size() > 0) {
+                updateTask();
+                currentExitPath = null;
+            }
+        }
+        lastHandledOffscreen = false;
+        if (currentTask == null) {
+            if (tasks.size() > 0) {
+                updateTask();
+            } else {
+                return;
+            }
+        } else if (!currentTask.destinationReached) {
+            int npcId = world.npcs.indexOf(this);
+            Area curArea = world.areas.get(world.npcsAreas.get(npcId));
+            curRoom = world.map.getRoomByName(curArea.name);
+            IntCoords myCoords = new IntCoords((int)Math.floor(x/curArea.TILE_WIDTH), (int)Math.floor(y/curArea.TILE_HEIGHT));
+            if ((currentExitPath == null || currentExitPath.size() == 0)) {
+                if (currentTaskPath != null && currentTaskPath.size() > 0) {
+                    PathFinder pathFinder = new PathFinder();
+                    Exit exit = currentTaskPath.get(0);
+                    IntCoords exitCoords = new IntCoords((int)Math.floor((exit.x)/curArea.TILE_WIDTH), (int)Math.floor((exit.y)/curArea.TILE_HEIGHT));
+                    currentExitPath = pathFinder.getAStarPath(curRoom.walkables, myCoords, exitCoords);
+                    if (currentExitPath != null && currentExitPath.size() > 0) {
+                        IntCoords lastCoords = new IntCoords(currentExitPath.get(0).x, currentExitPath.get(0).y);
+                        int offsetX = exit.offsetX;
+                        int offsetY = exit.offsetY;
+                        lastCoords.x += offsetX;
+                        lastCoords.y += offsetY;
+                        currentExitPath.add(0, lastCoords);
+                    }
+                    curExitRoom = curRoom;
+                } else if (currentTaskPath != null && currentTaskPath.size() == 0){
+                    currentTask.destinationReached = true;
+                    if (currentTask.coords.size() == 0) {
+                        currentTask.startPointReached = true;
+                        currentTask.started = true;
+                        currentTask.startedTime = System.currentTimeMillis();
+                    } else {
+                        PathFinder pathFinder = new PathFinder();
+                        currentExitPath = pathFinder.getAStarPath(curRoom.walkables, myCoords, currentTask.coords.get(0));
+                    }
+                }
+            } else {
+                walktToExit(new IntCoords((int)x, (int)y));
+                /*if (currentExitPath.size() == 0 && currentTaskPath != null && currentTaskPath.size() > 0) {
+                    currentTaskPath.remove(0);
+                }*/
+            }
+        } else {
+            if (currentTask.startPointReached) {
+                if (System.currentTimeMillis() >= currentTask.startedTime + currentTask.time) {
+                    currentTask.finished = true;
+                    tasks.remove(currentTask);
+                    currentTask = null;
+                } else {
+
+                }
+            } else {
+                if (currentExitPath == null) {
+                    int npcId = world.npcs.indexOf(this);
+                    Area curArea = world.areas.get(world.npcsAreas.get(npcId));
+                    IntCoords myCoords = new IntCoords((int)Math.floor(x/curArea.TILE_WIDTH), (int)Math.floor(y/curArea.TILE_HEIGHT));
+                    PathFinder pathFinder = new PathFinder();
+                    if (currentTask.coords.size() > 0) {
+                        currentExitPath = pathFinder.getAStarPath(curRoom.walkables, myCoords, currentTask.coords.get(0));
+                    } else {
+                        currentTask.startPointReached = true;
+                    }
+                } else {
+                    walkToStartPoint(new IntCoords((int)x, (int)y));
+                }
+            }
+        }
+    }
+
+    private void walkTo(IntCoords trueCoords, IntCoords currentTarget, ArrayList currentExitPath) {
+        int targetX = currentTarget.x * 32 + 8;
+        int targetY = currentTarget.y * 16;
+        if (targetX < trueCoords.x - 5) {
+            movingConfiguration.movingLeft = 1;
+            movingConfiguration.movingRight = 0;
+        } else if (targetX > trueCoords.x + 5) {
+            movingConfiguration.movingRight = 1;
+            movingConfiguration.movingLeft = 0;
+        } else {
+            movingConfiguration.movingRight = 0;
+            movingConfiguration.movingLeft = 0;
+        }
+        if (targetY < trueCoords.y - 3) {
+            movingConfiguration.movingUp = 1;
+            movingConfiguration.movingDown = 0;
+        } else if (targetY > trueCoords.y + 3) {
+            movingConfiguration.movingDown = 1;
+            movingConfiguration.movingUp = 0;
+        } else {
+            movingConfiguration.movingUp = 0;
+            movingConfiguration.movingDown = 0;
+        }
+        if (trueCoords.hypot(new IntCoords(targetX, targetY)) < 10) {
+            currentExitPath.remove(currentTarget);
+        }
+        h = hitBox.y;
+    }
+
+    private void walktToExit(IntCoords trueCoords) {
+        /*if (!curRoom.name.equals(currentTaskPath.get(0).room.name)) {
+            currentExitPath.clear();
+        }*/
+        if (curExitRoom != null && curExitRoom != curRoom) {
+            currentExitPath.clear();
+            return;
+        }
+        if (currentExitPath.size() > 0) {
+            IntCoords currentTarget = currentExitPath.get(currentExitPath.size() - 1);
+            walkTo(trueCoords, currentTarget, currentExitPath);
+            if (currentExitPath.size() == 0) {
+                movingConfiguration.movingRight = 0;
+                movingConfiguration.movingLeft = 0;
+                movingConfiguration.movingUp = 0;
+                movingConfiguration.movingDown = 0;
+                /*Exit curExit = currentTaskPath.get(0);
+                if (curExit.direction == ExitDirection.WEST) {
+
+                }*/
+            }
+        }
+    }
+
+    private void walkToStartPoint(IntCoords trueCoords) {
+        if (currentExitPath != null && currentExitPath.size() > 0) {
+            IntCoords currentTarget = currentExitPath.get(currentExitPath.size() - 1);
+            walkTo(trueCoords, currentTarget, currentExitPath);
+            if (currentExitPath.size() == 0) {
+                currentTask.startPointReached = true;
+                movingConfiguration.movingRight = 0;
+                movingConfiguration.movingLeft = 0;
+                movingConfiguration.movingUp = 0;
+                movingConfiguration.movingDown = 0;
+            }
+        }
     }
 
     public void updateFlagsAfterRemoval(Item droppedItem) {

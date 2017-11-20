@@ -1,25 +1,28 @@
-*time_0 
-go 2 3 2
-use made_bed
-
-*time_8
-use made_bed
-? TVisOn
-use tv
--
-go 3 3 2
-walk 3 3
-turn down
-
-*time_10
-go 2 6 2
-patrol 6 5 11 5
-
-*time_15 
-go 2 6 0
-walk 8 4
-turn up
-
-*time_16
-go 2 6 2
-patrol 6 5 11 5
+4
+krovinosroom
+patrol
+1
+5
+5
+down
+1
+1
+parentsroom
+patrol
+1
+5
+18
+left
+100000
+100000
+corridor1
+patrol
+random
+5000
+3000
+kitchen
+use
+yellow
+3
+1000
+repeat
