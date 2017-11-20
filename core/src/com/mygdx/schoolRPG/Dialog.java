@@ -144,7 +144,10 @@ public class Dialog {
                     if (c == '&') {
                         line = in.readLine();
                         transId = Integer.parseInt(line);
-
+                        if (texCharId <= 0) {
+                            talkPostfix = "";
+                            texCharId = 0;
+                        }
                         speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
                         speechTransitionsIds.add(transId);
                         line = in.readLine();
@@ -162,9 +165,17 @@ public class Dialog {
                         }
                         line = in.readLine();
                         c = line.charAt(0);
+                        if (texCharId <= 0) {
+                            talkPostfix = "";
+                            texCharId = 0;
+                        }
                         speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player, parent));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     } else {
+                        if (texCharId <= 0) {
+                            talkPostfix = "";
+                            texCharId = 0;
+                        }
                         speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
                     }
@@ -183,6 +194,10 @@ public class Dialog {
                         choiceTransitionsIds.get(choiceTransitionsIds.size()-1).add(transId);
                         line = in.readLine();
                         c = line.charAt(0);
+                    }
+                    if (texCharId <= 0) {
+                        talkPostfix = "";
+                        texCharId = 0;
                     }
                     choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs, player, parent));
                 } else if (c == '$') {

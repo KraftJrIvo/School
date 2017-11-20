@@ -62,6 +62,9 @@ public class NPC extends HittableEntity {
     boolean lastHandledOffscreen = false;
     boolean repeatTasks = false;
     String charPath;
+    boolean lastMovedUp = false;
+    boolean lastMovedDown = false;
+    boolean ignoreNextZero = false;
 
     public GlobalSequence headWear;
     public GlobalSequence bodyWear;
@@ -281,7 +284,7 @@ public class NPC extends HittableEntity {
                 currentTask.startedTime = System.currentTimeMillis();
             }
         }
-        System.out.println(curRoom.name);
+        //System.out.println(curRoom.name);
         return pos;
     }
 
@@ -535,15 +538,47 @@ public class NPC extends HittableEntity {
             }
         }
         if (allowToMove && movingConfiguration.movingUp > 0 && movingConfiguration.movingDown == 0 && !falling) {
-            speedY += 1;
+            if (!lastMovedUp || speedY != 0 || ignoreNextZero) {
+                speedY += 1;
+                if (speedY > 0) {
+                    ignoreNextZero = false;
+                }
+            } else {
+                pushCount = 3;
+            }
+            lastMovedUp = true;
             if (!pushUp) pushCount = -2;
         }
         else if (speedY > 0) speedY -= 1;
         if (allowToMove && movingConfiguration.movingUp == 0 && movingConfiguration.movingDown > 0 && !falling) {
-            speedY -= 1;
+            if (!lastMovedDown || speedY != 0 || ignoreNextZero) {
+                speedY -= 1;
+                if (speedY < 0) {
+                    ignoreNextZero = false;
+                }
+            } else {
+                pushCount = 3;
+            }
+            lastMovedDown = true;
             if (!pushDown) pushCount = -2;
         }
         else if (speedY < 0) speedY += 1;
+
+        if ((speedY > 0 && movingConfiguration.movingDown > 0) || (speedY < 0 && movingConfiguration.movingUp > 0)) {
+            ignoreNextZero = true;
+        }
+
+        if (movingConfiguration.movingUp == 0) {
+            lastMovedUp = false;
+        }
+        if (movingConfiguration.movingDown == 0) {
+            lastMovedDown = false;
+        }
+        if (movingConfiguration.movingLeft > 0 || movingConfiguration.movingRight > 0) {
+            lastMovedUp = false;
+            lastMovedDown = false;
+        }
+
         //}
         int maxSpeedX, maxSpeedY;
         if (isRunning) {

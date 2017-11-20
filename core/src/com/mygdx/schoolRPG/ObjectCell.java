@@ -77,6 +77,7 @@ public class ObjectCell {
     public ArrayList<ArrayList<Integer>> statesBodyXOffsets;
     public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
     public ArrayList<String> statesFlags;
+    public ArrayList<String> statesDialogs;
     public ArrayList<Boolean> statesFlagVals;
     public ArrayList<Integer> statesParticles;
     public ArrayList<ArrayList<Float>> statesParticlesCoords;
@@ -220,6 +221,12 @@ public class ObjectCell {
         if (statesSoundLoops.get(currentState) != null) {
             statesSoundLoops.get(currentState).stop();
             loopId = -1;
+        }
+        if (statesDialogs.get(currentState) != null) {
+            menu.drawPause = false;
+            menu.paused = true;
+            menu.unpausable = false;
+            area.worldObjectsHandler.currentDialog = new Dialog(area.worldObjectsHandler.getActiveDialogPath(menu, worldDir), statesDialogs.get(currentState), false, area.worldObjectsHandler.NPCs, area.player, assets, worldDir + "/chars", menu.currentLanguage, area.world.menu);
         }
         currentState++;
         currentState = currentState % statesCount;
@@ -396,6 +403,7 @@ public class ObjectCell {
             statesTex = new ArrayList<String>();
             names = new ArrayList<String>();
             statesFlags = new ArrayList<String>();
+            statesDialogs = new ArrayList<String>();
             statesFlagVals = new ArrayList<Boolean>();
             statesParticles = new ArrayList<Integer>();
             statesParticlesCoords = new ArrayList<ArrayList<Float>>();
@@ -449,11 +457,20 @@ public class ObjectCell {
                 statesTexTypes.add(texType);
                 statesFlags.add(eElement.getAttribute("flagName"));
                 statesFlagVals.add(Boolean.parseBoolean(eElement.getAttribute("flagVal")));
-                statesParticles.add(Integer.parseInt(eElement.getAttribute("emitsParticle")));
+                if (!eElement.getAttribute("emitsParticle").equals("")) statesParticles.add(Integer.parseInt(eElement.getAttribute("emitsParticle")));
+                else statesParticles.add(-1);
                 statesParticlesCoords.add(new ArrayList<Float>());
-                statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitX")));
-                statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitY")));
-                statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
+                if (statesParticles.get(i) != -1) {
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitX")));
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitY")));
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
+                    statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
+                } else {
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
+                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
+                    statesIntervals.add(0);
+                }
                 String switchSoundPath = eElement.getAttribute("switchSound");
                 if (!switchSoundPath.equals("")) {
                     statesSwitchSounds.add(assets.get(world.worldDir + "/sounds/" + switchSoundPath, Sound.class));
@@ -463,12 +480,15 @@ public class ObjectCell {
                 String soundLoopPath = eElement.getAttribute("loopSound");
                 if (!soundLoopPath.equals("")) {
                     statesSoundLoops.add(assets.get(world.worldDir + "/sounds/" + eElement.getAttribute("loopSound"), Sound.class));
+                    statesLoopsVolumes.add(Integer.parseInt(eElement.getAttribute("loopVolume")));
                 } else {
                     statesSoundLoops.add(null);
+                    statesLoopsVolumes.add(0);
                 }
-                statesLoopsVolumes.add(Integer.parseInt(eElement.getAttribute("loopVolume")));
-                statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
-                boolean hidePlayer = Boolean.parseBoolean(eElement.getAttribute("hidePlayer"));
+                boolean hidePlayer = false;
+                if (!eElement.getAttribute("hidePlayer").equals("")) {
+                    hidePlayer = Boolean.parseBoolean(eElement.getAttribute("hidePlayer"));
+                }
                 statesHidePlayer.add(hidePlayer);
                 boolean drawHiddenPlayer = false;
                 if (hidePlayer) {
@@ -519,9 +539,12 @@ public class ObjectCell {
                     statesHeadWearsDirs.add(null);
                     statesBodyWearsDirs.add(null);
                 }
-                statesFPS.add(Integer.parseInt(eElement.getAttribute("fps")));
-                statesLooping.add(Boolean.parseBoolean(eElement.getAttribute("looping")));
-                statesFramesCount.add(Integer.parseInt(eElement.getAttribute("framesCount")));
+                if (statesTexTypes.get(i).equals("anim")) {
+                    statesFPS.add(Integer.parseInt(eElement.getAttribute("fps")));
+                    statesLooping.add(Boolean.parseBoolean(eElement.getAttribute("looping")));
+                    statesFramesCount.add(Integer.parseInt(eElement.getAttribute("framesCount")));
+                }
+                statesDialogs.add(eElement.getAttribute("initDialog"));
             }
             if (isContainer) {
                 nList = doc.getElementsByTagName("eng");

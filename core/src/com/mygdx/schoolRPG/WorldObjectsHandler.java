@@ -483,7 +483,11 @@ public class WorldObjectsHandler {
     }
 
     public String getActiveDialogPath(GameMenu menu, String worldPath) {
-        String diagPath = worldPath + "/chars/" + activeNPC.charId + "/dialog/";
+        int id = 0;
+        if (activeNPC != null) {
+         id = activeNPC.charId;
+        }
+        String diagPath = worldPath + "/chars/" + id + "/dialog/";
         if (menu.currentLanguage == 0) {
             diagPath += "eng/";
         } else if (menu.currentLanguage == 1) {

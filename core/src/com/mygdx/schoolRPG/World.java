@@ -1195,6 +1195,8 @@ public class World{
             oldArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
             int n = areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ);
             Area curArea = areas.get(n);
+            //curArea.invalidate(this);
+            curArea.worldObjectsHandler.invalidateObjectCells();
             curArea.isCurrent = true;
             if (areasAmbients.get(n)!= null && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
                 currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
