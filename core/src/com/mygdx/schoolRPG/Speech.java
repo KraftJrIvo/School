@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
 
 import java.util.ArrayList;
@@ -37,6 +38,10 @@ public class Speech {
     int oldCharCount = 0, charCount = 0;
     ArrayList<NPC> npcs;
     int nextLineChars = 0;
+    String itemToGive = "";
+    int itemsToGiveCount = 0;
+    int itemsToGiveTo = 0;
+    Player player;
 
     public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
         this.menu = menu;
@@ -46,6 +51,7 @@ public class Speech {
         this.phrases = phrases;
         this.flagCharId = flagCharId;
         this.flagVal = flagVal;
+        this.player = player;
         progress = new ArrayList<Boolean>();
         for (int i =0; i < phrases.size(); ++i) {
             progress.add(false);
@@ -73,6 +79,38 @@ public class Speech {
         currentPhrase = 0;
         time = 0;
         curTime = 0;
+        for (int i = 0; i < phrases.size(); ++i) {
+            String phrase = phrases.get(i);
+            if (phrase.charAt(0) == ']' && phrase.charAt(1) == ';' && phrase.charAt(2) == '[') {
+                boolean numbersStarted = false;
+                boolean receiverStarted = false;
+                String numba = "";
+                String numba2 = "";
+                for (int j = 3; j < phrase.length(); ++j) {
+                    if (phrase.charAt(j) == ';') {
+                        if (numbersStarted) {
+                            receiverStarted = true;
+                            j++;
+                        } else {
+                            numbersStarted = true;
+                            j++;
+                        }
+                    }
+                    if (numbersStarted) {
+                        if (receiverStarted) {
+                            numba2 += phrase.charAt(j);
+                        } else {
+                            numba += phrase.charAt(j);
+                        }
+                    } else {
+                        itemToGive += phrase.charAt(j);
+                    }
+                }
+                itemsToGiveCount = Integer.parseInt(numba);
+                itemsToGiveTo = Integer.parseInt(numba2);
+                phrases.remove(phrase);
+            }
+        }
     }
 
     public void draw(SpriteBatch batch, boolean paused) {
@@ -104,6 +142,16 @@ public class Speech {
                     dialog.changedFlagsVals.add(flagVal);
                 }
                 finished = true;
+                target.removeItems(itemToGive, itemsToGiveCount);
+                World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
+                for (int i = 0; i < itemsToGiveCount; ++i) {
+                    if (itemsToGiveTo == 0) {
+                        player.takeItem(new Item(world.assets, world.folderPath, itemToGive));
+                    } else {
+                        npcs.get(itemsToGiveTo-1).takeItem(new Item(world.assets, world.folderPath, itemToGive));
+                    }
+                }
+
             } else {
                 if (progress.get(currentPhrase)) {
                     time = 0;
@@ -114,8 +162,9 @@ public class Speech {
             }
             nextLineChars = 0;
         }
-        boolean roundBracetsStarted = false; //()
-        boolean squareBracetsStarted = false;//[]
+        boolean roundBracketsStarted = false; //()
+        boolean squareBracketsStarted = false;//[]
+        boolean curlyBracketsStarted = false;//{}
         boolean shakingTextStarted = false;//@@
         int rainbowTextStarted = -1;//##
         int nextLineStarted = 0;
@@ -136,10 +185,13 @@ public class Speech {
                     String curChar = ""+ch;
                     switch (ch) {
                         case '(':
-                            roundBracetsStarted = true;
+                            roundBracketsStarted = true;
                             break;
                         case '[':
-                            squareBracetsStarted = true;
+                            squareBracketsStarted = true;
+                            break;
+                        case '{':
+                            curlyBracketsStarted = true;
                             break;
                         case '@':
                             curChar = "";
@@ -154,9 +206,11 @@ public class Speech {
                             }
                             break;
                     }
-                    if (roundBracetsStarted) {
+                    if (roundBracketsStarted) {
                         font.setColor(new Color(0.251f, 0.878f, 0.816f, 1.0f));
-                    } else if (squareBracetsStarted) {
+                    } else if (squareBracketsStarted) {
+                        font.setColor(new Color(0.502f, 0.941f, 0.502f, 1.0f));
+                    } else if (curlyBracketsStarted) {
                         font.setColor(new Color(0.941f, 0.502f, 0.502f, 1.0f));
                     } else if (rainbowTextStarted != -1) {
                         switch ((j - rainbowTextStarted) % 7) {
@@ -195,10 +249,13 @@ public class Speech {
                     phraseOffset += font.getBounds(curChar).width;
                     switch (ch) {
                         case ')':
-                            roundBracetsStarted = false;
+                            roundBracketsStarted = false;
                             break;
                         case ']':
-                            squareBracetsStarted = false;
+                            squareBracketsStarted = false;
+                            break;
+                        case '}':
+                            curlyBracketsStarted = false;
                             break;
                     }
                 }
@@ -220,7 +277,7 @@ public class Speech {
 
         if (charCount != oldCharCount && charCount > 0 && phrases.get(currentPhrase).charAt(charCount - 1) != ' ') {
             float volume = 1.0f;
-            if (roundBracetsStarted || squareBracetsStarted) {
+            if (roundBracketsStarted || squareBracketsStarted || curlyBracketsStarted) {
                 volume = 0.5f;
             }
             target.speechSound.play(volume * menu.soundVolume/100.0f);

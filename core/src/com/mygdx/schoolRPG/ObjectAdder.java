@@ -222,7 +222,7 @@ public class ObjectAdder {
                     worldObjectsHandler.addCheckPoint(cp, -1);
                     //}
                 } else if (type == 4) {
-                    float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2);
+                    float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2) + blocks.get(7).get(t).get(i);;
                     float width = 0;
                     float height = 0;
                     float floorHeight = 0;
@@ -267,23 +267,24 @@ public class ObjectAdder {
                         float xx = t*area.TILE_WIDTH + area.TILE_WIDTH/2-blocks.get(6).get(t).get(i)/2;
                         if (area.platformMode) {
                             if (blocks.get(5).get(t).get(i) == 1) {
-                                xx-=area.TILE_WIDTH/2-(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);
-                                //xx = t*area.TILE_WIDTH+(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2) + blocks.get(6).get(t).get(i);//-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
+                                //xx-=area.TILE_WIDTH/2-(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);
+                                xx = t*area.TILE_WIDTH+(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2) + blocks.get(6).get(t).get(i);//-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             } else if (blocks.get(5).get(t).get(i) == 3) {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
-                        width = blocks.get(6).get(t).get(i);
-                        height = blocks.get(7).get(t).get(i);
+                        width = blocks.get(8).get(t).get(i);
+                        height = blocks.get(9).get(t).get(i);
                         if (height >= 15) {
                             floorHeight = 4;
                         } else {
                             floorHeight = -2;
                         }
+                        floorHeight = height/2;
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), world, -1, null);
                     } else {
-                        width = blocks.get(6).get(t).get(i);
-                        height = blocks.get(7).get(t).get(i);
+                        width = blocks.get(8).get(t).get(i);
+                        height = blocks.get(9).get(t).get(i);
                         if (height >= 15) {
                             floorHeight = 4;
                         } else {
@@ -566,7 +567,7 @@ public class ObjectAdder {
                                 xml.getDocumentElement().normalize();
                                 int id = Integer.parseInt(xml.getDocumentElement().getAttribute("id"));
                                 if (id == type + 56) {
-                                    Entity itemGlow = new Entity(assets, "item.png", t*area.TILE_WIDTH + area.TILE_WIDTH/2 - 7, i * area.TILE_HEIGHT, 0 ,0 ,0);
+                                    Entity itemGlow = new Entity(assets, "item.png", t*area.TILE_WIDTH + area.TILE_WIDTH/2 - 7 + blocks.get(6).get(t).get(i), i * area.TILE_HEIGHT + blocks.get(7).get(t).get(i), 0 ,0 ,0);
                                     itemGlow.containingItem = new Item(assets, world.folderPath, entry.nameWithoutExtension());
                                     area.worldObjectsHandler.addNonSolid(itemGlow, -1);
                                     world.itemsOnFloor.add(itemGlow);

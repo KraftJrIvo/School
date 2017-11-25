@@ -77,7 +77,7 @@ public class Area {
         this.height = height;
         int c = 0;
 
-        for (int i = 0; i < 8; ++i) blocks.add(new ArrayList<ArrayList<Integer>>());
+        for (int i = 0; i < 10; ++i) blocks.add(new ArrayList<ArrayList<Integer>>());
 
         if (map != null) {
             for (int i = 0; i < width; ++i) {
@@ -114,6 +114,8 @@ public class Area {
                                 blocks.get(k+1).add(new ArrayList<Integer>());
                                 blocks.get(k+2).add(new ArrayList<Integer>());
                                 blocks.get(k+3).add(new ArrayList<Integer>());
+                                blocks.get(k+4).add(new ArrayList<Integer>());
+                                blocks.get(k+5).add(new ArrayList<Integer>());
                             }
                         }
 
@@ -139,6 +141,12 @@ public class Area {
                             c++;
                             type = (int)map[c];
                             blocks.get(k+3).get(t).add(type);
+                            c++;
+                            type = (int)map[c];
+                            blocks.get(k+4).get(t).add(type);
+                            c++;
+                            type = (int)map[c];
+                            blocks.get(k+5).get(t).add(type);
                         }
                         c++;
                     }

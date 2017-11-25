@@ -526,7 +526,7 @@ public class World{
 
                 int isChoice = saveFile.read();
                 int dialogCurrentId = saveFile.read();
-                Dialog dialog = new Dialog(dialogFileName, "", false, curArea.worldObjectsHandler.NPCs, curArea.player, assets, dialogCharPath, menu.currentLanguage, menu);
+                Dialog dialog = new Dialog(dialogFileName, "", false, npcs, curArea.player, assets, dialogCharPath, menu.currentLanguage, menu);
                 if (isChoice == 0) {
                     dialog.reload("", menu.currentLanguage, dialogCurrentId);
                 } else {
@@ -679,7 +679,7 @@ public class World{
                 map = new RoomsMap(this);
                 while (fis.available() > 1) {
 
-                    buff = new byte[areaWidth*areaHeight*7];
+                    buff = new byte[areaWidth*areaHeight*9];
                     fis.read(buff);
                     if (curCoordX != 246) {
                         Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this);

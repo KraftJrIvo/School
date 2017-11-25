@@ -1,0 +1,48 @@
+<object statesCount="2" startState="0" radius="20" offsetX="10" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           switchCondition="TVisOn"
+           tex="tv"
+           texType="sprite"
+           fps="0"
+           looping="false"
+           framesCount="1"
+           
+           flagName="TVisOn"
+           flagVal="false"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+           
+           switchSound="click.wav"
+           loopSound=""
+           loopVolume="0"
+           
+           hidePlayer="false"/> 
+    <state id="1"
+           switchable="true"
+           switchCondition="!TVisOn"
+           tex="tv_on"
+           texType="anim"
+           fps="10"
+           looping="true"
+           framesCount="2"
+           
+           flagName="TVisOn"
+           flagVal="true"
+           
+           emitsParticle="-1"
+           emitX="0"
+           emitY="0"
+           emitZ="0"
+           emitInterval="0"
+
+           switchSound="click.wav"
+           loopSound="noise.wav"
+           loopVolume="20"
+           
+           hidePlayer="false"/> 
+</object>

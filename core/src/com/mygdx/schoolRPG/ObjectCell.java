@@ -222,7 +222,7 @@ public class ObjectCell {
             statesSoundLoops.get(currentState).stop();
             loopId = -1;
         }
-        if (statesDialogs.get(currentState) != null) {
+        if (statesDialogs.get(currentState) != null && !statesDialogs.get(currentState).equals("")) {
             menu.drawPause = false;
             menu.paused = true;
             menu.unpausable = false;
@@ -543,6 +543,10 @@ public class ObjectCell {
                     statesFPS.add(Integer.parseInt(eElement.getAttribute("fps")));
                     statesLooping.add(Boolean.parseBoolean(eElement.getAttribute("looping")));
                     statesFramesCount.add(Integer.parseInt(eElement.getAttribute("framesCount")));
+                } else {
+                    statesFPS.add(0);
+                    statesLooping.add(false);
+                    statesFramesCount.add(1);
                 }
                 statesDialogs.add(eElement.getAttribute("initDialog"));
             }

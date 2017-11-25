@@ -490,6 +490,45 @@ public class NPC extends HittableEntity {
         inventory.add(item);
     }
 
+    public int removeItems(String fileName, int count) {
+        int needed = count;
+        for (int i = 0; i < inventory.size(); ++i) {
+            if (inventory.get(i).fileName.equals(fileName)) {
+                if (inventory.get(i).stackable) {
+                    needed -= inventory.get(i).stack;
+                } else {
+                    needed--;
+                }
+                if (needed <= 0) {
+                    break;
+                }
+            }
+        }
+        if (needed <= 0) {
+            needed = count;
+            for (int i = 0; i < inventory.size(); ++i) {
+                if (inventory.get(i).fileName.equals(fileName)) {
+                    if (inventory.get(i).stackable) {
+                        inventory.get(i).stack -= needed;
+                        needed = -inventory.get(i).stack;
+                        if (inventory.get(i).stack <= 0) {
+                            inventory.remove(i);
+                            i--;
+                        }
+                    } else {
+                        inventory.remove(i);
+                        i--;
+                        needed--;
+                    }
+                    if (needed <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        return needed;
+    }
+
     @Override
     public void dropShadow(SpriteBatch batch, float offsetX, float offsetY, int tileWidth, int tileHeight, Texture shadow) {
         super.initialiseIfNeeded();
@@ -543,7 +582,7 @@ public class NPC extends HittableEntity {
                 if (speedY > 0) {
                     ignoreNextZero = false;
                 }
-            } else {
+            } else if (speedX == 0) {
                 pushCount = 3;
             }
             lastMovedUp = true;
@@ -556,7 +595,7 @@ public class NPC extends HittableEntity {
                 if (speedY < 0) {
                     ignoreNextZero = false;
                 }
-            } else {
+            } else if (speedX == 0) {
                 pushCount = 3;
             }
             lastMovedDown = true;
@@ -570,11 +609,15 @@ public class NPC extends HittableEntity {
 
         if (movingConfiguration.movingUp == 0) {
             lastMovedUp = false;
+        } else {
+            lastMovedDown = false;
         }
         if (movingConfiguration.movingDown == 0) {
             lastMovedDown = false;
+        } else {
+            lastMovedUp = false;
         }
-        if (movingConfiguration.movingLeft > 0 || movingConfiguration.movingRight > 0) {
+        if (speedX != 0) {
             lastMovedUp = false;
             lastMovedDown = false;
         }

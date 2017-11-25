@@ -27,8 +27,8 @@ public class GameMenu extends Menu {
     int halfScreenHeight = Gdx.graphics.getHeight() / 2;
     int halfScreenWidth = Gdx.graphics.getWidth() / 2;
     float JOYSIZE, JOYBASESIZE;
-    int curWorld = 0;
-    ArrayList<World> worlds;
+    public int curWorld = 0;
+    public ArrayList<World> worlds;
 
     public GameMenu(int id, boolean android) {
         super(id, android);

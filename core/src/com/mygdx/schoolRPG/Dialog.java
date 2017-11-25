@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
 
 import java.io.BufferedReader;
@@ -139,7 +140,7 @@ public class Dialog {
                         phrases.add(line);
                         line = in.readLine();
                         c = line.charAt(0);
-                    } while (c != '&' && c != '*' && c != '%' && c != '\uFEFF' && c != '$' && c != '#');
+                    } while (c != '&' && c != '*' && c != '%' && c != '\uFEFF' && c != '$' && c != '#' && c != '^');
 
                     if (c == '&') {
                         line = in.readLine();
@@ -171,6 +172,30 @@ public class Dialog {
                         }
                         speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player, parent));
                         speechTransitionsIds.add(speechTransitionsIds.size() + 1);
+                    } else if (c == '^') {
+                        int receiverId = Integer.parseInt(in.readLine());
+                        String itemName = in.readLine();
+                        int itemsCount = Integer.parseInt(in.readLine());
+                        String okPhrase = in.readLine();
+                        String okMessage = in.readLine();
+                        String notOkMessage = in.readLine();
+                        int itemsNeeded = itemsCount;
+                        for (int i =0; i < npcs.get(texCharId-1).inventory.size(); ++i) {
+                            if (npcs.get(texCharId-1).inventory.get(i).fileName.equals(itemName)) {
+                                itemsNeeded -= npcs.get(texCharId-1).inventory.get(i).stack;
+                                if (itemsNeeded <= 0) break;
+                            }
+                        }
+                        if (itemsNeeded <= 0) {
+                            phrases.add(okPhrase);
+                            phrases.add(okMessage);
+                            phrases.add("];[" + itemName + ";" + itemsCount + ";" + receiverId);
+                        } else {
+                            phrases.add(notOkMessage);
+                        }
+                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
+                        speechTransitionsIds.add(transId);
+                        line = in.readLine();
                     } else {
                         if (texCharId <= 0) {
                             talkPostfix = "";

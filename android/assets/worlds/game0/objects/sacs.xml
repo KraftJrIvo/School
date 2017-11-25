@@ -1,0 +1,8 @@
+<object statesCount="1" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           tex="sacs"
+           texType="sprite"
+           initDialog="bags"
+           /> 
+</object>
