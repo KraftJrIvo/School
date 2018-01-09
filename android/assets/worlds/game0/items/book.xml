@@ -1,0 +1,10 @@
+<item id = "0" mass="1" equip_slot="NONE" stackable="false" maxStack="1" flag="" replaces="">
+    <eng 
+        name = "Book" 
+        description = "This is a book. Book about words. It has an end."
+    />    
+    <rus 
+        name = "Книга" 
+        description = "Это книга. Книга про слова. У неё есть конец."
+    />    
+</item>

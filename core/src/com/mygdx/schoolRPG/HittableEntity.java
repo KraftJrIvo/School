@@ -406,7 +406,7 @@ public class HittableEntity extends Entity {
                         if (rightSide) {
                             if (centerX <= center2X && hitBox.x + hitBox.width - rect.x <= SLIP_EDGE_X && he.canRight) {
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedX += 3;
+                                    if (((Player)he).speedX >= 0) ((Player)he).speedX += 3;
                                 } else {
                                     rect.x += 0.3f;
                                 }
@@ -419,7 +419,7 @@ public class HittableEntity extends Entity {
                         if (leftSide) {
                             if (centerX >= center2X && rect.x + rect.width - hitBox.x <= SLIP_EDGE_X && he.canLeft) {
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedX -= 3;
+                                    if (((Player)he).speedX <= 0) ((Player)he).speedX -= 3;
                                 } else {
                                     rect.x -= 0.3f;
                                 }
@@ -433,7 +433,7 @@ public class HittableEntity extends Entity {
                         if (upSide) {
                             if (centerY <= center2Y && hitBox.y+hitBox.height-rect.y <= SLIP_EDGE_Y) {
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedY += 2;
+                                    if (((Player)he).speedY >= 0) ((Player)he).speedY += 2;
                                 } else {
                                     rect.y += 0.2f;
                                 }
@@ -445,7 +445,7 @@ public class HittableEntity extends Entity {
                         if (downSide) {
                             if (centerY >= center2Y && rect.y + rect.height - hitBox.y <= SLIP_EDGE_Y) {
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedY -= 2;
+                                    if (((Player)he).speedY <= 0) ((Player)he).speedY -= 2;
                                 } else {
                                     rect.y -= 0.2f;
                                 }
@@ -543,17 +543,19 @@ public class HittableEntity extends Entity {
                     if (!platformMode || !objectIsPlayer) {
                         if (diffY != 0 && (downSide || upSide) && !canMoveHor){
                             if (rightSide && centerX <= center2X && hitBox.x+hitBox.width-rect.x <= SLIP_EDGE_X) {
-                                he.hitBox.x += 0.4f;
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedX+=4;
+                                    if (((Player)he).speedX >= 0) ((Player)he).speedX+=4;
+                                } else {
+                                    he.hitBox.x += 0.4f;
                                 }
                                 he.canUp = true;
                                 he.canDown = true;
 
                             } else if (leftSide && centerX >= center2X && rect.x+rect.width-hitBox.x <= SLIP_EDGE_X) {
-                                he.hitBox.x -= 0.4f;
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedX-=4;
+                                    if (((Player)he).speedX <= 0) ((Player)he).speedX-=4;
+                                } else {
+                                    he.hitBox.x -= 0.4f;
                                 }
                                 he.canUp = true;
                                 he.canDown = true;
@@ -561,17 +563,19 @@ public class HittableEntity extends Entity {
                             }
                         } else if (diffX != 0 && (leftSide || rightSide) && !canMoveVer) {
                             if (upSide && centerY <= center2Y && hitBox.y+hitBox.height-rect.y <= SLIP_EDGE_Y) {
-                                he.hitBox.y += 0.6f;
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedY+=3;
+                                    if (((Player)he).speedY == 0) ((Player)he).speedY+=3;
+                                } else {
+                                    he.hitBox.y += 0.6f;
                                 }
                                 he.canLeft = true;
                                 he.canRight = true;
                             } else if (downSide && centerY >= center2Y && rect.y+rect.height-hitBox.y <= SLIP_EDGE_Y) {
                                 if (!objectIsPlayer) rect.y -= (SLIP_EDGE_Y-(rect.y+rect.height-hitBox.y)) / 10;
-                                he.hitBox.y -= 0.6f;
                                 if (objectIsPlayer) {
-                                    ((Player)he).speedY-=3;
+                                    if (((Player)he).speedY == 0) ((Player)he).speedY-=3;
+                                } else {
+                                    he.hitBox.y -= 0.6f;
                                 }
                                 he.canLeft = true;
                                 he.canRight = true;

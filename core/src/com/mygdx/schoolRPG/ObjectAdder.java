@@ -222,7 +222,7 @@ public class ObjectAdder {
                     worldObjectsHandler.addCheckPoint(cp, -1);
                     //}
                 } else if (type == 4) {
-                    float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2) + blocks.get(7).get(t).get(i);;
+                    float y = (i * area.TILE_HEIGHT - area.TILE_HEIGHT/2) + blocks.get(7).get(t).get(i);
                     float width = 0;
                     float height = 0;
                     float floorHeight = 0;
@@ -268,11 +268,12 @@ public class ObjectAdder {
                         if (area.platformMode) {
                             if (blocks.get(5).get(t).get(i) == 1) {
                                 //xx-=area.TILE_WIDTH/2-(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);
-                                xx = t*area.TILE_WIDTH+(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2) + blocks.get(6).get(t).get(i);//-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
+                                xx = t*area.TILE_WIDTH+(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             } else if (blocks.get(5).get(t).get(i) == 3) {
                                 xx-=(world.sprites.get(world.tileIndices.get(img)).getHeight()/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2);//xx += area.TILE_WIDTH/2-world.sprites.get(world.tileIndices.get(img)).getWidth()/2;
                             }
                         }
+                        xx += blocks.get(6).get(t).get(i);
                         width = blocks.get(8).get(t).get(i);
                         height = blocks.get(9).get(t).get(i);
                         if (height >= 15) {
@@ -280,7 +281,7 @@ public class ObjectAdder {
                         } else {
                             floorHeight = -2;
                         }
-                        floorHeight = height/2;
+                        floorHeight = height - 8;
                         worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, false, blocks.get(5).get(t).get(i)), world, -1, null);
                     } else {
                         width = blocks.get(8).get(t).get(i);
@@ -291,10 +292,10 @@ public class ObjectAdder {
                             floorHeight = -2;
                         }
                         if (world.tileTypes.get(img) == 1) {
-                            worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 -blocks.get(6).get(t).get(i)/2, y,
+                            worldObjectsHandler.addSolid(new HittableEntity(assets, world.tiles.get(world.tileIndices.get(img)).getSingleTile(), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 + blocks.get(6).get(t).get(i)/2, y,
                                     width, height, floorHeight, false, blocks.get(5).get(t).get(i)), world, -1, null);
                         } else {
-                            worldObjectsHandler.addSolid(new HittableEntity(assets, world.animations.get(world.tileIndices.get(img)), t * area.TILE_WIDTH + area.TILE_WIDTH / 2 -blocks.get(6).get(t).get(i)/2, y,
+                            worldObjectsHandler.addSolid(new HittableEntity(assets, world.animations.get(world.tileIndices.get(img)), t * area.TILE_WIDTH + area.TILE_WIDTH / 2  + blocks.get(6).get(t).get(i)/2, y,
                                     width, height, floorHeight, false, blocks.get(5).get(t).get(i)), world, -1, null);
                         }
                     }

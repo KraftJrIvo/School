@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * Created by Kraft on 10.06.2016.
  */
 public class Speech {
-
+    public boolean isSpeech = true;
     String speaker;
     ArrayList<String> phrases;
     ArrayList<Boolean> progress;
@@ -42,6 +42,7 @@ public class Speech {
     int itemsToGiveCount = 0;
     int itemsToGiveTo = 0;
     Player player;
+    int charId;
 
     public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
         this.menu = menu;
@@ -56,8 +57,8 @@ public class Speech {
         for (int i =0; i < phrases.size(); ++i) {
             progress.add(false);
         }
-        texture = assets.get(texPath, Texture.class);
-
+        if (assets.isLoaded(texPath)) texture = assets.get(texPath, Texture.class);
+        this.charId = charId;
         overlay = assets.get("dialog_overlay2.png", Texture.class);
         font = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
         this.flagId = flagId;
@@ -119,7 +120,7 @@ public class Speech {
         float textX = Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth() /2 + 10;
         float textY = Gdx.graphics.getHeight()/screenRatioY/8 + overlay.getHeight() - 12;
         //System.out.println(screenRatioX + " " + screenRatioY);
-        batch.draw(texture, Gdx.graphics.getWidth()/screenRatioX/2 - texture.getWidth(), 0, texture.getWidth() * 2, texture.getHeight() * 2);
+        if (texture != null) batch.draw(texture, Gdx.graphics.getWidth()/screenRatioX/2 - texture.getWidth(), 0, texture.getWidth() * 2, texture.getHeight() * 2);
         batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth() /2, Gdx.graphics.getHeight()/screenRatioY/8);
         if (target != null) {
             font.setColor(target.charColor);
@@ -137,8 +138,13 @@ public class Speech {
             if (ok)  {
 
                 if (flagId != -1) {
-                    flagTarget.flags.set(flagId, flagVal);
-                    dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+                    if (charId == 0) {
+                        player.world.flags.set(flagId, flagVal);
+                        dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
+                    } else {
+                        flagTarget.flags.set(flagId, flagVal);
+                        dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+                    }
                     dialog.changedFlagsVals.add(flagVal);
                 }
                 finished = true;

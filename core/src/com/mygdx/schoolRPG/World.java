@@ -118,9 +118,16 @@ public class World{
         ArrayList<Integer> preTileIndices = new ArrayList<Integer>(tileIndices);
         ArrayList<Integer> preTileTypes = new ArrayList<Integer>(tileTypes);
         for (int i = 0; i < newNames.size(); ++i) {
-            preTileTypes.set(i, tileTypes.get(names.indexOf(newNames.get(i))));
-            preTileIndices.set(i, tileIndices.get(names.indexOf(newNames.get(i))));
-            preNames.set(i, newNames.get(i));
+            int id = names.indexOf(newNames.get(i));
+            if (id != -1) {
+                preTileTypes.set(i, tileTypes.get(id));
+                preTileIndices.set(i, tileIndices.get(id));
+                preNames.set(i, newNames.get(i));
+            } else {
+                preTileTypes.add(i, -1);
+                preTileIndices.add(i, -1);
+                preNames.add(i, "");
+            }
         }
         /*for (int i = 0; i < unusedNames.size(); ++i) {
             tileTypes.set(newNames.size() + i, unusedTypes.get(i));
@@ -291,14 +298,10 @@ public class World{
             if (dialog != null) {
                 saveFile.write(dialog.fileName.length());
                 saveFile.write(dialog.fileName.getBytes());
+                saveFile.write(dialog.mainCharId);
                 saveFile.write(dialog.charPath.length());
                 saveFile.write(dialog.charPath.getBytes());
-                if (dialog.currentChoice != null) {
-                    saveFile.write(1);
-                } else {
-                    saveFile.write(0);
-                }
-                saveFile.write(Math.abs(dialog.getCurrentSpeechId()));
+                saveFile.write(Math.abs(dialog.currentSpeechId));
             } else {
                 saveFile.write(0);
             }
@@ -518,20 +521,20 @@ public class World{
                 byte[] dialogFileNameBytes = new byte[dialogFileNameLength];
                 saveFile.read(dialogFileNameBytes);
                 String dialogFileName = new String(dialogFileNameBytes, StandardCharsets.UTF_8);
-
+                int dialogMainCharId = saveFile.read();
                 int dialogCharPathLength = saveFile.read();
                 byte[] dialogCharPathBytes = new byte[dialogCharPathLength];
                 saveFile.read(dialogCharPathBytes);
                 String dialogCharPath = new String(dialogCharPathBytes, StandardCharsets.UTF_8);
 
-                int isChoice = saveFile.read();
+                //int isChoice = saveFile.read();
                 int dialogCurrentId = saveFile.read();
-                Dialog dialog = new Dialog(dialogFileName, "", false, npcs, curArea.player, assets, dialogCharPath, menu.currentLanguage, menu);
-                if (isChoice == 0) {
+                Dialog dialog = new Dialog(dialogFileName, "", dialogMainCharId, false, npcs, curArea.player, assets, dialogCharPath, menu.currentLanguage, menu);
+                /*if (isChoice == 0) {
                     dialog.reload("", menu.currentLanguage, dialogCurrentId);
                 } else {
                     dialog.reload("", menu.currentLanguage, -dialogCurrentId);
-                }
+                }*/
                 curArea.invalidate(this);
                 curArea.worldObjectsHandler.currentDialog = dialog;
             } else {
@@ -1316,7 +1319,7 @@ public class World{
 
     public void checkDialog(Area area) {
         if (menu.currentLanguage != area.worldObjectsHandler.currentDialog.language) {
-            area.worldObjectsHandler.currentDialog.reload(area.worldObjectsHandler.getActiveDialogPath(menu, folderPath), menu.currentLanguage, area.worldObjectsHandler.currentDialog.getCurrentSpeechId());
+            area.worldObjectsHandler.currentDialog.reload(menu.currentLanguage, area.worldObjectsHandler.currentDialog.currentSpeechId);
         }
     }
 

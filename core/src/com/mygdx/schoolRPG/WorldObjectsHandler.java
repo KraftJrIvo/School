@@ -537,7 +537,7 @@ public class WorldObjectsHandler {
                     str += 0;
                 }
             }
-            currentDialog = new Dialog(getActiveDialogPath(menu, worldPath), str, false, world.npcs, area.player, assets, worldPath + "/chars", menu.currentLanguage, area.world.menu);
+            currentDialog = new Dialog(worldPath + "/chars/"+ activeNPC.charId, "dialog.xml", activeNPC.charId, false, world.npcs, area.player, assets, worldPath + "/chars", menu.currentLanguage, area.world.menu);
         }
     }
 

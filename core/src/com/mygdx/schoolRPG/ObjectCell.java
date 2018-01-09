@@ -226,7 +226,7 @@ public class ObjectCell {
             menu.drawPause = false;
             menu.paused = true;
             menu.unpausable = false;
-            area.worldObjectsHandler.currentDialog = new Dialog(area.worldObjectsHandler.getActiveDialogPath(menu, worldDir), statesDialogs.get(currentState), false, area.worldObjectsHandler.NPCs, area.player, assets, worldDir + "/chars", menu.currentLanguage, area.world.menu);
+            area.worldObjectsHandler.currentDialog = new Dialog(worldDir + "/chars/0/dialog", statesDialogs.get(currentState) + ".xml", 0, false, area.worldObjectsHandler.NPCs, area.player, assets, worldDir + "/chars", menu.currentLanguage, area.world.menu);
         }
         currentState++;
         currentState = currentState % statesCount;

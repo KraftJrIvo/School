@@ -1,0 +1,66 @@
+﻿
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<body>
+
+
+<center>
+<input id="loadSrc" type="file" value=""></input><br>
+<input type="radio" id="langChoice0" name="lang" value="eng" checked><label for="langChoice0">Eng</label>
+<input type="radio" id="langChoice1" name="lang" value="rus"><label for="langChoice1">Rus</label><br>
+<button id="createButton">Create</button><br>
+<br>
+<canvas id="myCanvas" width="1800" height="1000" style="border:1px solid #c3c3c3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas><br>
+<script src="editorScript.js">
+</script>
+<div id="blockParams"><br><table border="1"><tr>
+<td>
+<input type="file" id="imgSrc" onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple /><br>
+<div id="imgPart" style="width: 100px; height:100px;"></div><br>
+<input type="text" id="imgName" placeholder="Sprite name" onchange="tryImage($('#imgName').val());"/><br>
+</td>
+<td>
+Text:<textarea id="text0" style="width:500px; height: 80px">Start</textarea><textarea id="text1" style="width:500px; height: 80px">Начало</textarea><br>
+Speaker name:<input id="textEx0" style="width:500px" value="" placeholder="Speaker name"></input><input id="textEx1" style="width:500px" value="" placeholder="Имя рассказчика"></input><br>
+</td>
+<td>
+Flag change:<br>
+<input type="checkbox" id="flagChange"><input type="number" id="flagOwnerId" style="width:30px" disabled>&nbsp;<input type="number" id="flagId" style="width:30px" disabled>&nbsp;<input type="radio" id="flagTrue" name="a" checked disabled>&nbsp;True&nbsp;<input type="radio" name="a" id="flagFalse" disabled>&nbsp;False<br>
+Item transfer:<br>
+<input type="checkbox" id="itemTransfer"><input type="number" id="giveTo" style="width:30px" disabled>&nbsp;<input type="text" id="itemName" style="width:100px"  placeholder="itemName" disabled>&nbsp;<input type="number" id="itemCount" style="width:30px" disabled><br><input type="text" id="giveText0" style="width:300px" placeholder="can give" disabled>&nbsp;<input type="text" id="giveText1" style="width:300px" placeholder="можем дать" disabled><br><input type="text" id="notGiveText0" style="width:300px" placeholder="can't give" disabled>&nbsp;<input type="text" id="notGiveText1" style="width:300px" placeholder="не можем дать" disabled><br><br>
+</td>
+</tr></table></div>
+Link text:<input id="linkText0" style="width:500px" value="" placeholder="Answer text"></input><input id="linkText1" style="width:500px" placeholder="Текст ответа" value=""></input>&nbsp;
+<input type="number" id="linkPriority" style="width:30px" value="0">&nbsp;<input type="checkbox" id="conditionalLink">&nbsp;<input type="text" id="condition" style="width:300px"  placeholder="condition" disabled><br>
+<button onclick="copyXML();">Copy Output XML to Clipboard</button><br>
+<textarea id="copyField"></textarea></center>
+<script>
+$('#flagChange').click(function(){
+$('#flagOwnerId').prop( "disabled", !$('#flagOwnerId').prop("disabled"));
+$('#flagId').prop( "disabled", !$('#flagId').prop("disabled"));
+$('#flagTrue').prop( "disabled", !$('#flagTrue').prop("disabled"));
+$('#flagFalse').prop( "disabled", !$('#flagFalse').prop("disabled"));
+});
+$('#itemTransfer').click(function(){
+$('#giveTo').prop( "disabled", !$('#giveTo').prop("disabled"));
+$('#itemName').prop( "disabled", !$('#itemName').prop("disabled"));
+$('#itemCount').prop( "disabled", !$('#itemCount').prop("disabled"));
+$('#giveText0').prop( "disabled", !$('#giveText0').prop("disabled"));
+$('#notGiveText0').prop( "disabled", !$('#notGiveText0').prop("disabled"));
+$('#giveText1').prop( "disabled", !$('#giveText1').prop("disabled"));
+$('#notGiveText1').prop( "disabled", !$('#notGiveText1').prop("disabled"));
+});
+$('#conditionalLink').click(function(){
+$('#condition').prop( "disabled", !$('#condition').prop("disabled"));
+});
+document.getElementById('loadSrc').addEventListener('change', handleLoadFile, false);
+createTextBlock(true, false);
+textBlocks[0].x = 900;
+textBlocks[0].y = 200;
+
+</script>
+</body>
+</html>
