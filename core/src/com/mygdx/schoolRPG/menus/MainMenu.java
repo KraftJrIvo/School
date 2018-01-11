@@ -197,7 +197,7 @@ public class MainMenu extends Menu {
         FileHandle worldsDir = Gdx.files.internal("worlds");
         for (FileHandle entry: worldsDir.list()) {
             if (entry.isDirectory()) {
-                FileHandle tlwFile = Gdx.files.internal(entry.path() + "/world.tlw");
+                FileHandle tlwFile = Gdx.files.internal(entry.path() + "/world1.tlw");
                 if (tlwFile.exists()) {
                     String name = "";
                     FileInputStream fis = null;

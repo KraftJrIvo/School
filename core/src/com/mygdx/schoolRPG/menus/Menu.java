@@ -158,6 +158,25 @@ public class Menu {
         }
     }
 
+    private void saveOptions() {
+        try {
+            PrintWriter writer = new PrintWriter("../../current.cfg", "UTF-8");
+            writer.println("fullscreen");
+            writer.println("" + fullScreen);
+            writer.println("sound");
+            writer.println("" + soundVolume);
+            writer.println("music");
+            writer.println("" + musicVolume);
+            writer.println("language");
+            writer.println("" + currentLanguage);
+            writer.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void draw(SpriteBatch batch, ShapeRenderer renderer) {
         //System.out.println(paused);
         updateLanguage();
@@ -225,22 +244,7 @@ public class Menu {
                     updateLanguage();
                 } else if (index == 5) {
                     optionsOpen = false;
-                    try {
-                        PrintWriter writer = new PrintWriter("../../current.cfg", "UTF-8");
-                        writer.println("fullscreen");
-                        writer.println("" + fullScreen);
-                        writer.println("sound");
-                        writer.println("" + soundVolume);
-                        writer.println("music");
-                        writer.println("" + musicVolume);
-                        writer.println("language");
-                        writer.println("" + currentLanguage);
-                        writer.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
+                    saveOptions();
                     click2.play(soundVolume / 100.0f);
                 }
             }
@@ -274,6 +278,7 @@ public class Menu {
             if (currentLanguage < 0) currentLanguage = languages.size() - 1;
             if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.P)) {
                 optionsOpen = false;
+                saveOptions();
                 click2.play(soundVolume / 100.0f);
             }
 

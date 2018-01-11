@@ -99,7 +99,7 @@ public class World{
         this.menu = menu;
         areas = new ArrayList<Area>();
         folderPath = worldPath;
-        tlw = new File(worldPath+"/world.tlw");
+        tlw = new File(worldPath+"/world1.tlw");
         this.save = save;
     }
 
@@ -547,7 +547,7 @@ public class World{
             player.y = playerY;
             player.graphicY = playerY;
             menu.drawPause = false;
-            menu.unpausable = false;
+            //menu.unpausable = false;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -567,6 +567,7 @@ public class World{
         this.assets = assets;
         stepSounds = new ArrayList<String>();
         areasAmbients = new ArrayList<String>();
+        roomNames = new ArrayList<String>();
         assets.load("item.png", Texture.class);
         assets.load("active.png", Texture.class);
         assets.load("blank.png", Texture.class);
@@ -679,15 +680,34 @@ public class World{
                 curAreaX = curCoordX;
                 curAreaY = curCoordY;
                 curAreaZ = curCoordZ;
+
                 map = new RoomsMap(this);
                 while (fis.available() > 1) {
+                    int size1 = fis.read();
+                    byte[] buff1 = new byte[size1];
+                    fis.read(buff1);
+                    String name1 = new String(buff1);
+
+                    int size2 = fis.read();
+                    byte[] buff2 = new byte[size2];
+                    fis.read(buff2);
+                    String name2 = new String(buff2);
+
+                    roomNames.add(name1);
+                    areasAmbients.add(name2);
 
                     buff = new byte[areaWidth*areaHeight*9];
                     fis.read(buff);
                     if (curCoordX != 246) {
                         Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this);
+                        newArea.name = name1;
                         areas.add(newArea);
-                        areasAmbients.add(null);
+                        map.addRoom(newArea, curCoordX, curCoordY, curCoordZ, newArea.width / firtsAreaWidth, newArea.height / firtsAreaHeight, name1);
+                        if (newArea.containsSpawn) {
+                            curAreaX = curCoordX;
+                            curAreaY = curCoordY;
+                            curAreaZ = curCoordZ;
+                        }
                         int areaRoomsHor = (int)Math.ceil(areaWidth/firtsAreaWidth);
                         int areaRoomsVer = (int)Math.ceil(areaHeight/firtsAreaHeight);
                         for (int i = curCoordX; i < curCoordX+areaRoomsHor; ++i) {
@@ -713,6 +733,7 @@ public class World{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             if (platformMode) {
                 assets.load("platform_sounds/jump.wav", Sound.class);
                 assets.load("platform_sounds/djump.wav", Sound.class);
@@ -721,35 +742,7 @@ public class World{
                 assets.load("platform_sounds/land.wav", Sound.class);
             }
             worldDir = Gdx.files.internal(folderPath);
-            FileHandle roomsFile = worldDir.child("rooms");
-            if (roomsFile.exists()) {
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(worldDir.path() + "/rooms"));
-                    int count = Integer.parseInt(in.readLine());
-                    roomNames = new ArrayList<String>();
-                    ArrayList<Integer>roomNamesIds = new ArrayList<Integer>();
-                    for (int i = 0; i < count; ++i) {
-                        int x = Integer.parseInt(in.readLine());
-                        int y = Integer.parseInt(in.readLine());
-                        int z = Integer.parseInt(in.readLine());
-                        roomNames.add(null);
-                        int areaId = areaIds.get(x).get(y).get(z);
-                        roomNamesIds.add(areaId);
-                        String name = in.readLine();
-                        Area area = areas.get(areaId);
-                        area.name = name;
-                        map.addRoom(area, x, y, z, area.width / firtsAreaWidth, area.height / firtsAreaHeight, name);
-                    }
-                    for (int i = 0; i < roomNamesIds.size(); ++i) {
-                        Area curArea = areas.get(roomNamesIds.get(i));
-                        roomNames.set(roomNamesIds.get(i), curArea.name);
-                    }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
                     continue;
@@ -831,14 +824,14 @@ public class World{
                     in.readLine();
                 }
             }
-            int numAmbients = Integer.parseInt(in.readLine());
+            /*int numAmbients = Integer.parseInt(in.readLine());
             for (int i = 0; i < numAmbients; ++i) {
                 int x = Integer.parseInt(in.readLine());
                 int y = Integer.parseInt(in.readLine());
                 int z = Integer.parseInt(in.readLine());
                 int n = areaIds.get(x).get(y).get(z);
                 areasAmbients.set(n, in.readLine());
-            }
+            }*/
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -981,7 +974,7 @@ public class World{
         }
         int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
         areas.get(n).isCurrent = true;
-        if (areasAmbients.get(n) != null) {
+        if (areasAmbients.get(n) != null && areasAmbients.get(n).length() > 0) {
             currentSoundPath = areasAmbients.get(n);
             currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
             currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
@@ -1201,11 +1194,11 @@ public class World{
             //curArea.invalidate(this);
             curArea.worldObjectsHandler.invalidateObjectCells();
             curArea.isCurrent = true;
-            if (areasAmbients.get(n)!= null && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
+            if (areasAmbients.get(n)!= null && areasAmbients.get(n).length() > 0 && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
                 currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
                 currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
                 startedAmbient = true;
-            } else if (currentSound != null) {
+            } else if (currentSound != null && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
                 currentSound.stop();
                 currentSound = null;
                 currentSoundPath = null;

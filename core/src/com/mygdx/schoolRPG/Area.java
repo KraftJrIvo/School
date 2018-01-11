@@ -52,6 +52,8 @@ public class Area {
 
     BitmapFont signFont;
 
+    public boolean containsSpawn = false;
+
 
     public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world) {
         TILE_WIDTH = tileWidth;
@@ -127,6 +129,7 @@ public class Area {
                             } else if (type == 0) {
                                 playerTileX = t;
                                 playerTileY = i;
+                                containsSpawn = true;
                             } else if (type == 1) {
                                 if (blocks.get(0).get(t).get(i) == -1) blocks.get(2).get(t).set(i, 1);
                             } else if (type == 2) {
