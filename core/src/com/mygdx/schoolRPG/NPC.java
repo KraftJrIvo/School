@@ -733,15 +733,16 @@ public class NPC extends HittableEntity {
         }
         if (spritesPath != null) {
             //curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
+            boolean jumpPose = jumping || pSpeed > 15;
             if (jumping) {
                 //curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 setToJump = true;
             }
-            if (movingConfiguration.movingUp > 0 && !jumping) {
+            if (movingConfiguration.movingUp > 0 && !jumpPose) {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.BACK);
                 setToJump = false;
                 walkingFrames = 0;
-            } else if (movingConfiguration.movingDown > 0 && !jumping)  {
+            } else if (movingConfiguration.movingDown > 0 && !jumpPose)  {
                 curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 setToJump = false;
                 walkingFrames = 0;
@@ -750,7 +751,7 @@ public class NPC extends HittableEntity {
             }
             int animDraw = 0;
             if (movingConfiguration.movingLeft > 0) {
-                if (jumping) {
+                if (jumpPose) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_LEFT);
                     walkingFrames = 0;
                 } else {
@@ -763,7 +764,7 @@ public class NPC extends HittableEntity {
                     walkingFrames++;
                 }
             } else if (movingConfiguration.movingRight > 0) {
-                if (jumping) {
+                if (jumpPose) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP_RIGHT);
                     walkingFrames = 0;
                 } else {
@@ -777,17 +778,14 @@ public class NPC extends HittableEntity {
                 }
             } else {
                 graphicX = x;
-                if (jumping) {
+                if (jumpPose) {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.JUMP);
                 } else {
                     curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
                 }
                 walkingFrames = 0;
             }
-            if (Math.abs(pSpeed) < 15 && Math.abs(speedX) > 2 && walkingFrames != 0 && walkingFrames % 10 == 0) {
-                step.play(world.menu.soundVolume / 100.0f);
-            }
-            if (animDraw == 0 && (curPose == null || (setToJump && !jumping))) {
+            if (animDraw == 0 && (curPose == null || (setToJump && !jumpPose))) {
                 //curPose = poses.getTile(PlayerMultiTile.PlayerPose.FRONT);
             }
             if (poses != null && curPose != null) {

@@ -577,7 +577,7 @@ public class World{
         assets.load("inventory_overlay3.png", Texture.class);
         assets.load("inventory_overlay2.png", Texture.class);
 
-        assets.load(folderPath + "/bg.png", Texture.class);
+        //assets.load(folderPath + "bg/bg.png", Texture.class);
         flags = new ArrayList<Boolean>();
         flagNames = new ArrayList<String>();
         if (tlw == null) {
@@ -766,6 +766,13 @@ public class World{
                 tilesetsCount++;
                 stepSounds.add(null);
             }
+            worldDir = Gdx.files.internal(folderPath+"/bg");
+            for (FileHandle entry: worldDir.list()) {
+                if (!entry.file().getName().contains(".png")){
+                    continue;
+                }
+                assets.load(entry.path(), Texture.class);
+            }
             worldDir = Gdx.files.internal(folderPath+"/objects/util");
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
@@ -824,14 +831,6 @@ public class World{
                     in.readLine();
                 }
             }
-            /*int numAmbients = Integer.parseInt(in.readLine());
-            for (int i = 0; i < numAmbients; ++i) {
-                int x = Integer.parseInt(in.readLine());
-                int y = Integer.parseInt(in.readLine());
-                int z = Integer.parseInt(in.readLine());
-                int n = areaIds.get(x).get(y).get(z);
-                areasAmbients.set(n, in.readLine());
-            }*/
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -884,7 +883,7 @@ public class World{
         for (int i = 0; i < particles.size(); ++i) {
             particles.get(i).initialiseResources(assets, folderPath + "/particles/" + i);
         }
-        bg = assets.get(folderPath+"/bg.png", Texture.class);
+        //bg = assets.get(folderPath+"/bg.png", Texture.class);
         shapeRenderer = new ShapeRenderer();
         if (!initialised && !areasCreated) {
             if (tlw == null) {
@@ -981,6 +980,55 @@ public class World{
             startedAmbient = true;
         }
         map.connectExits();
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new FileReader(worldDir.path() + "/bg/bg"));
+            String line = "";
+            int numLayers = Integer.parseInt(in.readLine());
+            Background defaultBg = new Background();
+            for (int i = 0; i < numLayers; ++i) {
+                line = in.readLine();
+                String vals[] = line.split(" ");
+                defaultBg.addLayer(assets.get(worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+            }
+            for (int i =0; i < areas.size(); ++i) {
+                areas.get(i).bg = defaultBg;
+            }
+            int numCustomBGGroups = Integer.parseInt(in.readLine());
+            for (int z = 0; z < numCustomBGGroups; ++z) {
+                int numCustomBGs = Integer.parseInt(in.readLine());
+                ArrayList<Area> customAreas = new ArrayList<Area>();
+                for (int i = 0; i < numCustomBGs; ++i) {
+                    line = in.readLine();
+                    customAreas.add(map.getAreaByName(line));
+                }
+                Background bg = new Background();
+                numLayers = Integer.parseInt(in.readLine());
+                for (int j = 0; j < numLayers; ++j) {
+                    line = in.readLine();
+                    String vals[] = line.split(" ");
+                    bg.addLayer(assets.get(worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+                }
+                for (int j = 0; j < customAreas.size(); ++j) {
+                    if (customAreas.get(j) != null) {
+                        customAreas.get(j).bg = bg;
+                    }
+                }
+            }
+            in = new BufferedReader(new FileReader(worldDir.path() + "/looping"));
+            int numLoopingAreas = Integer.parseInt(in.readLine());
+            for (int i=0; i < numLoopingAreas; ++i) {
+                line = in.readLine();
+                Area a = map.getAreaByName(line);
+                line = in.readLine();
+                a.loopingX = line.contains("x");
+                a.loopingY = line.contains("y");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         //System.out.println();
     }
 
@@ -1016,16 +1064,48 @@ public class World{
                     offX = -1;
                     offY = inRoomYCoord;
                     horizontal = true;
+                    if (a.loopingX) {
+                        if (platformMode) {
+                            solid.x += a.width * a.TILE_WIDTH;
+                            solid.graphicX += a.width * a.TILE_WIDTH;
+                            solid.hitBox.x += a.width * a.TILE_WIDTH;
+                        }
+                        return;
+                    }
                 } else if (solid.hitBox.x > a.TILE_WIDTH*(a.width)-a.player.hitBox.getWidth()-5) {
                     offX = inRoomXCoord + 1;
                     offY = inRoomYCoord;
                     horizontal = true;
+                    if (a.loopingX) {
+                        if (platformMode) {
+                            solid.x -= a.width * a.TILE_WIDTH;
+                            solid.graphicX -= a.width * a.TILE_WIDTH;
+                            solid.hitBox.x -= a.width * a.TILE_WIDTH;
+                        }
+                        return;
+                    }
                 } else if (solid.hitBox.y+solid.hitBox.getHeight()/2 < -solid.hitBox.getHeight()/2) {
                     offX = inRoomXCoord;
                     offY = inRoomYCoord;
+                    if (a.loopingY) {
+                        if (platformMode) {
+                            solid.y += a.height * a.TILE_HEIGHT;
+                            solid.graphicY += a.height * a.TILE_HEIGHT;
+                            solid.hitBox.y += a.height * a.TILE_HEIGHT;
+                        }
+                        return;
+                    }
                 } else if (solid.hitBox.y > a.TILE_HEIGHT*(a.height-1)) {
                     offX = inRoomXCoord;
                     offY = -1;
+                    if (a.loopingY) {
+                        if (platformMode) {
+                            solid.y -= a.height * a.TILE_HEIGHT;
+                            solid.graphicY -= a.height * a.TILE_HEIGHT;
+                            solid.hitBox.y -= a.height * a.TILE_HEIGHT;
+                        }
+                        return;
+                    }
                 } else {
                     continue;
                 }
@@ -1034,47 +1114,50 @@ public class World{
                 else {
                     a.worldObjectsHandler.NPCs.remove(solid);
                 }
-                Area toArea = areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ));
-                float pos = 0;
-                if (horizontal) {
-                    pos = solid.hitBox.y + ((toArea.y+toArea.h) - (a.y+a.h)) * firtsAreaHeight * a.TILE_HEIGHT;
-                    if (offX > 0) {
-                        solid.hitBox.x = toArea.TILE_WIDTH;
-                        if (isNPC) ((NPC)solid).characterMaker.setDirection(3, ((NPC)solid).charId);
+                int toAreaId = areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ+offZ);
+                if (toAreaId != -1) {
+                    Area toArea = areas.get(toAreaId);
+                    float pos = 0;
+                    if (horizontal) {
+                        pos = solid.hitBox.y + ((toArea.y+toArea.h) - (a.y+a.h)) * firtsAreaHeight * a.TILE_HEIGHT;
+                        if (offX > 0) {
+                            solid.hitBox.x = toArea.TILE_WIDTH;
+                            if (isNPC) ((NPC)solid).characterMaker.setDirection(3, ((NPC)solid).charId);
+                        } else {
+                            solid.hitBox.x = (toArea.width - 2) * toArea.TILE_WIDTH ;
+                            if (isNPC) ((NPC)solid).characterMaker.setDirection(1, ((NPC)solid).charId);
+                        }
+                        solid.hitBox.y = pos;
                     } else {
-                        solid.hitBox.x = (toArea.width - 2) * toArea.TILE_WIDTH ;
-                        if (isNPC) ((NPC)solid).characterMaker.setDirection(1, ((NPC)solid).charId);
+                        pos = solid.hitBox.x - (areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).x - a.x)*firtsAreaWidth*a.TILE_WIDTH;//a.player.hitBox.y;// - inRoomYCoord;
+                        if (offY > 0) {
+                            solid.hitBox.y = (toArea.height - 2) * toArea.TILE_HEIGHT - solid.hitBox.height;
+                            if (isNPC) ((NPC)solid).characterMaker.setDirection(2, ((NPC)solid).charId);
+                        } else {
+                            solid.hitBox.y = toArea.TILE_HEIGHT;
+                            if (isNPC) ((NPC)solid).characterMaker.setDirection(4, ((NPC)solid).charId);
+                        }
+                        solid.hitBox.x = pos;
                     }
-                    solid.hitBox.y = pos;
-                } else {
-                    pos = solid.hitBox.x - (areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).x - a.x)*firtsAreaWidth*a.TILE_WIDTH;//a.player.hitBox.y;// - inRoomYCoord;
-                    if (offY > 0) {
-                        solid.hitBox.y = (toArea.height - 2) * toArea.TILE_HEIGHT - solid.hitBox.height;
-                        if (isNPC) ((NPC)solid).characterMaker.setDirection(2, ((NPC)solid).charId);
+                    solid.x = solid.hitBox.x;
+                    solid.y = solid.hitBox.y;
+                    solid.h = solid.hitBox.y;
+                    solid.graphicX = solid.x;
+                    solid.graphicY = solid.y;
+                    if (solid.getClass() == HittableEntity.class) {
+                        toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items);
+                        movablesAreas.set(movables.indexOf(solid), areas.indexOf(toArea));
                     } else {
-                        solid.hitBox.y = toArea.TILE_HEIGHT;
-                        if (isNPC) ((NPC)solid).characterMaker.setDirection(4, ((NPC)solid).charId);
-                    }
-                    solid.hitBox.x = pos;
-                }
-                solid.x = solid.hitBox.x;
-                solid.y = solid.hitBox.y;
-                solid.h = solid.hitBox.y;
-                solid.graphicX = solid.x;
-                solid.graphicY = solid.y;
-                if (solid.getClass() == HittableEntity.class) {
-                    toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items);
-                    movablesAreas.set(movables.indexOf(solid), areas.indexOf(toArea));
-                } else {
-                    //ObjectCell soc = toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
-                    ((NPC)solid).speedX = 0;
-                    ((NPC)solid).speedY = 0;
-                    a.worldObjectsHandler.deleteObjectCellsForEntity(solid);
-                    toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1);
-                    npcsAreas.set(npcs.indexOf(solid), areas.indexOf(toArea));
-                    ((NPC)solid).curRoom = map.getRoomByName(toArea.name);
-                    if (((NPC)solid).currentTaskPath != null && ((NPC)solid).currentTaskPath.size() > 0 && ((NPC)solid).currentTaskPath.get(0).otherExit.room == ((NPC)solid).curRoom) {
-                        ((NPC)solid).currentTaskPath.remove(0);
+                        //ObjectCell soc = toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
+                        ((NPC)solid).speedX = 0;
+                        ((NPC)solid).speedY = 0;
+                        a.worldObjectsHandler.deleteObjectCellsForEntity(solid);
+                        toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1);
+                        npcsAreas.set(npcs.indexOf(solid), areas.indexOf(toArea));
+                        ((NPC)solid).curRoom = map.getRoomByName(toArea.name);
+                        if (((NPC)solid).currentTaskPath != null && ((NPC)solid).currentTaskPath.size() > 0 && ((NPC)solid).currentTaskPath.get(0).otherExit.room == ((NPC)solid).curRoom) {
+                            ((NPC)solid).currentTaskPath.remove(0);
+                        }
                     }
                 }
             }
@@ -1110,16 +1193,58 @@ public class World{
             }
             else a.respawnPlayer(null, assets, 0, 0, 0, 0, null);
         }
+        boolean resetCamera = false;
+        double cameraDiffX = 0;
+        double cameraDiffY = 0;
+        if (a.loopingX) {
+            if (a.player.hitBox.x + a.player.hitBox.width >= a.width * a.TILE_WIDTH) {
+                cameraDiffX = a.player.graphicX + a.player.hitBox.getWidth()/2 - a.cameraX;
+                cameraDiffY = a.player.graphicY + a.player.hitBox.getHeight()/2 - a.cameraY;
+                a.player.x -= a.width * a.TILE_WIDTH;
+                a.player.graphicX -= a.width * a.TILE_WIDTH;
+                a.player.hitBox.x -= a.width * a.TILE_WIDTH;
+                resetCamera = true;
+            } else if (a.player.hitBox.x + a.player.hitBox.width < 0) {
+                cameraDiffX = a.player.graphicX + a.player.hitBox.getWidth()/2 - a.cameraX;
+                cameraDiffY = a.player.graphicY + a.player.hitBox.getHeight()/2 - a.cameraY;
+                a.player.x += a.width * a.TILE_WIDTH;
+                a.player.graphicX += a.width * a.TILE_WIDTH;
+                a.player.hitBox.x += a.width * a.TILE_WIDTH;
+                resetCamera = true;
+            }
+        }
+        if (a.loopingY) {
+            if (a.player.hitBox.y + a.player.hitBox.height * 2 >= a.height * a.TILE_HEIGHT) {
+                cameraDiffX = a.player.graphicX + a.player.hitBox.getWidth()/2 - a.cameraX;
+                cameraDiffY = a.player.graphicY + a.player.hitBox.getHeight()/2 - a.cameraY;
+                a.player.y -= a.height * a.TILE_HEIGHT;
+                a.player.graphicY -= a.height * a.TILE_HEIGHT;
+                a.player.hitBox.y -= a.height * a.TILE_HEIGHT;
+                resetCamera = true;
+            } else if (a.player.hitBox.y + a.player.hitBox.height * 2 < 0) {
+                cameraDiffX = a.player.graphicX + a.player.hitBox.getWidth()/2 - a.cameraX;
+                cameraDiffY = a.player.graphicY + a.player.hitBox.getHeight()/2 - a.cameraY;
+                a.player.y += a.height * a.TILE_HEIGHT;
+                a.player.graphicY += a.height * a.TILE_HEIGHT;
+                a.player.hitBox.y += a.height * a.TILE_HEIGHT;
+                resetCamera = true;
+            }
+        }
+
+        if (resetCamera) {
+            a.cameraX = a.player.graphicX + a.player.hitBox.getWidth()/2 - cameraDiffX;
+            a.cameraY = a.player.graphicY + a.player.hitBox.getHeight()/2 - cameraDiffY;
+        }
     }
 
     public void changeArea(boolean horizontal, int offX, int offY, int offZ) {
-        if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1) {
+        Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && (areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1 && ((offX != 0 && !a.loopingX) || (offY != 0 && !a.loopingY)))) {
 
             //areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).resetCheckPoints();
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.x = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.x - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_WIDTH*offX;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).player.y = areas.get(areaIds.get(curAreaX).get(curAreaY)).player.y - areas.get(areaIds.get(curAreaX).get(curAreaY)).TILE_HEIGHT*offY;
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY)).resetCamera();
-            Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             if (offX == 0) {
                 areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).playerTileX = a.playerTileX - (areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).x - a.x)*firtsAreaWidth;
                 //areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).playerTileX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileX;
@@ -1222,7 +1347,13 @@ public class World{
             }
             startedChanging = false;
         } else {
-            areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
+            Area curarea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            if ((curarea.loopingX && offX != 0) || (curarea.loopingY && offY != 0)){
+                return;
+            }
+            if( (offX != 0 && !curarea.loopingX && (curAreaX+offX < 0 || curAreaX+offX > areaIds.size()-1 || areaIds.get(curAreaX + offX).get(curAreaY).get(curAreaZ) == -1)) || (offY != 0 && !curarea.loopingY && (curAreaY+offY < 0 || curAreaY+offY > areaIds.get(0).size()-1 || areaIds.get(curAreaX).get(curAreaY + offY).get(curAreaZ) == -1) && !curarea.loopingY)) {
+                curarea.respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
+            }
         }
         /*if (id < areas.size()) {
             curArea = id;
@@ -1426,10 +1557,10 @@ public class World{
                 area2 = oldArea;
                 area1 = curArea;
             }
-            boolean freeHorCamera1 = (area1.width * area1.TILE_WIDTH * area1.zoom < area1.camera.getWidth());
-            boolean freeVerCamera1 = (area1.height * area1.TILE_HEIGHT * area1.zoom < area1.camera.getHeight());
-            boolean freeHorCamera2 = (area2.width * area2.TILE_WIDTH * area2.zoom < area2.camera.getWidth());
-            boolean freeVerCamera2 = (area2.height * area2.TILE_HEIGHT * area2.zoom < area2.camera.getHeight());
+            boolean freeHorCamera1 = !platformMode || (area1.width * area1.TILE_WIDTH * area1.zoom < area1.camera.getWidth());
+            boolean freeVerCamera1 = !platformMode || (area1.height * area1.TILE_HEIGHT * area1.zoom < area1.camera.getHeight());
+            boolean freeHorCamera2 = !platformMode || (area2.width * area2.TILE_WIDTH * area2.zoom < area2.camera.getWidth());
+            boolean freeVerCamera2 = !platformMode || (area2.height * area2.TILE_HEIGHT * area2.zoom < area2.camera.getHeight());
             if (areaTransitionZ != 0) {
                 if (areaTransitionZ > 0.2f) {
                     oldArea.draw(batch, this, 0, 0, true, true, true);

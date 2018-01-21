@@ -45,6 +45,9 @@ public class Area {
     boolean playerHidden = false;
     World world;
     public boolean isCurrent = false;
+    public boolean loopingX = false;
+    public boolean loopingY = false;
+    public Background bg;
 
     float lastSpawnPos;
     Texture shadow;
@@ -204,7 +207,8 @@ public class Area {
         if (player == null) return;
         cameraX += (player.graphicX + player.hitBox.getWidth()/2 - cameraX)/k;
         cameraY += (player.graphicY + player.hitBox.getHeight()/2 - cameraY)/k;
-        if (TILE_WIDTH*(width)*zoom +20 > camera.getWidth()) {
+        bg.move((float) (player.graphicX + player.hitBox.getWidth()/2 - cameraX)/k, (float)(player.graphicY + player.hitBox.getHeight()/2 - cameraY)/k);
+        if (platformMode && TILE_WIDTH*(width)*zoom +20 > camera.getWidth()) {
             if (cameraX - SCREEN_WIDTH/zoom/2 < 1) {
                 cameraX = SCREEN_WIDTH/zoom/2+1;
                 if (platformMode) {
@@ -221,7 +225,7 @@ public class Area {
         if (platformMode) {
             off = 1;
         }
-        if (TILE_HEIGHT*(height-off)*zoom +20 > camera.getHeight()) {
+        if (platformMode && TILE_HEIGHT*(height-off)*zoom +20 > camera.getHeight()) {
             if (cameraY - SCREEN_HEIGHT / zoom / 2 + TILE_HEIGHT < 0) {
                 cameraY = SCREEN_HEIGHT / zoom / 2 - TILE_HEIGHT;
             } else if (cameraY + SCREEN_HEIGHT / zoom / 2 + FLOOR_HEIGHT + 2 > TILE_HEIGHT * (height - off)) {
@@ -364,7 +368,8 @@ public class Area {
         if (drawBG) {
 
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            batch.draw(world.bg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            //batch.draw(world.bg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            bg.draw(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, alpha));
         }
 
@@ -385,8 +390,34 @@ public class Area {
         offsetX += -cameraX + SCREEN_WIDTH /2;
         offsetY += cameraY + SCREEN_HEIGHT /2;
 
+        if (!platformMode) {
+            int xLoops;
+            int yLoops;
+            int thisX = 0;
+            int thisY = 0;
+            if (loopingX) {
+                xLoops = SCREEN_WIDTH / (width * TILE_WIDTH) + 1;
+                thisX = Math.round((float)xLoops/(float)2)-1;
+            } else {
+                xLoops = 1;
+            }
+            if (loopingY) {
+                yLoops  = SCREEN_HEIGHT / (height * TILE_HEIGHT) + 1;
+                thisY = Math.round((float)yLoops/(float)2)-1;
+            } else {
+                yLoops = 1;
+            }
+            for (int i = 0; i < yLoops; ++i) {
+                for (int t = 0; t < xLoops; ++t) {
+                    float offSetX = (t - thisX) * width * TILE_WIDTH;
+                    float offSetY = (thisY - i) * height * TILE_HEIGHT;
+                    worldObjectsHandler.draw(world.menu, batch, world, offsetX + offSetX, offsetY + offSetY, drawPlayer && (t == thisX && i == thisY), alpha);
+                }
+            }
+        } else {
+            worldObjectsHandler.draw(world.menu, batch, world, offsetX, offsetY, drawPlayer, alpha);
+        }
 
-        worldObjectsHandler.draw(world.menu, batch, world, offsetX, offsetY, drawPlayer, alpha);
         transform = new Matrix4();
         batch.setTransformMatrix(transform);
     }

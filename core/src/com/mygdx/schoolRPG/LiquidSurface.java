@@ -16,7 +16,7 @@ import java.util.ArrayList;
  */
 public class LiquidSurface extends Entity{
 
-    private float x, y;
+    public float x, y;
     private int width;
     private float resistance, damping, spread, targetPosition;
     private ArrayList<Float> positions, velocities, accelerations, leftDeltas, rightDeltas;

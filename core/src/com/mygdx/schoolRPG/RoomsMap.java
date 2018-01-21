@@ -169,11 +169,11 @@ public class RoomsMap {
                     int blocksCount = 1;
                     int startBlock = i;
                     i++;
-                    if (i >= walkables.size()) curBlock = false;
+                    if (i >= walkables.get(0).size()) curBlock = false;
                     else curBlock = walkables.get(t).get(i);
                     while (curBlock) {
                         blocksCount++;
-                        if (i >= walkables.size()) curBlock = false;
+                        if (i >= walkables.get(0).size()) curBlock = false;
                         else curBlock = walkables.get(t).get(i);
                         i++;
                     }

@@ -138,6 +138,10 @@ public class Player extends NPC {
         if (controlsBlocked && movingConfiguration.allZeroesPlatform()) {
             controlsBlocked = false;
         }
+
+        if (Math.abs(pSpeed) < 15 && Math.abs(speedX) > 2 && walkingFrames != 0 && walkingFrames % 10 == 0) {
+            step.play(world.menu.soundVolume / 100.0f);
+        }
     }
 
     @Override
