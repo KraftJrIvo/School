@@ -32,9 +32,9 @@ public class MultiTile {
         width = (int)(tileSet.getWidth()/xCount);
         height = (int)(tileSet.getHeight()/yCount);
         tiles = new ArrayList<ArrayList<TextureRegion>>();
-        for (int i=0; i<height; ++i) {
+        for (int i=0; i<yCount; ++i) {
             tiles.add(new ArrayList<TextureRegion>());
-            for (int t=0; t < width; ++t) {
+            for (int t=0; t < xCount; ++t) {
                 tiles.get(i).add(new TextureRegion(tileSet, width*t, height*i, width, height));
             }
         }
@@ -44,12 +44,12 @@ public class MultiTile {
     public void initialiseIfNeeded(AssetManager assets) {
         if (!initialised) {
             if (tileSet == null) tileSet = assets.get(filePath);
-            width = (int)(tileSet.getWidth()/xCount);
-            height = (int)(tileSet.getHeight()/yCount);
+            width = (tileSet.getWidth()/xCount);
+            height = (tileSet.getHeight()/yCount);
             tiles = new ArrayList<ArrayList<TextureRegion>>();
-            for (int i=0; i<height; ++i) {
+            for (int i=0; i<yCount; ++i) {
                 tiles.add(new ArrayList<TextureRegion>());
-                for (int t=0; t < width; ++t) {
+                for (int t=0; t < xCount; ++t) {
                     tiles.get(i).add(new TextureRegion(tileSet, width*t, height*i, width, height));
                 }
             }
@@ -66,6 +66,12 @@ public class MultiTile {
         tiles.get(y).get(x).flip(xInverted, yInverted);
         return temp;
 
+    }
+
+    public TextureRegion getTile(int id) {
+        int x = id % tiles.get(0).size();
+        int y = (id - 1)/tiles.get(0).size();
+        return getTile(x, y, false, false);
     }
 
     public int getWidth() {

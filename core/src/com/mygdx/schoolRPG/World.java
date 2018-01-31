@@ -14,11 +14,14 @@ import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.IntCoords;
+import com.mygdx.schoolRPG.tools.MultiTile;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class World{
     public static final int SCREEN_HEIGHT = 720;
@@ -41,6 +44,7 @@ public class World{
     ArrayList<String> flagNames;
     ArrayList<Texture> sprites;
     ArrayList<BlockMultiTile> tiles;
+    ArrayList<MultiTile> tilesets;
     ArrayList<AnimationSequence> animations;
     ArrayList<String> names;
     ArrayList<String> newNames;
@@ -74,6 +78,147 @@ public class World{
     boolean loadedState = false;
     RoomsMap map;
 
+    public boolean worldChange = false;
+    public String nextWorldDir = "";
+    public String nextWorldRoom = "";
+    public int nextWorldX = 0;
+    public int nextWorldY = 0;
+    public ArrayList<String> charNamesForTransfer;
+    public ArrayList<String> worldDirsForTransfer;
+    public ArrayList<String> uniqueItemNamesForTransfer;
+    public ArrayList<ArrayList<String>> itemNamesForTransfer;
+    public ArrayList<ArrayList<Integer>> itemCountsForTransfer;
+    public ArrayList<Boolean> worldFlagsForTransfer;
+    public ArrayList<String> worldFlagsNamesForTransfer;
+    public ArrayList<ArrayList<Boolean>> charFlagsForTransfer;
+    public ArrayList<ArrayList<String>> charFlagNamesForTransfer;
+    public String headWear, bodyWear, objectInHands;
+
+    public void prepareForWorldChange(String nextWorldDir, String nextWorldRoom, int nextWorldX, int nextWorldY) {
+        this.nextWorldDir = nextWorldDir;
+        this.nextWorldRoom = nextWorldRoom;
+        this.nextWorldX = nextWorldX;
+        this.nextWorldY = nextWorldY;
+        if (worldDirsForTransfer == null) worldDirsForTransfer = new ArrayList<String>();
+        worldFlagsForTransfer = flags;
+        worldFlagsNamesForTransfer = flagNames;
+        charNamesForTransfer = new ArrayList<String>();
+        uniqueItemNamesForTransfer = new ArrayList<String>();
+        charFlagNamesForTransfer = new ArrayList<ArrayList<String>>();
+        charFlagsForTransfer = new ArrayList<ArrayList<Boolean>>();
+        itemNamesForTransfer = new ArrayList<ArrayList<String>>();
+        itemCountsForTransfer = new ArrayList<ArrayList<Integer>>();
+        charNamesForTransfer.add("You");
+        charFlagsForTransfer.add(null);
+        charFlagNamesForTransfer.add(null);
+        Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        curArea.stopAllSounds = true;
+        curArea.worldObjectsHandler.invalidateObjects(worldDir.path(), assets, this);
+        itemNamesForTransfer.add(new ArrayList<String>());
+        itemCountsForTransfer.add(new ArrayList<Integer>());
+
+        for (int i = 0; i < curArea.player.inventory.size(); ++i) {
+            itemNamesForTransfer.get(0).add(curArea.player.inventory.get(i).fileName);
+            itemCountsForTransfer.get(0).add(curArea.player.inventory.get(i).stack);
+            if (curArea.player.inventory.get(i).sides == curArea.player.headWear) {
+                headWear = curArea.player.inventory.get(i).fileName;
+            } else if (curArea.player.inventory.get(i).sides == curArea.player.bodyWear) {
+                bodyWear = curArea.player.inventory.get(i).fileName;
+            } else if (curArea.player.inventory.get(i).sides == curArea.player.objectInHands) {
+                objectInHands = curArea.player.inventory.get(i).fileName;
+            }
+        }
+        for (int i = 0; i < npcs.size(); ++i) {
+            charNamesForTransfer.add(null);
+            charFlagNamesForTransfer.add(new ArrayList<String>());
+            charFlagsForTransfer.add(new ArrayList<Boolean>());
+            itemNamesForTransfer.add(new ArrayList<String>());
+            itemCountsForTransfer.add(new ArrayList<Integer>());
+        }
+        for (int i = 0; i < npcs.size(); ++i) {
+            charNamesForTransfer.set(i+1, npcs.get(i).name);
+            for (int j = 0; j < npcs.get(i).flags.size(); ++j) {
+                charFlagsForTransfer.get(i+1).add(npcs.get(i).flags.get(j));
+                charFlagNamesForTransfer.get(i+1).add(npcs.get(i).flagNames.get(j));
+            }
+            ArrayList<Item> inv = npcs.get(i).inventory;
+            for (int j = 0; j < inv.size(); ++j) {
+                String name = inv.get(j).fileName;
+                itemNamesForTransfer.get(i+1).add(inv.get(j).fileName);
+                if (!uniqueItemNamesForTransfer.contains(inv.get(j).fileName)) uniqueItemNamesForTransfer.add(inv.get(j).fileName);
+                itemCountsForTransfer.get(i+1).add(inv.get(j).stack);
+            }
+        }
+        this.worldChange = true;
+    }
+
+    public void transferFromWorld(World w) {
+        RoomNode r = map.getRoomByName(w.nextWorldRoom);
+        if (r != null) {
+            curAreaX = r.roomX;
+            curAreaY = r.roomY;
+            curAreaZ = r.roomZ;
+            Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            Player player = curArea.player;
+            float playerX = w.nextWorldX * curArea.TILE_WIDTH;
+            float playerY = w.nextWorldY * curArea.TILE_HEIGHT;
+            player.hitBox.x = playerX;
+            player.x = playerX;
+            player.graphicX = playerX;
+            player.hitBox.y = playerY;
+            player.y = playerY;
+            for (int i = 0; i < w.worldFlagsForTransfer.size(); ++i) {
+                if (flagNames.contains(w.worldFlagsNamesForTransfer.get(i))) {
+                    flags.set(flagNames.indexOf(w.worldFlagsNamesForTransfer.get(i)), w.worldFlagsForTransfer.get(i));
+                } else {
+                    flagNames.add(w.worldFlagsNamesForTransfer.get(i));
+                    flags.add(w.worldFlagsForTransfer.get(i));
+                }
+            }
+            for (int i = 0; i < w.charNamesForTransfer.size(); ++i) {
+                int foundCharId = -1;
+                if (w.charNamesForTransfer.get(i).equals("You")) {
+                    foundCharId = 0;
+                } else {
+                    for (int j = 0; j < npcs.size(); ++j) {
+                        if (npcs.get(j).name.equals(w.charNamesForTransfer.get(i))) {
+                            foundCharId = j;
+                            break;
+                        }
+                    }
+                }
+                if (foundCharId != -1) {
+                    if (foundCharId != 0) {
+                        for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
+                            if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
+                                npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
+                            } else {
+                                npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
+                                npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
+                            }
+                        }
+                    }
+                    NPC receiver;
+                    if (foundCharId == 0) receiver = curArea.player;
+                    else receiver = npcs.get(foundCharId);
+                    receiver.inventory.clear();
+                    for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
+                        Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
+                        receiver.takeItem(item);
+                        if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
+                            receiver.headWear = item.sides;
+                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.bodyWear)) {
+                            receiver.bodyWear = item.sides;
+                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.objectInHands)) {
+                            receiver.objectInHands = item.sides;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
     public World(GameMenu menu, String folderPath, int size, int startingAreaX, int startingAreaY, int startingAreaZ, int save) {
         this.menu = menu;
         areas = new ArrayList<Area>();
@@ -104,16 +249,6 @@ public class World{
     }
 
     public void updateTiles() {
-        /*ArrayList<String> unusedNames = new ArrayList<String>();
-        ArrayList<Integer> unusedTypes = new ArrayList<Integer>();
-        ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
-        for (int i = 0; i < names.size(); ++i) {
-            if (!newNames.contains(names.get(i))) {
-                unusedNames.add(names.get(i));
-                unusedTypes.add(tileTypes.get(i));
-                unusedIndices.add(tileIndices.get(i));
-            }
-        }*/
         ArrayList<String> preNames = new ArrayList<String>(names);
         ArrayList<Integer> preTileIndices = new ArrayList<Integer>(tileIndices);
         ArrayList<Integer> preTileTypes = new ArrayList<Integer>(tileTypes);
@@ -129,29 +264,31 @@ public class World{
                 preNames.add(i, "");
             }
         }
-        /*for (int i = 0; i < unusedNames.size(); ++i) {
-            tileTypes.set(newNames.size() + i, unusedTypes.get(i));
-            tileIndices.set(newNames.size() + i, unusedIndices.get(i));
-            preNames.set(newNames.size() + i, unusedNames.get(i));
-        }*/
-        /*ArrayList<String> preNames = new ArrayList<String>(names);
-        for (int i = 0; i < newNames.size(); ++i) {
-            int id = names.indexOf(newNames.get(i));
-            if (id >= 0 && id != i) {
-                int type = tileTypes.get(i);
-                int idx = tileIndices.get(i);
-                String name = preNames.get(i);
-                tileTypes.set(i, tileTypes.get(id));
-                tileIndices.set(i, tileIndices.get(id));
-                preNames.set(i, preNames.get(id));
-                tileTypes.set(id, type);
-                tileIndices.set(id, idx);
-                preNames.set(id, name);
-            }
-        }*/
         tileIndices = preTileIndices;
         tileTypes = preTileTypes;
         names = preNames;
+        int numberAdded = 0;
+        int ind = 0;
+        int startId = 0;
+        for (int i = 0; i < tileTypes.size(); ++i) {
+            if (tileTypes.get(i) == 1 && names.get(i) != null) {
+                if (names.get(i).contains("tileset")) {
+                    Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
+                    Matcher m = p.matcher(names.get(i));
+                    m.find();
+                    int count = Integer.parseInt(m.group(1)) * Integer.parseInt(m.group(2)) - 1;
+                    startId = i;
+                    for (int j = 0; j < count; ++j) {
+                        names.add(startId+1, null);
+                        tileIndices.add(startId+1, ind);
+                        tileTypes.add(startId+1,1);
+                        numberAdded++;
+                    }
+                }
+                ind++;
+            }
+        }
+        numberAdded = 0;
     }
 
     public static byte [] float2ByteArray (float value)
@@ -696,7 +833,7 @@ public class World{
                     roomNames.add(name1);
                     areasAmbients.add(name2);
 
-                    buff = new byte[areaWidth*areaHeight*9];
+                    buff = new byte[areaWidth*areaHeight*12];
                     fis.read(buff);
                     if (curCoordX != 246) {
                         Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this);
@@ -921,18 +1058,22 @@ public class World{
                     sprites.add(assets.get(entry.path(), Texture.class));
                 }
                 tiles = new ArrayList<BlockMultiTile>();
+                tilesets = new ArrayList<MultiTile>();
                 worldDir = Gdx.files.internal(folderPath+"/tiles");
                 for (FileHandle entry: worldDir.list()) {
                     if (!entry.file().getName().contains(".png")){
                         continue;
                     }
-                    /*for (int i = 0; i < names.size(); ++i) {
-                        if (("tiles\\" + entry.name().substring(0, entry.name().length() - 4)).equals(names.get(i))) {
-                            tileIndices.set(i, tiles.size());
-                            tileTypes.set(i, 1);
-                        }
-                    }*/
-                    tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
+                    if (entry.file().getName().contains("tileset")) {
+                        Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
+                        Matcher m = p.matcher(entry.file().getName());
+                        m.find();
+                        tiles.add(null);
+                        tilesets.add(new MultiTile(assets.get(entry.path(), Texture.class), Integer.parseInt(m.group(1)),  Integer.parseInt(m.group(2))));
+                    } else {
+                        tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
+                        tilesets.add(null);
+                    }
                 }
                 animations = new ArrayList<AnimationSequence>();
                 worldDir = Gdx.files.internal(folderPath+"/anim");
@@ -940,12 +1081,6 @@ public class World{
                     if (!entry.file().getName().contains(".png")){
                         continue;
                     }
-                    /*for (int i = 0; i < names.size(); ++i) {
-                        if (("anim\\" + entry.name().substring(0, entry.name().length() - 4)).equals(names.get(i))) {
-                            tileIndices.set(i, animations.size());
-                            tileTypes.set(i, 2);
-                        }
-                    }*/
                     animations.add(new AnimationSequence(assets, entry.path(), 12, true));
                 }
                 worldDir = Gdx.files.internal(folderPath);
@@ -1045,6 +1180,12 @@ public class World{
     }
 
     private void checkSolidsPosition() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+            for (int i =0; i < objects.size(); ++i) {
+                objects.get(i).soundsAreStopped = true;
+            }
+            prepareForWorldChange("game0", "bathroom", 3, 3);
+        }
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         for (int i = 0; i < a.worldObjectsHandler.solids.size() + a.worldObjectsHandler.NPCs.size(); ++i) {
             HittableEntity solid;
@@ -1370,7 +1511,7 @@ public class World{
     }
 
     public Sound getSound(int id) {
-        if (id < 0 || stepSounds.get(id) == null) {
+        if (id < 0 || id >= stepSounds.size() || stepSounds.get(id) == null) {
             return assets.get(folderPath + "/sounds/default.wav", Sound.class);
         }
         if (stepSounds.get(id).contains(".")) {

@@ -1,5 +1,8 @@
 package com.mygdx.schoolRPG.menus;
 
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
@@ -13,6 +16,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.World;
 import com.mygdx.schoolRPG.tools.JoyStick;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -29,6 +38,7 @@ public class GameMenu extends Menu {
     float JOYSIZE, JOYBASESIZE;
     public int curWorld = 0;
     public ArrayList<World> worlds;
+    World transferringWorld;
 
     public GameMenu(int id, boolean android) {
         super(id, android);
@@ -88,6 +98,9 @@ public class GameMenu extends Menu {
                 rightGameJoy = new JoyStick(rightJoyRect, joyBase, joy, Color.BLACK, Gdx.graphics.getWidth()/20f);
             }
             if (worlds.get(curWorld).initialised) {
+                if (transferringWorld != null) {
+                    worlds.get(curWorld).transferFromWorld(transferringWorld);
+                }
                 initialised = true;
             } else if (assets.update() && worlds.get(curWorld).loaded) {
                 worlds.get(curWorld).initialiseResources(assets);
@@ -102,7 +115,31 @@ public class GameMenu extends Menu {
     public void updateLanguage() {
 
     }*/
+    private void copyFile(String dir1, String dir2, String file1, String file2) {
+        Path copy_from_1 = Paths.get(dir1, file1);
+        File f = new File(copy_from_1.toString());
+        if (!f.exists()) return;
+        Path copy_to_1 = Paths.get(dir2, file2);
+        try {
+            Files.copy(copy_from_1, copy_to_1, REPLACE_EXISTING, COPY_ATTRIBUTES, NOFOLLOW_LINKS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void changeWorld(World w) {
+        World newWorld = new World(this, "worlds/" + w.nextWorldDir, curWorld);
+        initialised = false;
+        for (int i =0; i < w.uniqueItemNamesForTransfer.size(); ++i) {
+            copyFile(w.worldDir + "/items", "worlds/" + w.nextWorldDir + "/items", w.uniqueItemNamesForTransfer.get(i) + ".xml", w.uniqueItemNamesForTransfer.get(i) + ".xml");
+            copyFile(w.worldDir + "/items/icons", "worlds/" + w.nextWorldDir + "/items/icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+            copyFile(w.worldDir + "/items/big_icons", "worlds/" + w.nextWorldDir + "/items/big_icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+            copyFile(w.worldDir + "/items/sides", "worlds/" + w.nextWorldDir + "/items/sides", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+        }
+        transferringWorld = w;
+        worlds.set(worlds.indexOf(w), newWorld);
+
+    }
 
     public void invalidate() {
         super.invalidate();
@@ -115,6 +152,9 @@ public class GameMenu extends Menu {
         }
         else {
             worlds.get(curWorld).invalidate();
+            if (worlds.get(curWorld).worldChange) {
+                changeWorld(worlds.get(curWorld));
+            }
         }
     }
 

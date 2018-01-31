@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
+import java.awt.image.AreaAveragingScaleFilter;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +42,7 @@ public class Menu {
 
     Sound click2;
     Sound click3;
+
 
     public Menu(int id, boolean android) {
         this.android = android;

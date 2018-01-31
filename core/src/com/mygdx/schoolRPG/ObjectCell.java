@@ -209,6 +209,7 @@ public class ObjectCell {
     public void updateSoundState(GameMenu menu) {
         if (statesSoundLoops.get(currentState) != null) {
             statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
+            soundsAreStopped = false;
         }
     }
 
@@ -261,9 +262,12 @@ public class ObjectCell {
                 if (soundsAreStopped) {
                     statesSoundLoops.get(currentState).loop((statesLoopsVolumes.get(currentState)/100.0f) * (menu.soundVolume / 100.0f));
                 } else {
-                    statesSoundLoops.get(currentState).setVolume(0, menu.soundVolume / 100.0f);
+                    statesSoundLoops.get(currentState).setVolume(0, (statesLoopsVolumes.get(currentState)/100.0f) * menu.soundVolume / 100.0f);
                 }
                 soundsAreStopped = false;
+            }
+            if (area.stopAllSounds) {
+                statesSoundLoops.get(currentState).stop();
             }
         }
     }

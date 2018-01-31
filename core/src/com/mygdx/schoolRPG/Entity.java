@@ -244,11 +244,11 @@ public class Entity implements Comparable {
         } else if (texR != null) {
             float yy;
             if (floor) yy = offsetY - y-floorHeight + z - texR.getRegionHeight()*scale/2;
-            else yy = offsetY - y-floorHeight + z;
+            else yy = offsetY - y/*-floorHeight*/ + z;
             float xx = offsetX+x;
             if (centered) xx = offsetX+x - texR.getRegionWidth()*scale/2;
             batch.draw(texR, xx, yy, texR.getRegionWidth()/2, 0,
-                    texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee, false);
+                    texR.getRegionWidth()*scale, texR.getRegionHeight()*scale, 1.0f, 1.0f, anglee-90, false);
         }
         batch.setColor(new Color(1, 1, 1, baseAlpha));
     }

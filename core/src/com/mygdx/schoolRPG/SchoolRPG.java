@@ -84,11 +84,24 @@ public class SchoolRPG extends ApplicationAdapter {
 			menus.get(curMenuId).soundVolume = menus.get(prevMenuId).soundVolume;
 			menus.get(curMenuId).musicVolume = menus.get(prevMenuId).musicVolume;
 			menus.get(curMenuId).changeSetting(0);
+
+			assets.dispose();
+            this.fullScreen = menus.get(prevMenuId).fullScreen;
+            soundVolume = menus.get(prevMenuId).soundVolume;
+            musicVolume = menus.get(prevMenuId).musicVolume;
+            currentLanguage = menus.get(prevMenuId).currentLanguage;
+			create();
+			/*assets = new AssetManager();
+            MainMenu mm = (MainMenu) menus.get(0);
+            menus.clear();
+            mm.load(assets);
+            mm.initialiseResources();
+            menus.add(mm);*/
 			return;
 		}
 		boolean neww = false;
 		if (findId(newId) > 0) {
-			curMenuId = findId(newId);
+            curMenuId = findId(newId);
 		} else {
 			if (newId == 1) {
 				menus.add(new GameMenu(menus.size(), android));

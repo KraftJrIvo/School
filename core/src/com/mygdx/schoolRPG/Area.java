@@ -53,6 +53,8 @@ public class Area {
     Texture shadow;
     boolean saved = false;
 
+    public boolean stopAllSounds = false;
+
     BitmapFont signFont;
 
     public boolean containsSpawn = false;
@@ -95,17 +97,18 @@ public class Area {
                 for (int i = 0; i < height; ++i) {
                     for (int t = 0; t < width; ++t) {
                         if (i == 0)blocks.get(k).add(new ArrayList<Integer>());
-                        if ((int)map[c] == 255 || (int)map[c] == -1) {
+                        if (((int)map[c] == 255 || (int)map[c] == -1) && ((int)map[c+1] == 255 || (int)map[c+1] == -1)) {
                             blocks.get(k).get(t).add(-1);
                         } else {
-                            blocks.get(k).get(t).add((int)map[c]);
+                            int res = (map[c+1] & 0xff) | (short) (map[c] << 8);
+                            blocks.get(k).get(t).add(res);
                             if (k == 0) {
                                 blocks.get(2).get(t).set(i, 1);
                             } else {
                                 blocks.get(2).get(t).set(i, 2);
                             }
                         }
-                        c++;
+                        c+=2;
                     }
                 }
             }
@@ -123,8 +126,12 @@ public class Area {
                                 blocks.get(k+5).add(new ArrayList<Integer>());
                             }
                         }
-
-                        int type = (int)map[c];
+                        int type;
+                        if (k == 3) {
+                            type = (map[c+1] & 0xff) | (short) (map[c] << 8);
+                        } else {
+                            type = (int)map[c];
+                        }
                         blocks.get(k).get(t).add(type);
                         if (k == 4) {
                             if (type == -1) {
@@ -155,6 +162,7 @@ public class Area {
                             blocks.get(k+5).get(t).add(type);
                         }
                         c++;
+                        if (k == 3) c++;
                     }
                 }
             }
