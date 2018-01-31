@@ -70,7 +70,7 @@ public class MultiTile {
 
     public TextureRegion getTile(int id) {
         int x = id % tiles.get(0).size();
-        int y = (id - 1)/tiles.get(0).size();
+        int y = id/tiles.get(0).size();
         return getTile(x, y, false, false);
     }
 

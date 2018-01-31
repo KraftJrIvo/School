@@ -37,6 +37,7 @@ public class Entity implements Comparable {
     Texture active = null;
     public Item containingItem = null;
     int spawnArea = -1;
+    float offY = 0;
 
     public ArrayList<TextureRegion> heads = null;
     public ArrayList<TextureRegion> headWears = null;
@@ -73,6 +74,7 @@ public class Entity implements Comparable {
         this.floorHeight = floorHeight;
         this.angle = angle;
         this.h = y;
+        offY = h;
         //hitBox = new Rectangle(0,0,0,0);
     }
 
@@ -86,6 +88,7 @@ public class Entity implements Comparable {
         this.floorHeight = floorHeight;
         this.angle = angle;
         this.h = y;
+        offY = h;
         //if (angle == 2 && tex.getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -100,6 +103,7 @@ public class Entity implements Comparable {
         this.floorHeight = floorHeight;
         this.angle = angle;
         this.h = y;
+        offY = h;
         //if (angle == 2 && tex.getHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -114,6 +118,7 @@ public class Entity implements Comparable {
         this.floorHeight = floorHeight;
         this.angle = angle;
         this.h = y;
+        offY = h;
         //if (angle == 2 && anim.getFirstFrame().getRegionHeight()%2!=0) this.y-=1;
         //hitBox = new Rectangle(0,0,0,0);
     }
@@ -242,9 +247,7 @@ public class Entity implements Comparable {
                 batch.draw(tex2, xx, yy);
             }
         } else if (texR != null) {
-            float yy;
-            if (floor) yy = offsetY - y-floorHeight + z - texR.getRegionHeight()*scale/2;
-            else yy = offsetY - y/*-floorHeight*/ + z;
+            float yy = offsetY - y-floorHeight + z + offY;
             float xx = offsetX+x;
             if (centered) xx = offsetX+x - texR.getRegionWidth()*scale/2;
             batch.draw(texR, xx, yy, texR.getRegionWidth()/2, 0,

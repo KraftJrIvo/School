@@ -1186,7 +1186,15 @@ public class WorldObjectsHandler {
                 } else {
                     int startTile = blocks.get(layer).get(t).get(i);
                     while (world.tileIndices.get(startTile).equals(world.tileIndices.get(blocks.get(layer).get(t).get(i)))) startTile--;
-                    img = world.tilesets.get(world.tileIndices.get(blocks.get(layer).get(t).get(i))).getTile(type - startTile - world.spritesCount);
+                    int imCount = 0;
+                    int iii = 0;
+                    while (iii < i){
+                        if (world.tileTypes.get(iii) != 1) {
+                            imCount++;
+                        }
+                        iii++;
+                    }
+                    img = world.tilesets.get(world.tileIndices.get(blocks.get(layer).get(t).get(i))).getTile(type - startTile - imCount);
                 }
                 float x = offsetX + realT * (area.TILE_WIDTH) + area.TILE_WIDTH/2 - img.getRegionWidth()/2;
                 float y = offsetY - realI * area.TILE_HEIGHT-img.getRegionHeight()+area.TILE_HEIGHT;
