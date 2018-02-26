@@ -517,12 +517,12 @@ public class WorldObjectsHandler {
                 int inRoomXCoord = (int)Math.floor(area.player.x/area.TILE_WIDTH/world.firtsAreaWidth);
                 int inRoomYCoord = (int)(Math.floor(area.height/world.firtsAreaHeight-(area.player.y+area.player.hitBox.getHeight()/2)/area.TILE_HEIGHT/world.firtsAreaHeight));
                 if (c > 0) {
-                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c);
+                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c, null);
                 } else if (c < 0) {
-                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c);
+                    world.changeArea(false, inRoomXCoord, inRoomYCoord, c, null);
                 }
             }
-            activeObject.activate(worldPath, assets, flagNames, flags, area, 0, menu, true);
+            activeObject.activate(worldPath, assets, flagNames, flags, area, 0, menu, true, false);
             world.synchronizeFlags();
             if (activeObject.isContainer) {
                 menu.drawPause = false;
@@ -561,7 +561,7 @@ public class WorldObjectsHandler {
             if (objects.get(i).entity.getClass() != HittableEntity.class) {
                 if (objects.get(i).entity.anim != null) {
                     ox += objects.get(i).entity.anim.getFirstFrame().getRegionWidth()/2;
-                } else {
+                } else if (objects.get(i).entity.tex != null) {
                     ox += objects.get(i).entity.tex.getWidth()/2;
                 }
             }
@@ -569,8 +569,10 @@ public class WorldObjectsHandler {
             if (!world.menu.paused && objects.get(i).checkParticleEmission()) {
                 ox += objects.get(i).getParticleCoord(0);
                 oy += objects.get(i).getParticleCoord(1);
-                Particle prt = new Particle(assets, world.particles.get(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
-                addParticle(prt, -1);
+                for (int j = 0; j < objects.get(i).statesParticlesCount.get(objects.get(i).currentState); ++j) {
+                    Particle prt = new Particle(assets, world.getParticleByName(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
+                    addParticle(prt, -1);
+                }
             }
         }
     }
@@ -604,7 +606,7 @@ public class WorldObjectsHandler {
                 if (objects.get(i).entity.getClass() != HittableEntity.class) {
                     if (objects.get(i).entity.anim != null) {
                         ox += objects.get(i).entity.anim.getFirstFrame().getRegionWidth()/2;
-                    } else {
+                    } else if (objects.get(i).entity.tex != null) {
                         ox += objects.get(i).entity.tex.getWidth()/2;
                     }
                 }
@@ -617,8 +619,10 @@ public class WorldObjectsHandler {
                 if (objects.get(i).checkParticleEmission()) {
                     ox += objects.get(i).getParticleCoord(0);
                     oy += objects.get(i).getParticleCoord(1);
-                    Particle prt = new Particle(assets, world.particles.get(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
-                    addParticle(prt, -1);
+                    for (int j = 0; j < objects.get(i).statesParticlesCount.get(objects.get(i).currentState); ++j) {
+                        Particle prt = new Particle(assets, world.getParticleByName(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
+                        addParticle(prt, -1);
+                    }
                 }
             }
 
@@ -646,6 +650,16 @@ public class WorldObjectsHandler {
                 activeObject = null;
             } else {
                 activeItem = null;
+            }
+        }
+        for (int i = 0; i < objects.size(); ++i) {
+            if (objects.get(i).checkProximity(area.player.x, area.player.y)) {
+                objects.get(i).activate(area.worldPath, assets, flagNames, flags, area, 0, area.world.menu, true, true);
+            }
+            for (int j =0; j < NPCs.size(); ++j) {
+                if (objects.get(i).checkProximity(NPCs.get(j).x, NPCs.get(j).y)) {
+                    objects.get(i).activate(area.worldPath, assets, flagNames, flags, area, 0, area.world.menu, true, true);
+                }
             }
         }
     }
@@ -798,6 +812,9 @@ public class WorldObjectsHandler {
                     temp.x = i;
                     temp.y = t;
                     temp.invalidate();
+                    if (temp.isObject) {
+                        temp.invalidateAsObject(area.worldPath, area.world.assets, flagNames, flags, area, 0, area.world.menu);
+                    }
                     /*if (temp.type != ObjectType.NONSOLID && ((int)temp.x != i || (int)temp.y != t)) {
                         if ((int)temp.x >= 0 && (int)temp.y >= 0 && (int)temp.x < area.width && (int)temp.y < area.height) {
                             objectCells.get((int)temp.x).get((int)temp.y).add(temp);

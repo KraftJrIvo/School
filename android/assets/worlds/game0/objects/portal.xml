@@ -1,0 +1,27 @@
+<object statesCount="3" startState="0" radius="5" offsetX="8" offsetY="0" container="false">
+    <state id="0"
+           switchable="false"
+           switchCondition="!portal_open"
+           tex="portal"
+           texType="anim"
+           fps="10"
+           looping="true"
+           framesCount="3"
+           proximityGoto="2"/> 
+    <state id="1"
+           switchable="false"
+           switchCondition="portal_open"
+           goto="0"/> 
+    <state id="1"
+           switchable="false"
+           switchTimer="0"
+           tex="portal"
+           texType="anim"
+           fps="10"
+           looping="true"
+           framesCount="3"
+           teleportRoom="parentsroom"
+           teleportX="1"
+           teleportY="1"
+           goto="0"/> 
+</object>

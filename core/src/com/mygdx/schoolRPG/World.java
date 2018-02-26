@@ -16,6 +16,7 @@ import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.IntCoords;
 import com.mygdx.schoolRPG.tools.MultiTile;
 
+import java.awt.geom.Point2D;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +62,7 @@ public class World{
     ArrayList<Entity> itemsOnFloor;
     ArrayList<Integer> itemsOnFloorAreas;
     ArrayList<ParticleProperties> particles;
+    ArrayList<String> particlesPaths;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
     AssetManager assets;
@@ -77,6 +79,7 @@ public class World{
     public int save;
     boolean loadedState = false;
     RoomsMap map;
+    boolean teleporting = false;
 
     public boolean worldChange = false;
     public String nextWorldDir = "";
@@ -135,21 +138,37 @@ public class World{
             itemNamesForTransfer.add(new ArrayList<String>());
             itemCountsForTransfer.add(new ArrayList<Integer>());
         }
-        for (int i = 0; i < npcs.size(); ++i) {
-            charNamesForTransfer.set(i+1, npcs.get(i).name);
-            for (int j = 0; j < npcs.get(i).flags.size(); ++j) {
-                charFlagsForTransfer.get(i+1).add(npcs.get(i).flags.get(j));
-                charFlagNamesForTransfer.get(i+1).add(npcs.get(i).flagNames.get(j));
+        for (int i = -1; i < npcs.size(); ++i) {
+            if (i >= 0) {
+                charNamesForTransfer.set(i+1, npcs.get(i).name);
+                for (int j = 0; j < npcs.get(i).flags.size(); ++j) {
+                    charFlagsForTransfer.get(i+1).add(npcs.get(i).flags.get(j));
+                    charFlagNamesForTransfer.get(i+1).add(npcs.get(i).flagNames.get(j));
+                }
             }
-            ArrayList<Item> inv = npcs.get(i).inventory;
+            ArrayList<Item> inv;
+            if (i == -1) inv = curArea.player.inventory;
+            else inv = npcs.get(i).inventory;
             for (int j = 0; j < inv.size(); ++j) {
                 String name = inv.get(j).fileName;
-                itemNamesForTransfer.get(i+1).add(inv.get(j).fileName);
-                if (!uniqueItemNamesForTransfer.contains(inv.get(j).fileName)) uniqueItemNamesForTransfer.add(inv.get(j).fileName);
-                itemCountsForTransfer.get(i+1).add(inv.get(j).stack);
+                if (!uniqueItemNamesForTransfer.contains(name)) uniqueItemNamesForTransfer.add(name);
+                if (i >= 0) {
+                    itemCountsForTransfer.get(i+1).add(inv.get(j).stack);
+                    itemNamesForTransfer.get(i+1).add(name);
+                }
             }
         }
         this.worldChange = true;
+    }
+
+
+    ParticleProperties getParticleByName(String name) {
+        for (int i =0; i < particles.size(); ++i) {
+            if (particlesPaths.get(i).equals(name)) {
+                return particles.get(i);
+            }
+        }
+        return null;
     }
 
     public void transferFromWorld(World w) {
@@ -177,44 +196,39 @@ public class World{
             }
             for (int i = 0; i < w.charNamesForTransfer.size(); ++i) {
                 int foundCharId = -1;
-                if (w.charNamesForTransfer.get(i).equals("You")) {
-                    foundCharId = 0;
-                } else {
-                    for (int j = 0; j < npcs.size(); ++j) {
-                        if (npcs.get(j).name.equals(w.charNamesForTransfer.get(i))) {
-                            foundCharId = j;
-                            break;
+                for (int j = 0; j < npcs.size(); ++j) {
+                    if (npcs.get(j).name.equals(w.charNamesForTransfer.get(i))) {
+                        foundCharId = j;
+                        break;
+                    }
+                }
+                if (foundCharId > 0) {
+                    for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
+                        if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
+                            npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
+                        } else {
+                            npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
+                            npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
                         }
                     }
                 }
-                if (foundCharId != -1) {
-                    if (foundCharId != 0) {
-                        for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
-                            if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
-                                npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
-                            } else {
-                                npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
-                                npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
-                            }
-                        }
-                    }
-                    NPC receiver;
-                    if (foundCharId == 0) receiver = curArea.player;
-                    else receiver = npcs.get(foundCharId);
-                    receiver.inventory.clear();
-                    for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
-                        Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
-                        receiver.takeItem(item);
-                        if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
-                            receiver.headWear = item.sides;
-                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.bodyWear)) {
-                            receiver.bodyWear = item.sides;
-                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.objectInHands)) {
-                            receiver.objectInHands = item.sides;
-                        }
+                NPC receiver;
+                if (foundCharId == -1) receiver = curArea.player;
+                else receiver = npcs.get(foundCharId);
+                receiver.inventory.clear();
+                for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
+                    Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
+                    receiver.takeItem(item);
+                    if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
+                        receiver.headWear = item.sides;
+                    } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.bodyWear)) {
+                        receiver.bodyWear = item.sides;
+                    } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.objectInHands)) {
+                        receiver.objectInHands = item.sides;
                     }
                 }
             }
+            saveState();
         }
     }
 
@@ -975,6 +989,7 @@ public class World{
         }
 
         particles = new ArrayList<ParticleProperties>();
+        particlesPaths = new ArrayList<String>();
         FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
         int dirsCount = 0;
         for (FileHandle entry: particlesDir.list()) {
@@ -985,6 +1000,7 @@ public class World{
                     assets.load(entry2.path(), Texture.class);
                 }
                 particles.add(new ParticleProperties(folderPath + "/particles/" + dirsCount));
+                particlesPaths.add(entry.name());
                 dirsCount++;
             }
         }
@@ -1184,6 +1200,7 @@ public class World{
             for (int i =0; i < objects.size(); ++i) {
                 objects.get(i).soundsAreStopped = true;
             }
+            currentSound.stop();
             prepareForWorldChange("game0", "bathroom", 3, 3);
         }
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
@@ -1317,20 +1334,20 @@ public class World{
         int inRoomXCoord = (int)Math.floor(a.player.x/a.TILE_WIDTH/firtsAreaWidth);
         int inRoomYCoord = (int)(Math.floor(a.height/firtsAreaHeight-(a.player.y+a.player.hitBox.getHeight()/2)/a.TILE_HEIGHT/firtsAreaHeight));
         if (a.player.x < 5) {
-            changeArea(true, -1, inRoomYCoord, 0);
+            changeArea(true, -1, inRoomYCoord, 0, null);
         } else if (a.player.x > a.TILE_WIDTH*(a.width)-a.player.hitBox.getWidth()-5) {
-            changeArea(true, inRoomXCoord + 1, inRoomYCoord, 0);
+            changeArea(true, inRoomXCoord + 1, inRoomYCoord, 0, null);
         } else if (a.player.y+a.player.hitBox.getHeight() < -a.player.hitBox.getHeight()/2) {
-            changeArea(false, inRoomXCoord, inRoomYCoord, 0);
+            changeArea(false, inRoomXCoord, inRoomYCoord, 0, null);
         } else if (a.player.y > a.TILE_HEIGHT*(a.height-1)) {
-            changeArea(false, inRoomXCoord, -1, 0);
+            changeArea(false, inRoomXCoord, -1, 0, null);
         }
         if (a.player.movingConfiguration.use == 1) {
             a.worldObjectsHandler.activateActiveObject(menu, folderPath, assets, this);
         }
         if (a.player.z > a.cameraY + SCREEN_HEIGHT) {
             if (curAreaZ >= 1 && areaIds.get(curAreaX).get(curAreaY).get(curAreaZ-1) != -1) {
-                changeArea(false, inRoomXCoord, inRoomYCoord, -1);
+                changeArea(false, inRoomXCoord, inRoomYCoord, -1, null);
             }
             else a.respawnPlayer(null, assets, 0, 0, 0, 0, null);
         }
@@ -1378,7 +1395,8 @@ public class World{
         }
     }
 
-    public void changeArea(boolean horizontal, int offX, int offY, int offZ) {
+    public void changeArea(boolean horizontal, int offX, int offY, int offZ, Point2D teleport) {
+        teleporting = (teleport != null);
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && (areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1 && ((offX != 0 && !a.loopingX) || (offY != 0 && !a.loopingY)))) {
 
@@ -1403,6 +1421,10 @@ public class World{
                     areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ)).playerTileX = areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ)).width-1;
                 }
             }
+            if (teleporting) {
+                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileX = (int)teleport.getX();
+                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileY = (int)teleport.getY();
+            }
 
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).playerTileX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileX-(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).width-1)*offX;
             //areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ)).playerTileY = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileY+(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).height-1)*offY;
@@ -1411,8 +1433,10 @@ public class World{
             int tileX=0, tileY=0;
             int speed=0;
 
-
-            if (offZ == 0) {
+            if (teleporting) {
+                tileX = (int)teleport.getX();
+                tileY = (int)teleport.getY();
+            } else if (offZ == 0) {
                 if (horizontal) {
                     pos = a.player.y + ((areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).y+areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).h) - (a.y+a.h))*firtsAreaHeight*a.TILE_HEIGHT;//a.player.hitBox.y;// - inRoomYCoord;
                     if (offX > 0) {
@@ -1495,6 +1519,9 @@ public class World{
             if( (offX != 0 && !curarea.loopingX && (curAreaX+offX < 0 || curAreaX+offX > areaIds.size()-1 || areaIds.get(curAreaX + offX).get(curAreaY).get(curAreaZ) == -1)) || (offY != 0 && !curarea.loopingY && (curAreaY+offY < 0 || curAreaY+offY > areaIds.get(0).size()-1 || areaIds.get(curAreaX).get(curAreaY + offY).get(curAreaZ) == -1) && !curarea.loopingY)) {
                 curarea.respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
             }
+        }
+        if (teleporting) {
+            areaTransitionZ = 1.0f;
         }
         /*if (id < areas.size()) {
             curArea = id;
@@ -1674,7 +1701,7 @@ public class World{
                 curArea.worldObjectsHandler.currentInventory.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentInventory.closed) {
                     if (curArea.worldObjectsHandler.currentInventory.containerMode) {
-                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0, menu, true);
+                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0, menu, true, false);
                     }
                     curArea.worldObjectsHandler.currentInventory = null;
                     menu.drawPause = true;
@@ -1702,7 +1729,7 @@ public class World{
             boolean freeVerCamera1 = !platformMode || (area1.height * area1.TILE_HEIGHT * area1.zoom < area1.camera.getHeight());
             boolean freeHorCamera2 = !platformMode || (area2.width * area2.TILE_WIDTH * area2.zoom < area2.camera.getWidth());
             boolean freeVerCamera2 = !platformMode || (area2.height * area2.TILE_HEIGHT * area2.zoom < area2.camera.getHeight());
-            if (areaTransitionZ != 0) {
+            if (areaTransitionZ != 0 || teleporting) {
                 if (areaTransitionZ > 0.2f) {
                     oldArea.draw(batch, this, 0, 0, true, true, true);
                     batch.setColor(0, 0, 0, 1.25f * ((1.0f - areaTransitionZ)));
@@ -1720,6 +1747,7 @@ public class World{
                     areaTransitionZ = 0;
                     oldArea.removeParticles();
                     oldArea.resetCheckPoints();
+                    teleporting = false;
                 }
             } else if (areaTransitionX != 0) {
                 if (oldAreaX < curAreaX) {

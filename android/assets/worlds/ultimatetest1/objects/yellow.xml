@@ -11,12 +11,6 @@
            flagName=""
            flagVal="false"
            
-           emitsParticle="-1"
-           emitX="0"
-           emitY="-2"
-           emitZ="0"
-           emitInterval="0"
-           
            switchSound=""
            loopSound=""
            loopVolume="0"

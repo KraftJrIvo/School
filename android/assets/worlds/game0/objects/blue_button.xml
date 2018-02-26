@@ -1,0 +1,15 @@
+<object statesCount="2" startState="0" radius="10" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           tex="blue_button"
+           texType="sprite"
+           flagName="portal_open"
+           flagVal="toggle"
+           switchSound="click.wav"/> 
+    <state id="1"
+           switchable="false"
+           tex="blue_button_pressed"
+           texType="sprite"
+           switchTimer="200"
+           /> 
+</object>

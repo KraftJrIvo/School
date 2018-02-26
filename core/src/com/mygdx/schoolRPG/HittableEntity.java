@@ -164,6 +164,7 @@ public class HittableEntity extends Entity {
     }
 
     public Rectangle pushOutSolidObjects(HittableEntity he) {
+        if (!collidable) return he.getRect();
       /* ShapeRenderer sr = new ShapeRenderer();
         sr.setColor(1, 0, 0, 1);
         sr.begin(ShapeRenderer.ShapeType.Line);
@@ -224,6 +225,7 @@ public class HittableEntity extends Entity {
     }
 
     public Rectangle pushOutSolidObjects(HittableEntity he, Area area, float oldX, float oldY) {
+        if (!collidable) return he.getRect();
         if (this == he) return hitBox;
         type = 1;
         boolean overlapX = false, overlapY = false;

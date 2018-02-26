@@ -38,6 +38,7 @@ public class Entity implements Comparable {
     public Item containingItem = null;
     int spawnArea = -1;
     float offY = 0;
+    public boolean collidable = true;
 
     public ArrayList<TextureRegion> heads = null;
     public ArrayList<TextureRegion> headWears = null;
