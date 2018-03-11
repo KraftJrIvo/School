@@ -18,6 +18,7 @@ public class AnimationSequence {
 	public String path;
     int firstFrame;
 	public boolean justChangedFrame = false;
+	public int loops = 0;
 	
 	public AnimationSequence(AssetManager assets, String sName, int fps, boolean looping, int framesCount) {
 		path = sName;
@@ -112,7 +113,11 @@ public class AnimationSequence {
 			currentFrame = (gs.getLength() - 1 + seed)%(gs.getLength());
 		} else {
 			double doubleDelta = (double)delta/1000.0;
-			currentFrame = (int)((long)(doubleDelta * (double)fps) % gs.getLength() + seed)%(gs.getLength());
+			int n = (int)((long)(doubleDelta * (double)fps) % gs.getLength() + seed);
+			currentFrame = n%(gs.getLength());
+			if (n == gs.getLength()) {
+				loops++;
+			}
 		}
         if (reversed) {
             currentFrame = (gs.getLength() - currentFrame-1 + seed)%(gs.getLength());

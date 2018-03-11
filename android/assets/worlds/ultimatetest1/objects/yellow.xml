@@ -1,4 +1,4 @@
-<object statesCount="8" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
+<object statesCount="4" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
     <state id="0"
            switchable="true"
            switchCondition=""
@@ -32,14 +32,16 @@
            emitX="9"
            emitY="-2"
            emitZ="22"
-           emitInterval="500"
+           emitInterval="300"
            
            switchSound=""
            loopSound=""
            loopVolume="0"
 
-           hidePlayer="false"/> 
-    <state id="2"
+           hidePlayer="false"> 
+            <particle name="bubble" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="pop2.wav"/>
+           </state>
+       <state id="2"
            switchable="true"
            switchCondition=""
            tex="yellow"
@@ -51,18 +53,20 @@
            flagName=""
            flagVal="false"
            
-           emitsParticle="1"
+           emitsParticle="0"
            emitX="9"
            emitY="-2"
            emitZ="22"
-           emitInterval="100"
+           emitInterval="2000"
            
            switchSound=""
            loopSound=""
            loopVolume="0"
 
-           hidePlayer="false"/> 
-    <state id="3"
+           hidePlayer="false"> 
+            <particle name="fly" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="0" impulseSpread="0" spawnSound="pop2.wav"/>
+       </state>
+       <state id="3"
            switchable="true"
            switchCondition=""
            tex="yellow"
@@ -74,107 +78,17 @@
            flagName=""
            flagVal="false"
            
-           emitsParticle="2"
+           emitsParticle="0"
            emitX="9"
            emitY="-2"
            emitZ="22"
-           emitInterval="10"
-           switchSound=""
-           loopSound=""
-           loopVolume="0"
-
-           
-           hidePlayer="false"/> 
-    <state id="4"
-           switchable="true"
-           switchCondition=""
-           tex="yellow"
-           texType="sprite"
-           fps="0"
-           looping="false"
-           framesCount="1"
-           
-           flagName=""
-           flagVal="false"
-           
-           emitsParticle="3"
-           emitX="9"
-           emitY="-2"
-           emitZ="22"
-           emitInterval="10"
+           emitInterval="3000"
            
            switchSound=""
            loopSound=""
            loopVolume="0"
 
-           hidePlayer="false"/> 
-    <state id="5"
-           switchable="true"
-           switchCondition=""
-           tex="yellow"
-           texType="sprite"
-           fps="0"
-           looping="false"
-           framesCount="1"
-           
-           flagName=""
-           flagVal="false"
-           
-           emitsParticle="4"
-           emitX="9"
-           emitY="-2"
-           emitZ="22"
-           emitInterval="500"
-           switchSound=""
-           loopSound=""
-           loopVolume="0"
-
-           
-           hidePlayer="false"/> 
-    <state id="6"
-           switchable="true"
-           switchCondition=""
-           tex="yellow"
-           texType="sprite"
-           fps="0"
-           looping="false"
-           framesCount="1"
-           
-           flagName=""
-           flagVal="false"
-           
-           emitsParticle="5"
-           emitX="9"
-           emitY="-2"
-           emitZ="22"
-           emitInterval="10"
-           
-           switchSound=""
-           loopSound=""
-           loopVolume="0"
-
-           hidePlayer="false"/> 
-    <state id="7"
-           switchable="true"
-           switchCondition=""
-           tex="yellow"
-           texType="sprite"
-           fps="0"
-           looping="false"
-           framesCount="1"
-           
-           flagName=""
-           flagVal="false"
-           
-           emitsParticle="6"
-           emitX="9"
-           emitY="-2"
-           emitZ="22"
-           emitInterval="10"
-           
-           switchSound=""
-           loopSound=""
-           loopVolume="0"
-
-           hidePlayer="false"/> 
+           hidePlayer="false"> 
+            <particle name="snowman" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="pop2.wav"/>
+       </state>
 </object>

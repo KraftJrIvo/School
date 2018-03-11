@@ -184,6 +184,7 @@ public class NPC extends HittableEntity {
         try {
             BufferedReader in = new BufferedReader(new FileReader(charPath + "/behavior"));
             int tasksCount = Integer.parseInt(in.readLine());
+            movable = true;
             for (int i =0; i < tasksCount; ++i) {
                 tasks.add(new Task(in, world));
             }

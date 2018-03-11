@@ -990,20 +990,8 @@ public class World{
 
         particles = new ArrayList<ParticleProperties>();
         particlesPaths = new ArrayList<String>();
-        FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
-        int dirsCount = 0;
-        for (FileHandle entry: particlesDir.list()) {
-            if (entry.file().isDirectory()) {
-                assets.load(folderPath + "/particles/" + dirsCount + "/1.png", Texture.class);
-                FileHandle entry2 = Gdx.files.internal(folderPath + "/particles/" + dirsCount + "/2.png");
-                if (entry2.exists()) {
-                    assets.load(entry2.path(), Texture.class);
-                }
-                particles.add(new ParticleProperties(folderPath + "/particles/" + dirsCount));
-                particlesPaths.add(entry.name());
-                dirsCount++;
-            }
-        }
+
+
         if (platformMode) {
             FileHandle charDir =  Gdx.files.internal(folderPath + "/chars");
             for (FileHandle entry: charDir.list()) {
@@ -1019,13 +1007,16 @@ public class World{
             characterMaker = new CharacterMaker(assets, folderPath, menu);
             characterMaker.cdcs.get(0).setLookingForward(true);
         }
-        /*int minAreaArea = 99999;
-        for (int i = 0 ; i < areas.size(); ++i) {
-            if (areas.get(i).width * areas.get(i).height < minAreaArea) {
-                firtsAreaHeight = areas.get(i).height;
-                firtsAreaWidth = areas.get(i).width;
+        FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
+        for (FileHandle entry: particlesDir.list()) {
+            if (entry.file().isDirectory()) {
+                for (FileHandle entry2: entry.list()) {
+                    if (entry2.path().endsWith(".png")) {
+                        assets.load(entry2.path(), Texture.class);
+                    }
+                }
             }
-        }*/
+        }
         loaded = true;
     }
 
@@ -1033,8 +1024,15 @@ public class World{
         if (!platformMode) {
             characterMaker.initialiseResources(assets, folderPath);
         }
-        for (int i = 0; i < particles.size(); ++i) {
-            particles.get(i).initialiseResources(assets, folderPath + "/particles/" + i);
+        FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
+        for (FileHandle entry: particlesDir.list()) {
+            if (entry.file().isDirectory()) {
+                FileHandle entry3 = Gdx.files.internal(entry.path() + "/stats.xml");
+                if (entry3.exists()) {
+                    particles.add(new ParticleProperties(this, assets, entry3.path() , menu));
+                    particlesPaths.add(entry.name());
+                }
+            }
         }
         //bg = assets.get(folderPath+"/bg.png", Texture.class);
         shapeRenderer = new ShapeRenderer();

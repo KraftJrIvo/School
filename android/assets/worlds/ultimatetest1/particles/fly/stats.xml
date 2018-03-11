@@ -1,0 +1,32 @@
+<particle-properties radius="4.0">
+    <state
+        id="0"
+        tex="1"
+        frames="2"
+        fps="20"
+        looping="true"
+        weight="0.1"
+        bounciness="0.2"
+        inertia="0.5"
+        alphaStep="0"
+        movePattern="RANDOM"
+        collisionGroup="0"
+        flySoundLoop="buzz.wav"
+        bounceSound=""
+        nextStateCondition="TIMER-200-0;RANDOM-3-1"
+        spawnCount="5"
+        spawnInterval="0"
+    >
+        <child-particle name="flyTrail" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0" spawnImpulse="0" dirSpread="0" speedSpread="0" impulseSpread="0" spawnSound=""/>
+    </state>
+    <state 
+        id="1"
+        tex="1"
+        frames="2"
+        fps="1"
+        looping="false"
+        movePattern="NORMAL"
+        floor="true"
+        alphaStep="0.01"
+    />
+</particle-properties>

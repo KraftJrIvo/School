@@ -1,0 +1,30 @@
+<particle-properties radius="4.0">
+    <state
+        id="0"
+        tex="1"
+        frames="1"
+        weight="0.1"
+        bounciness="0.9"
+        inertia="0.99"
+        alphaStep="0"
+        movePattern="NORMAL"
+        collisionGroup="0"
+        flySoundLoop=""
+        bounceSound="pop1.wav"
+        nextStateCondition="BOUNCE-10-1"
+    />
+    <state 
+        id="1"
+        tex="2"
+        frames="1"
+        movePattern="NONE"
+        floor="true"
+        alphaStep="0.01"
+        spawnInterval="0"
+        spawnCount="1"
+    >
+        <child-particle name="lilBubble" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="1" dirSpread="6.28" speedSpread="1" impulseSpread="3" spawnSound="pop2.wav"/>
+        <child-particle name="lilBubble" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="1" dirSpread="6.28" speedSpread="1" impulseSpread="3" spawnSound=""/>
+        <child-particle name="lilBubble" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="1" dirSpread="6.28" speedSpread="1" impulseSpread="3" spawnSound=""/>
+    </state>
+</particle-properties>

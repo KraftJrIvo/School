@@ -195,7 +195,6 @@ public class WorldObjectsHandler {
     }
 
     public void invalidateParticlesCollisions(Particle p) {
-        if (!p.pp.bouncing) return;
         int tileX = (int)(p.x/(area.TILE_WIDTH));
         int tileY = (int)((p.y)/(area.TILE_HEIGHT));
         for (int i = tileY - 2; i <= tileY + 2; ++i) {
@@ -203,21 +202,13 @@ public class WorldObjectsHandler {
                 if (t < 0 || t >= blocks.get(2).size() || i < 0 || i >= blocks.get(2).get(0).size()) continue;
                 if (blocks.get(2).get(t).get(i) == 2) {
                     Rectangle collisionRect = new Rectangle(t*(area.TILE_WIDTH), i* area.TILE_HEIGHT -6 - 10, area.TILE_WIDTH, area.TILE_HEIGHT);
-                    if (p.curBounces > 0) {
+                    if (!p.floor) {
                         if (((collisionRect.contains(p.x-p.r, p.y) && p.XSpeed < 0) || (collisionRect.contains(p.x+p.r, p.y) && p.XSpeed > 0))) {
                             p.bounce(false, true);
                         }
-                        if (!area.platformMode) {
-                            if (((collisionRect.contains(p.x, p.y+p.r) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y-p.r) && p.YSpeed < 0))) {
-                                p.YSpeed = -p.YSpeed;
-                                //p.curBounces--;
-                            }
-                        } else {
-                            if (((collisionRect.contains(p.x, p.y-p.r) && p.YSpeed < 0))) {
-                                p.bounce(false, false);
-                            } else if (collisionRect.contains(p.x, p.y+p.r) && p.YSpeed > 0) {
-                                p.bounce(true, false);
-                            }
+                        if (((collisionRect.contains(p.x, p.y+p.r) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y-p.r) && p.YSpeed < 0))) {
+                            p.bounce(false, false);
+                            //p.curBounces--;
                         }
                     }
                 }
@@ -229,17 +220,33 @@ public class WorldObjectsHandler {
                 Rectangle collisionRect = new Rectangle(((HittableEntity)(solids.get(z))).getRect());
                 collisionRect.y-=10;
                 //collisionRect.height+=10;
-                if (p.curBounces > 0) {
+                if (!p.floor) {
                     if (((collisionRect.contains(p.x-p.r, p.y) && p.XSpeed < 0) || (collisionRect.contains(p.x+p.r, p.y) && p.XSpeed > 0))) {
-                        if (area.platformMode) p.bounce(false, true);
-                        else p.XSpeed = -p.XSpeed;
+                        p.bounce(false, true);
                     }
                     if (((collisionRect.contains(p.x, p.y+p.r*2) && p.YSpeed > 0) || (collisionRect.contains(p.x, p.y) && p.YSpeed < 0))) {
-                        if (area.platformMode) p.bounce(false, false);
-                        else p.YSpeed = -p.YSpeed;
+                        p.bounce(false, false);
                     }
                 }
             }
+        }
+        //System.out.println(particles.size());
+        for (int i = 0; i < particles.size(); ++i) {
+            Particle prtt = particles.get(i);
+            ArrayList<ParticleProperties.ParticleSpawnProperties> spawns = prtt.checkParticleEmission();
+            if (!area.world.menu.paused && spawns != null) {
+                for (int j = 0; j < spawns.size(); ++j) {
+                    Particle prt = new Particle(area.assets, area.world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, prtt.x, prtt.y, prtt.z);
+                    addParticle(prt, -1);
+                }
+            }
+            /*for (int j = i+1; j < particles.size(); ++j) {
+                float ofx = prtt.x - particles.get(j).x;
+                float ofy = prtt.y - particles.get(j).y;
+                if (Math.abs(prtt.z - particles.get(j).z) < prtt.r + particles.get(j).r && Math.sqrt(ofx * ofx + ofy * ofy) < prtt.r + particles.get(j).r) {
+                    prtt.bounce(particles.get(j));
+                }
+            }*/
         }
     }
 
@@ -432,18 +439,18 @@ public class WorldObjectsHandler {
         Particle prt;
         area.player.die.play(world.menu.soundVolume / 100.0f);
         for (int i = 0; i < 20; ++i) {
-            prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(6)), area.platformMode, area.player.x+3, area.player.y-6, 1);
+            prt = new Particle(area.assets, world.getParticleByName("blood"), new ParticleProperties().new ParticleSpawnProperties("blood",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
             particles.add(prt);
             addParticle(prt, -1);
         }
-        prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(4)), area.platformMode, area.player.x+3, area.player.y-6, 1);
+        prt = new Particle(area.assets, world.getParticleByName("skull"), new ParticleProperties().new ParticleSpawnProperties("skull",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
         particles.add(prt);
         addParticle(prt, -1);
-        prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(1)), area.platformMode, area.player.x+3, area.player.y-3, 1);
+        prt = new Particle(area.assets, world.getParticleByName("ribcage"), new ParticleProperties().new ParticleSpawnProperties("ribcage",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
         particles.add(prt);
         addParticle(prt, -1);
         for (int i = 0; i < 4; ++i) {
-            prt = new Particle(area.assets, new ParticleProperties(world.assets, world.particles.get(2)), area.platformMode, area.player.x+3, area.player.y-3, 1);
+            prt = new Particle(area.assets, world.getParticleByName("bone"), new ParticleProperties().new ParticleSpawnProperties("bone",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
             particles.add(prt);
             addParticle(prt, -1);
         }
@@ -566,11 +573,13 @@ public class WorldObjectsHandler {
                 }
             }
             float oy = objects.get(i).entity.y + objects.get(i).offsetY;// + area.TILE_HEIGHT/2;
-            if (!world.menu.paused && objects.get(i).checkParticleEmission()) {
-                ox += objects.get(i).getParticleCoord(0);
-                oy += objects.get(i).getParticleCoord(1);
-                for (int j = 0; j < objects.get(i).statesParticlesCount.get(objects.get(i).currentState); ++j) {
-                    Particle prt = new Particle(assets, world.getParticleByName(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
+            ArrayList<ParticleProperties.ParticleSpawnProperties> spawns = objects.get(i).checkParticleEmission();
+            if (!world.menu.paused && spawns != null) {
+                ox = objects.get(i).entity.x;
+                oy = objects.get(i).entity.y;
+                float oz = objects.get(i).entity.z;
+                for (int j = 0; j < spawns.size(); ++j) {
+                    Particle prt = new Particle(area.assets, world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, ox, oy, oz);
                     addParticle(prt, -1);
                 }
             }
@@ -616,14 +625,16 @@ public class WorldObjectsHandler {
                     minDist = dist;
                     minDistID = i;
                 }
-                if (objects.get(i).checkParticleEmission()) {
-                    ox += objects.get(i).getParticleCoord(0);
-                    oy += objects.get(i).getParticleCoord(1);
-                    for (int j = 0; j < objects.get(i).statesParticlesCount.get(objects.get(i).currentState); ++j) {
-                        Particle prt = new Particle(assets, world.getParticleByName(objects.get(i).statesParticles.get(objects.get(i).currentState)), area.platformMode, ox, oy, objects.get(i).getParticleCoord(2));
+                /*ArrayList<ParticleProperties.ParticleSpawnProperties> spawns = objects.get(i).checkParticleEmission();
+                if (!world.menu.paused && spawns != null) {
+                    ox = objects.get(i).entity.x;
+                    oy = objects.get(i).entity.y;
+                    float oz = objects.get(i).entity.z;
+                    for (int j = 0; j < spawns.size(); ++j) {
+                        Particle prt = new Particle(area.assets, world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, ox, oy, oz);
                         addParticle(prt, -1);
                     }
-                }
+                }*/
             }
 
             if (minDistID >= 0) {
@@ -767,6 +778,7 @@ public class WorldObjectsHandler {
                     particles.get(i).x < 0 || (particles.get(i).y < -area.TILE_HEIGHT && !area.platformMode) || particles.get(i).z > 500) {
                 deleteObjectCellsForEntity(particles.get(i));
                 fallingObjects.remove(particles.get(i));
+                particles.get(i).stopSounds();
                 particles.remove(i);
             }
         }
@@ -929,6 +941,7 @@ public class WorldObjectsHandler {
         while (particles.size() > 0) {
             fallingObjects.remove(particles.get(particles.size()-1));
             deleteObjectCellsForEntity(particles.get(particles.size()-1));
+            particles.get(particles.size()-1).stopSounds();
             particles.remove(particles.size()-1);
         }
     }
@@ -1066,7 +1079,7 @@ public class WorldObjectsHandler {
                         (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, active, activeX, activeY);
                     } else if (objectsOnLevel.get(z).type == ObjectType.PARTICLE) {
                         (objectsOnLevel.get(z).entity).draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, active, activeX, activeY);
-                        if (!objectsOnLevel.get(z).entity.floor && !((Particle)objectsOnLevel.get(z).entity).fallen && objectsOnLevel.get(z).entity.z > 0) {
+                        if (!objectsOnLevel.get(z).entity.floor && ((Particle)objectsOnLevel.get(z).entity).pp.r > 0 && !((Particle)objectsOnLevel.get(z).entity).floor && objectsOnLevel.get(z).entity.z > 0) {
                             float w = objectsOnLevel.get(z).entity.getTexRect().getWidth()/1.0f+objectsOnLevel.get(z).entity.z/3;
                             batch.setColor(new Color(1.0f, 1.0f, 1.0f, baseAlpha*(0.45f-objectsOnLevel.get(z).entity.z/50)));
                             batch.draw(area.shadow, offsetX + objectsOnLevel.get(z).entity.x - w/2, offsetY - (objectsOnLevel.get(z).entity.y + w/2), w, w);

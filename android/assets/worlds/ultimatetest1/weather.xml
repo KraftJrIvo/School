@@ -1,0 +1,21 @@
+<world-weather>
+    <weather-region>
+        <room roomName="garden"/>
+        <weather
+            wind="0.1"
+            windStep="0.1"
+            windStepProb="0"
+            windDir="0"
+            windDirStep="0.1"
+            windDirStepProb="0"
+        >
+            <particle-group
+                name="rain"
+                spawnInterval="1"
+                spawnProb="0.1"
+                spawnMinZ="500"
+                spawnMaxZ="500"
+            />
+        </weather>
+    </weather-region>
+</world-weather>

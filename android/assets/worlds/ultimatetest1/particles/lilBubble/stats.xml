@@ -1,0 +1,26 @@
+<particle-properties radius="2.0">
+    <state
+        id="0"
+        tex="1"
+        frames="1"
+        fps="10"
+        looping="true"       
+        weight="0.1"
+        bounciness="0.9"
+        inertia="0.99"
+        alphaStep="0"
+        movePattern="NORMAL"
+        collisionGroup="0"
+        flySoundLoop=""
+        bounceSound="pop1.wav"
+        nextStateCondition="BOUNCE-10-1"
+    />
+    <state 
+        id="1"
+        tex="2"
+        frames="1"
+        movePattern="NONE"
+        floor="true"
+        alphaStep="0.01"
+    />
+</particle-properties>

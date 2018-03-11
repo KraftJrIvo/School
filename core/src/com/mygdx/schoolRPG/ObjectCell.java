@@ -80,14 +80,12 @@ public class ObjectCell {
     public ArrayList<Point2D> statesTeleportCoords;
     public ArrayList<String> statesDialogs;
     public ArrayList<Boolean> statesFlagVals;
-    public ArrayList<String> statesParticles;
-    public ArrayList<Integer> statesParticlesCount;
+    ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesparticleSpawns;
     public ArrayList<Integer> statesSwitchTimers;
     public ArrayList<Boolean> statesCollidables;
     public ArrayList<Integer> statesGotos;
     public ArrayList<Integer> statesProximityGotos;
     public ArrayList<Integer> statesProximityRadii;
-    public ArrayList<ArrayList<Float>> statesParticlesCoords;
     public ArrayList<Item> items;
     public ArrayList<Integer> statesIntervals;
     public ArrayList<Boolean> statesHidePlayer;
@@ -272,10 +270,6 @@ public class ObjectCell {
         }
     }
 
-    public float getParticleCoord(int n) {
-        return statesParticlesCoords.get(currentState).get(n);
-    }
-
     public boolean checkProximity(float x, float y) {
         if (statesProximityGotos.get(currentState) != -1) {
             float px = x;
@@ -349,13 +343,13 @@ public class ObjectCell {
         return statesSwitchables.get(currentState);
     }
 
-    public boolean checkParticleEmission() {
-        if (statesParticles.get(currentState) == null || statesParticles.get(currentState).equals("-1")) return false;
-        boolean res = (System.currentTimeMillis() - startTime - lastSpawned) > statesIntervals.get(currentState);
+    public ArrayList<ParticleProperties.ParticleSpawnProperties> checkParticleEmission() {
+        boolean res = (statesparticleSpawns.get(currentState).size() > 0) && (System.currentTimeMillis() - startTime - lastSpawned) > statesIntervals.get(currentState);
         if (res) {
             lastSpawned = System.currentTimeMillis() - startTime;
+            return statesparticleSpawns.get(currentState);
         }
-        return res;
+        return null;
     }
 
     private TextureRegion getDir(ArrayList<GlobalSequence> list, String dir) {
@@ -452,9 +446,7 @@ public class ObjectCell {
             statesFlags = new ArrayList<String>();
             statesDialogs = new ArrayList<String>();
             statesFlagVals = new ArrayList<Boolean>();
-            statesParticles = new ArrayList<String>();
-            statesParticlesCount = new ArrayList<Integer>();
-            statesParticlesCoords = new ArrayList<ArrayList<Float>>();
+            statesparticleSpawns = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
             statesIntervals = new ArrayList<Integer>();
             statesHidePlayer = new ArrayList<Boolean>();
             statesFPS = new ArrayList<Integer>();
@@ -517,25 +509,29 @@ public class ObjectCell {
                 } else {
                     statesFlagVals.add(Boolean.parseBoolean(eElement.getAttribute("flagVal")));
                 }
-                if (!eElement.getAttribute("emitsParticle").equals("")) statesParticles.add(eElement.getAttribute("emitsParticle"));
-                else statesParticles.add(null);
-                statesParticlesCoords.add(new ArrayList<Float>());
-                if (statesParticles.get(i) != null) {
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitX")));
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitY")));
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(Float.parseFloat(eElement.getAttribute("emitZ")));
-                    statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
-                    if (!eElement.getAttribute("emitCount").equals("")) {
-                        statesParticlesCount.add(Integer.parseInt(eElement.getAttribute("emitCount")));
-                    } else {
-                        statesParticlesCount.add(1);
-                    }
+                if (eElement.getAttribute("emitInterval").equals("")) {
+                    statesIntervals.add(-1);
                 } else {
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
-                    statesParticlesCoords.get(statesParticlesCoords.size() - 1).add(0.0f);
-                    statesIntervals.add(0);
-                    statesParticlesCount.add(0);
+                    statesIntervals.add(Integer.parseInt(eElement.getAttribute("emitInterval")));
+                }
+                statesparticleSpawns.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
+                NodeList childParticlesSpawns = eElement.getElementsByTagName("particle");
+                for (int j = 0; j < childParticlesSpawns.getLength(); ++j) {
+                    Element spawnParams = (Element)childParticlesSpawns.item(j);
+                    statesparticleSpawns.get(statesparticleSpawns.size()-1).add(new ParticleProperties().new ParticleSpawnProperties(
+                            assets,
+                            world.worldDir + "/sounds/" + spawnParams.getAttribute("spawnSound"),
+                            spawnParams.getAttribute("name"),
+                            Integer.parseInt(spawnParams.getAttribute("spawnX")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnY")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnZ")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnDir")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnSpeed")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnImpulse")),
+                            Float.parseFloat(spawnParams.getAttribute("dirSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("speedSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
+                    ));
                 }
                 String switchSoundPath = eElement.getAttribute("switchSound");
                 if (!switchSoundPath.equals("")) {
