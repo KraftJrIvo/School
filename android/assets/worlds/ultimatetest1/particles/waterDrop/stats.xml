@@ -1,0 +1,22 @@
+<particle-properties radius="1.0">
+    <state
+        id="0"
+        tex="1"
+        frames="1"
+        weight="0.1"
+        bounciness="0"
+        alphaStep="0"
+        movePattern="NORMAL"
+        collisionGroup="0"
+        flySoundLoop=""
+        nextStateCondition="BOUNCE-0-1"
+    />
+    <state 
+        id="1"
+        tex="2"
+        frames="1"
+        movePattern="NONE"
+        floor="true"
+        alphaStep="0.05"
+    />
+</particle-properties>

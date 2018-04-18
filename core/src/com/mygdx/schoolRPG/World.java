@@ -195,36 +195,41 @@ public class World{
                 }
             }
             for (int i = 0; i < w.charNamesForTransfer.size(); ++i) {
-                int foundCharId = -1;
-                for (int j = 0; j < npcs.size(); ++j) {
-                    if (npcs.get(j).name.equals(w.charNamesForTransfer.get(i))) {
-                        foundCharId = j;
-                        break;
-                    }
-                }
-                if (foundCharId > 0) {
-                    for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
-                        if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
-                            npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
-                        } else {
-                            npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
-                            npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
+                NPC receiver = null;
+                if (i != 0) {
+                    int foundCharId = -1;
+                    for (int j = 0; j < npcs.size(); ++j) {
+                        if (npcs.get(j).name.equals(w.charNamesForTransfer.get(i))) {
+                            foundCharId = j;
+                            break;
                         }
                     }
+                    if (foundCharId >= 0) {
+                        for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
+                            if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
+                                npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
+                            } else {
+                                npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
+                                npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
+                            }
+                        }
+                        receiver = npcs.get(foundCharId);
+                    }
+                } else {
+                    receiver = player;
                 }
-                NPC receiver;
-                if (foundCharId == -1) receiver = curArea.player;
-                else receiver = npcs.get(foundCharId);
-                receiver.inventory.clear();
-                for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
-                    Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
-                    receiver.takeItem(item);
-                    if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
-                        receiver.headWear = item.sides;
-                    } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.bodyWear)) {
-                        receiver.bodyWear = item.sides;
-                    } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.objectInHands)) {
-                        receiver.objectInHands = item.sides;
+                if (receiver != null) {
+                    receiver.inventory.clear();
+                    for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
+                        Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
+                        receiver.takeItem(item);
+                        if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
+                            receiver.headWear = item.sides;
+                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.bodyWear)) {
+                            receiver.bodyWear = item.sides;
+                        } else if (w.itemNamesForTransfer.get(i).get(j).equals(w.objectInHands)) {
+                            receiver.objectInHands = item.sides;
+                        }
                     }
                 }
             }
@@ -1198,7 +1203,7 @@ public class World{
             for (int i =0; i < objects.size(); ++i) {
                 objects.get(i).soundsAreStopped = true;
             }
-            currentSound.stop();
+            if (currentSound != null) currentSound.stop();
             prepareForWorldChange("game0", "bathroom", 3, 3);
         }
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));

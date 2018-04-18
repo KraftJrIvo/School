@@ -160,6 +160,10 @@ public class Particle extends Entity {
             curLoop = -1;
         }
         curStateRemainingSpawns = pp.statesSpawnsCounts.get(curStateId);
+        floor = pp.statesFloors.get(curStateId);
+        if (floor && pp.statesMovePatterns.get(curStateId) == ParticleProperties.MovePattern.NONE) {
+            z = 0;
+        }
     }
 
     public void bounce(Particle p) {
@@ -183,11 +187,25 @@ public class Particle extends Entity {
     }
 
     public void windBlow(float windDirection, float windStrength) {
+        if (z < 0.2f) return;
+        float realDir = windDirection;
+        if (Math.abs(windDirection-direction) > Math.abs((windDirection + 6.28)-direction)) realDir = windDirection + 6.28f;
+        else realDir = windDirection;
+        if (Math.abs(realDir-direction) > Math.abs((windDirection - 6.28)-direction)) realDir = windDirection - 6.28f;
         float vectorX = (float)Math.cos(direction);
         float vectorY = (float)Math.sin(direction);
-        vectorX += ((float)Math.cos(windDirection) - vectorX) * windStrength;
-        vectorY += ((float)Math.sin(windDirection) - vectorY) * windStrength;
-        direction = (float)Math.atan2(vectorX, vectorY);
+        float targX = (float)Math.cos(realDir);
+        float targY = (float)Math.sin(realDir);
+        float step = pp.statesWeights.get(curStateId) * windStrength;
+        if (vectorX < targX - step) vectorX += step;
+        else if (vectorX > targX + step) vectorX -= step;
+        else vectorX = targX;
+        if (vectorY < targY - step) vectorY += step;
+        else if (vectorY > targY + step) vectorY -= step;
+        else vectorY = targY;
+
+        direction = (float)Math.atan2(vectorY, vectorX);
+        speed = (float)Math.sqrt(vectorX * vectorX + vectorY * vectorY);
     }
 
     @Override

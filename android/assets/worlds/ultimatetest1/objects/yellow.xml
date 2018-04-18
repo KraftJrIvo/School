@@ -39,6 +39,7 @@
            loopVolume="0"
 
            hidePlayer="false"> 
+            <particle name="pop" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>
             <particle name="bubble" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="pop2.wav"/>
            </state>
        <state id="2"
@@ -64,6 +65,7 @@
            loopVolume="0"
 
            hidePlayer="false"> 
+            <particle name="pop" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>
             <particle name="fly" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="0" impulseSpread="0" spawnSound="pop2.wav"/>
        </state>
        <state id="3"
@@ -89,6 +91,7 @@
            loopVolume="0"
 
            hidePlayer="false"> 
+            <particle name="pop" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>
             <particle name="snowman" spawnX="9" spawnY="-2" spawnZ="22" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="pop2.wav"/>
        </state>
 </object>

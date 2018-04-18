@@ -1,21 +1,15 @@
 <world-weather>
-    <weather-region>
-        <room roomName="garden"/>
-        <weather
-            wind="0.1"
-            windStep="0.1"
-            windStepProb="0"
-            windDir="0"
-            windDirStep="0.1"
-            windDirStepProb="0"
-        >
-            <particle-group
-                name="rain"
-                spawnInterval="1"
-                spawnProb="0.1"
-                spawnMinZ="500"
-                spawnMaxZ="500"
-            />
-        </weather>
-    </weather-region>
+	<default-weather>
+		<wind-params dir="0" dirSpread="6.28" force="0" forceSpread="1.0" changeFrequency="10000" maxChange="1.0" changeSpeed="0.01"/>
+		<particle-spawns>
+		</particle-spawns>
+	</default-weather>
+	<specific-weather>
+		<area-weather name="garden">
+		<wind-params dir="0" dirSpread="6.28" force="0" forceSpread="1.0" changeFrequency="10000" maxChange="1.0" changeSpeed="0.01"/>
+			<particle-spawns>
+				<particleSpawn name="normalRain" frequency="50" count="20" minZ="300" maxZ="300" spawnDir="0" spawnSpeed="0" spawnImpulse="-1" dirSpread="6.28" speedSpread="0" impulseSpread="0"/>
+			</particle-spawns>
+		</area-weather>
+	</specific-weather>
 </world-weather>

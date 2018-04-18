@@ -216,19 +216,31 @@ public class ParticleProperties {
             }
             str = state.getAttribute("weight");
             if (str.equals("")) {
-                statesWeights.add(statesWeights.get(statesWeights.size()-1));
+                if (statesWeights.size() == 0) {
+                    statesWeights.add(0f);
+                } else {
+                    statesWeights.add(statesWeights.get(statesWeights.size()-1));
+                }
             } else {
                 statesWeights.add(Float.parseFloat(str));
             }
             str = state.getAttribute("bounciness");
             if (str.equals("")) {
-                statesBounciness.add(statesBounciness.get(statesBounciness.size()-1));
+                if (statesBounciness.size() == 0) {
+                    statesBounciness.add(0f);
+                } else{
+                    statesBounciness.add(statesBounciness.get(statesBounciness.size()-1));
+                }
             } else {
                 statesBounciness.add(Float.parseFloat(str));
             }
             str = state.getAttribute("inertia");
             if (str.equals("")) {
-                statesInertia.add(statesInertia.get(statesInertia.size()-1));
+                if (statesInertia.size() == 0) {
+                    statesInertia.add(0f);
+                } else {
+                    statesInertia.add(statesInertia.get(statesInertia.size()-1));
+                }
             } else {
                 statesInertia.add(Float.parseFloat(str));
             }
@@ -254,7 +266,11 @@ public class ParticleProperties {
             }
             str = state.getAttribute("collisionGroup");
             if (str.equals("")) {
-                statesCollisionGroups.add(statesCollisionGroups.get(statesCollisionGroups.size()-1));
+                if (statesCollisionGroups.size() == 0) {
+                    statesCollisionGroups.add(statesCollisionGroups.get(statesCollisionGroups.size()-1));
+                } else {
+                    statesCollisionGroups.add(0);
+                }
             } else {
                 statesCollisionGroups.add(Integer.parseInt(str));
             }

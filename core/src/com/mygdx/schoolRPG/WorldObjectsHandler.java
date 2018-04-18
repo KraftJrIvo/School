@@ -250,6 +250,25 @@ public class WorldObjectsHandler {
         }
     }
 
+    public void invalidateWeather() {
+        for (int i = 0; i < particles.size(); ++i) {
+            particles.get(i).windBlow(area.weather.windDir, area.weather.windForce);
+        }
+        ArrayList<ParticleProperties.ParticleSpawnProperties> spawns = area.weather.invalidateParticleSpawns(area.world.menu.paused);
+        if (!area.world.menu.paused && spawns != null) {
+            for (int j = 0; j < spawns.size(); ++j) {
+                int rx = (int)Math.floor(Math.random() * area.width);
+                int ry = (int)Math.floor(Math.random() * area.height);
+                if (blocks.get(4).get(rx).get(ry) != 2 && blocks.get(0).get(rx).get(ry) != -1) {
+                    int rox = (int)Math.floor(Math.random() * area.TILE_WIDTH);
+                    int roy = (int)Math.floor(Math.random() * area.TILE_HEIGHT);
+                    Particle prt = new Particle(area.assets, area.world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, rx * area.TILE_WIDTH + rox, ry * area.TILE_HEIGHT - roy, 0);
+                    addParticle(prt, -1);
+                }
+            }
+        }
+    }
+
     public void invalidateCollisions(HittableEntity he, float oldX, float oldY) {
         boolean isPlayer = false;
         boolean isNPC = (he.getClass() == Player.class || he.getClass() == NPC.class);

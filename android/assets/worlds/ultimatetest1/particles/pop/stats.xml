@@ -1,0 +1,12 @@
+<particle-properties radius="0">
+    <state
+        id="0"
+        tex="1"
+        frames="1"
+        weight="0.1"
+        alphaStep="0.1"
+        movePattern="NONE"
+        collisionGroup="0"
+        nextStateCondition=""
+    />
+</particle-properties>

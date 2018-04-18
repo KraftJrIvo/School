@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -16,6 +17,7 @@ import com.mygdx.schoolRPG.tools.CharacterMaker;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.FileHandler;
 
 /**
  * Created by user on 06.08.2014.
@@ -48,6 +50,7 @@ public class Area {
     public boolean loopingX = false;
     public boolean loopingY = false;
     public Background bg;
+    public Weather weather;
 
     float lastSpawnPos;
     Texture shadow;
@@ -192,6 +195,10 @@ public class Area {
             //worldObjectsHandler.setPlayer(player);
 
         }
+        FileHandle weatherFile = Gdx.files.internal(worldPath + "/weather.xml");
+        if (weatherFile.exists()) {
+            weather = new Weather(worldPath + "/weather.xml", name, assets, world);
+        }
         shadow = assets.get("prt_shadow.png");
         if (assets.isLoaded(worldPath+"/sign.png")) {
             worldObjectsHandler.signOverlay = assets.get(worldPath+"/sign_overlay.png");
@@ -255,6 +262,10 @@ public class Area {
         worldObjectsHandler.invalidateNPCs();
         worldObjectsHandler.invalidateSolids();
         worldObjectsHandler.invalidateCollisions(player, player.oldX, player.oldY);
+        if (weather != null) {
+            weather.invalidateWind(world.menu.paused);
+            worldObjectsHandler.invalidateWeather();
+        }
    }
 
 
