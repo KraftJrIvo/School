@@ -52,7 +52,7 @@ public class CharacterMaker {
     public CharacterMaker(AssetManager assets, String worldPath, GameMenu menu) {
         FileHandle curDir = Gdx.files.internal(worldPath + "/chars");
         for (FileHandle entry: curDir.list()) {
-            if (entry.file().isDirectory()) {
+            //if (entry.file().isDirectory()) {
                 FileHandle spriteFile = Gdx.files.internal(entry.path() + "/sprite.png");
                 if (spriteFile.exists()) {
                     assets.load(entry.path() + "/sprite.png", Texture.class);
@@ -71,7 +71,7 @@ public class CharacterMaker {
                         assets.load(entry1.path(), Texture.class);
                     }
                 }
-            }
+            //}
         }
         this.menu = menu;
         assets.load("char/body_male.png", Texture.class);

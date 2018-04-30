@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
@@ -46,7 +47,7 @@ public class Choice extends Speech {
         font.setColor(Color.WHITE);
         font.draw(batch, question, textX, textY - 42);
         selector.draw(batch, paused);
-        if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER))) {
+        if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || (Gdx.input.justTouched() && Gdx.input.getY() > 300 && Gdx.input.getY() < 600 ))) {
             transitionId = selector.getSelectedIndex();
             finished = true;
         }

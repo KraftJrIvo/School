@@ -11,6 +11,7 @@ import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.GlobalSequence;
+import com.mygdx.schoolRPG.tools.Coords;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,8 +20,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -77,7 +78,7 @@ public class ObjectCell {
     public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
     public ArrayList<String> statesFlags;
     public ArrayList<String> statesTeleportRooms;
-    public ArrayList<Point2D> statesTeleportCoords;
+    public ArrayList<Coords> statesTeleportCoords;
     public ArrayList<String> statesDialogs;
     public ArrayList<Boolean> statesFlagVals;
     ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesparticleSpawns;
@@ -103,6 +104,8 @@ public class ObjectCell {
     boolean soundsAreStopped = false;
     long loopId = -1;
     String areaName;
+    public boolean objectChecked = false;
+    public int objectId = -1;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items, Area area) {
         this.type = type;
@@ -398,16 +401,20 @@ public class ObjectCell {
         return textureRegion;
     }
 
-    public void objectCheck(World world, AssetManager assets, int state, CharacterMaker characterMaker) {
+    public void objectCheck(World world, AssetManager assets, int state, CharacterMaker characterMaker, int objectId) {
+        objectChecked = true;
         if (entity.texPath == null) return;
-        String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
+        //String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
 
         FileHandle charDir =  Gdx.files.internal(world.worldDir + "/objects");
         FileHandle objectXML = null;
         for (FileHandle entry: charDir.list()) {
-            if (entry.nameWithoutExtension().equals(baseTex)) {
+            if (entry.isDirectory()) continue;
+            int id = Integer.parseInt(entry.nameWithoutExtension().split("_")[0]);
+            if (id == objectId) {
                 isObject = true;
                 objectXML = entry;
+                this.objectId = id;
             }
         }
         if (isObject) {
@@ -420,7 +427,7 @@ public class ObjectCell {
             }
             org.w3c.dom.Document doc = null;
             try {
-                doc = dBuilder.parse(objectXML.file());
+                doc = dBuilder.parse(objectXML.read());
             } catch (SAXException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -473,7 +480,7 @@ public class ObjectCell {
             statesProximityGotos = new ArrayList<Integer>();
             statesProximityRadii = new ArrayList<Integer>();
             statesTeleportRooms = new ArrayList<String>();
-            statesTeleportCoords = new ArrayList<Point2D>();
+            statesTeleportCoords = new ArrayList<Coords>();
 
             for (int i= 0; i< nList.getLength(); ++i) {
                 Node nNode = nList.item(i);
@@ -566,7 +573,7 @@ public class ObjectCell {
                 }
                 if (!eElement.getAttribute("teleportRoom").equals("")) {
                     statesTeleportRooms.add(eElement.getAttribute("teleportRoom"));
-                    statesTeleportCoords.add(new Point2D.Float(Integer.parseInt(eElement.getAttribute("teleportX")), Integer.parseInt(eElement.getAttribute("teleportY"))));
+                    statesTeleportCoords.add(new Coords(Integer.parseInt(eElement.getAttribute("teleportX")), Integer.parseInt(eElement.getAttribute("teleportY"))));
                 } else {
                     statesTeleportRooms.add(null);
                     statesTeleportCoords.add(null);

@@ -16,10 +16,7 @@ import com.mygdx.schoolRPG.tools.Button;
 import com.mygdx.schoolRPG.tools.CircularSelector;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +90,7 @@ public class MainMenu extends Menu {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || (Gdx.input.justTouched() && Gdx.input.getX() < 500)) {
             if (gameSelect) {
                 int index = gameSelector.getSelectedIndex();
                 if (index == gameSelector.titles.size() - 1) {
@@ -200,9 +197,9 @@ public class MainMenu extends Menu {
                 FileHandle tlwFile = Gdx.files.internal(entry.path() + "/world1.tlw");
                 if (tlwFile.exists()) {
                     String name = "";
-                    FileInputStream fis = null;
+                    InputStream fis = null;
                     try {
-                        fis = new FileInputStream(tlwFile.file());
+                        fis = tlwFile.read();//.open(tlwFile.file());//new FileInputStream(tlwFile.file());
                         int namesCount;
                         namesCount = fis.read();
                         for (int i =0; i < namesCount; ++i) {

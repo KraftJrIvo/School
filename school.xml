@@ -58,11 +58,11 @@
   
   <!-- JDK definitions -->
   
-  <property name="jdk.bin.android_api_20_platform" value="${jdk.home.android_api_20_platform}/../../../Program Files/Java/jdk1.8.0_05/bin"/>
-  <path id="jdk.classpath.android_api_20_platform">
-    <fileset dir="${jdk.home.android_api_20_platform}">
-      <include name="platforms/android-20/android.jar"/>
-      <include name="platforms/android-20/data/res"/>
+  <property name="jdk.bin.android_api_25_platform" value="${jdk.home.android_api_25_platform}/../../../Program Files/Java/jdk1.8.0_05/bin"/>
+  <path id="jdk.classpath.android_api_25_platform">
+    <fileset dir="${jdk.home.android_api_25_platform}">
+      <include name="platforms/android-25/android.jar"/>
+      <include name="platforms/android-25/data/res"/>
       <include name="tools/support/annotations.jar"/>
     </fileset>
   </path>
@@ -183,9 +183,9 @@
   <dirname property="module.android.basedir" file="${ant.file}"/>
   
   
-  <property name="module.jdk.home.android" value="${jdk.home.android_api_20_platform}"/>
-  <property name="module.jdk.bin.android" value="${jdk.bin.android_api_20_platform}"/>
-  <property name="module.jdk.classpath.android" value="jdk.classpath.android_api_20_platform"/>
+  <property name="module.jdk.home.android" value="${jdk.home.android_api_25_platform}"/>
+  <property name="module.jdk.bin.android" value="${jdk.bin.android_api_25_platform}"/>
+  <property name="module.jdk.classpath.android" value="jdk.classpath.android_api_25_platform"/>
   
   <property name="compiler.args.android" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
   

@@ -15,7 +15,7 @@ import com.badlogic.gdx.math.Rectangle;
 public class JoyStick {
     float joyX, joyY, stickWidth;
     boolean joyTouched = false;
-    Rectangle joyRect;
+    public Rectangle joyRect;
     Texture joy, joyBase;
     Color stickColor;
     int t = -1;
@@ -66,7 +66,7 @@ public class JoyStick {
 
     public double joyOffsetX() {
         if (joyTouched) {
-            return (joyX - joyRect.x-joyRect.width/2);
+            return (joyX - joyRect.x-joyRect.width/2)/(joyRect.width/2);
         } else {
             return 0;
         }
@@ -74,7 +74,7 @@ public class JoyStick {
 
     public double joyOffsetY() {
         if (joyTouched) {
-            return (joyY - joyRect.y-joyRect.height/2);
+            return (joyY - joyRect.y-joyRect.height/2)/(joyRect.height/2);
         } else {
             return 0;
         }

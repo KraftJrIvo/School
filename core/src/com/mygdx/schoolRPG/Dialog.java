@@ -54,7 +54,7 @@ public class Dialog {
         parseXMLDialog(language, startId);
         /*this.language = language;
         try {
-            BufferedReader in = new BufferedReader(new FileReader(folderPath + fileName));
+            BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(folderPath + fileName).read()));
             char c;
             String line = in.readLine();
             int choiceId = 0;
@@ -252,7 +252,7 @@ public class Dialog {
             }
             org.w3c.dom.Document doc = null;
             try {
-                doc = dBuilder.parse(objectXML.file());
+                doc = dBuilder.parse(objectXML.read());
             } catch (SAXException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -402,7 +402,7 @@ public class Dialog {
         overlay = assets.get("dialog_overlay1.png", Texture.class);
         parseXMLDialog(language, -1);
         /*try {
-            BufferedReader in = new BufferedReader(new FileReader(folder + fileName));
+            BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(folder + fileName).read()));
             char c;
             String line = in.readLine();
             int charId = -1;

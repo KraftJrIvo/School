@@ -28,7 +28,7 @@ public class Menu {
     public boolean paused = false, optionsOpen = false, dialogSkipping = false;
     Texture pause, resume, exit, options;
     AssetManager assets;
-    boolean android;
+    public boolean android;
     public BitmapFont mainFont;
     public boolean drawPause = true;
     public boolean unpausable = true;
@@ -191,7 +191,7 @@ public class Menu {
             batch.end();
             int index = optionsSelector.getSelectedIndex();
             int rate = Math.max(1, (10 - (changeSpeed / 10)));
-            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || (Gdx.input.justTouched() && Gdx.input.getX() > 600)) {
                 if (index == 0) {
                     musicVolume++;
                     click3.play(soundVolume / 100.0f);
@@ -199,7 +199,7 @@ public class Menu {
                     soundVolume++;
                     click3.play(soundVolume / 100.0f);
                 }
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A) || (Gdx.input.justTouched() && Gdx.input.getX() < 300)) {
                 if (index == 0) {
                     musicVolume--;
                     click3.play(soundVolume / 100.0f);
@@ -208,7 +208,7 @@ public class Menu {
                     click3.play(soundVolume / 100.0f);
                 }
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || (Gdx.input.justTouched() && Gdx.input.getX() > 600)) {
                 changeSpeed++;
                 if (index == 0) {
                     if (changeSpeed % rate == 0) {
@@ -221,7 +221,7 @@ public class Menu {
                         if (soundVolume < 100)  click3.play(soundVolume / 100.0f);
                     }
                 }
-            }else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+            }else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || (Gdx.input.justTouched() && Gdx.input.getX() < 300)) {
                 changeSpeed++;
                 if (index == 0) {
                     if (changeSpeed % rate == 0) {
@@ -237,7 +237,7 @@ public class Menu {
             } else {
                 changeSpeed = 0;
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.justTouched()) {
                 if (index == 4) {
                     fullScreen = true;
                     currentLanguage = 0;
@@ -250,23 +250,23 @@ public class Menu {
                     click2.play(soundVolume / 100.0f);
                 }
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D) || (Gdx.input.justTouched() && Gdx.input.getX() > 600)) {
                 if (index == 2) {
                     currentLanguage++;
                     click3.play(soundVolume / 100.0f);
                 }
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A) || (Gdx.input.justTouched() && Gdx.input.getX() < 300)) {
                 if (index == 2) {
                     currentLanguage--;
                     click3.play(soundVolume / 100.0f);
                 }
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D) || (Gdx.input.justTouched() && Gdx.input.getX() > 600)) {
                 if (index == 3) {
                     fullScreen = !fullScreen;
                     click3.play(soundVolume / 100.0f);
                 }
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A) || (Gdx.input.justTouched() && Gdx.input.getX() < 300)) {
                 if (index == 3) {
                     fullScreen = !fullScreen;
                     click3.play(soundVolume / 100.0f);
@@ -298,7 +298,7 @@ public class Menu {
             pauseSelector.draw(batch, false);
             batch.end();
             batch.setColor(1,1,1,1);
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.justTouched()) {
                 int index = pauseSelector.getSelectedIndex();
                 if (index == 0) {
                     unpause();

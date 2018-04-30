@@ -356,8 +356,10 @@ public class RoomsMap {
                 curExits.add(bestExit);
                 for (int i = 0; i < bestExit.otherExit.reachableExits.size(); ++i) {
                     Exit exit = bestExit.otherExit.reachableExits.get(i);
-                    exitQueue.add(exit);
-                    exitQueueLevels.add(curLevel);
+                    if (!exitQueue.contains(exit) && !doneExits.contains(exit)) {
+                        exitQueue.add(exit);
+                        exitQueueLevels.add(curLevel);
+                    }
                 }
                 doneExits.add(bestExit);
                 exitQueueLevels.remove(exitQueue.indexOf(bestExit));

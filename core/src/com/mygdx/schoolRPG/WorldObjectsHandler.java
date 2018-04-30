@@ -74,7 +74,7 @@ public class WorldObjectsHandler {
     }
 
 
-    private void addObjectCell(ObjectCell oc, int state) {
+    private void addObjectCell(ObjectCell oc, int state, int objectCheckId) {
         int tileX = (int)Math.floor(oc.entity.x/area.TILE_WIDTH)+2;
         if (oc.entity.floor) {
             tileX = (int)Math.floor(oc.entity.x/area.TILE_WIDTH);
@@ -98,8 +98,8 @@ public class WorldObjectsHandler {
         } else if (tileY >= area.height) {
             tileY = area.height - 1;
         }
-        if (!oc.isObject) {
-            oc.objectCheck(area.world, area.assets, state, area.world.characterMaker);
+        if (objectCheckId > -1) {
+            oc.objectCheck(area.world, area.assets, state, area.world.characterMaker, objectCheckId);
         }
         if (oc.isObject) {
             objects.add(oc);
@@ -134,7 +134,7 @@ public class WorldObjectsHandler {
         return result;
     }
 
-    public ObjectCell addSolid(HittableEntity he, World world, int state, ArrayList<Item> items) {
+    public ObjectCell addSolid(HittableEntity he, World world, int state, ArrayList<Item> items, int objectCheckId) {
         he.spawnArea = world.areas.indexOf(area);
         he.x = he.hitBox.x;
         he.y = he.hitBox.y;
@@ -144,16 +144,16 @@ public class WorldObjectsHandler {
             he.h = he.y + he.floorHeight;
         }
         ObjectCell cell = new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, he, ObjectType.SOLID, solids.size(), true, items, area);
-        addObjectCell(cell, state);
+        addObjectCell(cell, state, objectCheckId);
         solids.add(he);
         return cell;
     }
 
-    public void addNonSolid(Entity e, int state) {
+    public void addNonSolid(Entity e, int state, int objectCheckId) {
         if (e.floor) {
-            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), false, null, area), state);
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), false, null, area), state, objectCheckId);
         } else {
-            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true, null, area), state);
+            addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, e, ObjectType.NONSOLID, nonSolids.size(), true, null, area), state, objectCheckId);
         }
         nonSolids.add(e);
         if (e.containingItem != null) {
@@ -161,29 +161,29 @@ public class WorldObjectsHandler {
         }
     }
 
-    public void addObstacle(DeathZone dz, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, dz, ObjectType.OBSTACLE, obstacles.size(), true, null, area), state);
+    public void addObstacle(DeathZone dz, int state, int objectCheckId) {
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, dz, ObjectType.OBSTACLE, obstacles.size(), true, null, area), state, objectCheckId);
         obstacles.add(dz);
     }
 
-    public void addLiquidSurface(LiquidSurface ls, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, ls, ObjectType.LIQUID, liquidSurfaces.size(), true, null, area), state);
+    public void addLiquidSurface(LiquidSurface ls, int state, int objectCheckId) {
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, ls, ObjectType.LIQUID, liquidSurfaces.size(), true, null, area), state, objectCheckId);
         liquidSurfaces.add(ls);
     }
 
-    public void addCheckPoint(CheckPoint cp, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, cp, ObjectType.CHECKPOINT, checkPoints.size(), true, null, area), state);
+    public void addCheckPoint(CheckPoint cp, int state, int objectCheckId) {
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, cp, ObjectType.CHECKPOINT, checkPoints.size(), true, null, area), state, objectCheckId);
         checkPoints.add(cp);
     }
 
-    public void addParticle(Particle prt, int state) {
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, prt, ObjectType.PARTICLE, particles.size(), true, null, area), state);
+    public void addParticle(Particle prt, int state, int objectCheckId) {
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, prt, ObjectType.PARTICLE, particles.size(), true, null, area), state, objectCheckId);
         particles.add(prt);
     }
 
-    public void addNPC(NPC npc, World world, int state) {
+    public void addNPC(NPC npc, World world, int state, int objectCheckId) {
         npc.spawnArea = world.areas.indexOf(area);
-        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null, area), state);
+        addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null, area), state, objectCheckId);
         NPCs.add(npc);
         world.synchronizeFlags();
         if (world.npcs.contains(npc)) {
@@ -237,7 +237,7 @@ public class WorldObjectsHandler {
             if (!area.world.menu.paused && spawns != null) {
                 for (int j = 0; j < spawns.size(); ++j) {
                     Particle prt = new Particle(area.assets, area.world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, prtt.x, prtt.y, prtt.z);
-                    addParticle(prt, -1);
+                    addParticle(prt, -1, -1);
                 }
             }
             /*for (int j = i+1; j < particles.size(); ++j) {
@@ -263,7 +263,7 @@ public class WorldObjectsHandler {
                     int rox = (int)Math.floor(Math.random() * area.TILE_WIDTH);
                     int roy = (int)Math.floor(Math.random() * area.TILE_HEIGHT);
                     Particle prt = new Particle(area.assets, area.world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, rx * area.TILE_WIDTH + rox, ry * area.TILE_HEIGHT - roy, 0);
-                    addParticle(prt, -1);
+                    addParticle(prt, -1, -1);
                 }
             }
         }
@@ -460,18 +460,18 @@ public class WorldObjectsHandler {
         for (int i = 0; i < 20; ++i) {
             prt = new Particle(area.assets, world.getParticleByName("blood"), new ParticleProperties().new ParticleSpawnProperties("blood",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
             particles.add(prt);
-            addParticle(prt, -1);
+            addParticle(prt, -1, -1);
         }
         prt = new Particle(area.assets, world.getParticleByName("skull"), new ParticleProperties().new ParticleSpawnProperties("skull",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
         particles.add(prt);
-        addParticle(prt, -1);
+        addParticle(prt, -1, -1);
         prt = new Particle(area.assets, world.getParticleByName("ribcage"), new ParticleProperties().new ParticleSpawnProperties("ribcage",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
         particles.add(prt);
-        addParticle(prt, -1);
+        addParticle(prt, -1, -1);
         for (int i = 0; i < 4; ++i) {
             prt = new Particle(area.assets, world.getParticleByName("bone"), new ParticleProperties().new ParticleSpawnProperties("bone",0, 0, 0), area.platformMode, area.player.x, area.player.y, area.player.z);
             particles.add(prt);
-            addParticle(prt, -1);
+            addParticle(prt, -1, -1);
         }
         area.player.blockControls();
         if (area.saved) {
@@ -485,7 +485,7 @@ public class WorldObjectsHandler {
 
     public void invalidatePlayer(World world){
         if (!area.platformMode) {
-            area.player.move(!area.playerHidden);
+            area.player.move(!area.playerHidden, area.world.menu);
             area.player.invalidatePose(false, false);
             area.player.fall();
         } else {
@@ -496,7 +496,7 @@ public class WorldObjectsHandler {
                     killPlayer(world);
                 }
             }
-            area.player.platformMove();
+            area.player.platformMove(world.menu);
             area.player.platformFall();
         }
 
@@ -505,7 +505,7 @@ public class WorldObjectsHandler {
     public void invalidateNPCs() {
         for (int i = 0; i < NPCs.size(); ++i) {
             if (NPCs.get(i).getClass() != Player.class) {
-                NPCs.get(i).move(true);
+                NPCs.get(i).move(true, area.world.menu);
                 NPCs.get(i).invalidatePose(false, false);
                 invalidateCollisions( NPCs.get(i),  NPCs.get(i).oldX, NPCs.get(i).oldY);
                 NPCs.get(i).handleTasks();
@@ -599,7 +599,7 @@ public class WorldObjectsHandler {
                 float oz = objects.get(i).entity.z;
                 for (int j = 0; j < spawns.size(); ++j) {
                     Particle prt = new Particle(area.assets, world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, ox, oy, oz);
-                    addParticle(prt, -1);
+                    addParticle(prt, -1, -1);
                 }
             }
         }
@@ -1007,6 +1007,13 @@ public class WorldObjectsHandler {
                         int iPlus = 0;
                         while (i + iPlus < area.height && blocks.get(0).get(t).get(i + iPlus) >= 0) {
                             drawLayer(batch, world, 0, offsetX, offsetY, i + iPlus, t);
+                            for (int z =0; z < objectCells.get(t).get(i + iPlus).size(); ++z) {
+                                if (objectCells.get(t).get(i + iPlus).get(z) != null) {
+                                    if (objectCells.get(t).get(i + iPlus).get(z).entity.floor && objectCells.get(t).get(i + iPlus).get(z).type == ObjectType.PARTICLE) {
+                                        objectCells.get(t).get(i + iPlus).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectCells.get(t).get(i + iPlus).get(z) == activeObject, 0, 0);
+                                    }
+                                }
+                            }
                             iPlus++;
                         }
                     }
@@ -1019,7 +1026,9 @@ public class WorldObjectsHandler {
                         for (int z =0; z < objectCells.get(t).get(i - 1).size(); ++z) {
                             if (objectCells.get(t).get(i - 1).get(z) != null) {
                                 if (objectCells.get(t).get(i - 1).get(z).entity.floor) {
-                                    objectCells.get(t).get(i - 1).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectCells.get(t).get(i - 1).get(z) == activeObject, 0, 0);
+                                    if (objectCells.get(t).get(i - 1).get(z).type != ObjectType.PARTICLE) {
+                                        objectCells.get(t).get(i - 1).get(z).entity.draw(batch, offsetX, offsetY, area.TILE_WIDTH, area.TILE_HEIGHT, area.platformMode, objectCells.get(t).get(i - 1).get(z) == activeObject, 0, 0);
+                                    }
                                 } else {
                                     ObjectCell curCell = objectCells.get(t).get(i - 1).get(z);
                                     objectsOnLevel.add(curCell);

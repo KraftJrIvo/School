@@ -30,7 +30,7 @@ import java.util.ArrayList;
 public class GameMenu extends Menu {
 
     public int ID = 1;
-    JoyStick leftGameJoy, rightGameJoy;
+    public JoyStick leftGameJoy, rightGameJoy;
     Texture joyBase, joy;
     Rectangle leftJoyRect, rightJoyRect;
     int halfScreenHeight = Gdx.graphics.getHeight() / 2;
@@ -168,7 +168,7 @@ public class GameMenu extends Menu {
         //}
         batch.end();
         if (android) {
-            leftGameJoy.draw(batch, renderer, 1.0f);
+            //leftGameJoy.draw(batch, renderer, 1.0f);
             rightGameJoy.draw(batch, renderer, 1.0f);
         }
         super.draw(batch, renderer);

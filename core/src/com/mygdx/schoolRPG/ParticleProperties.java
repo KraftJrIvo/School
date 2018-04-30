@@ -182,7 +182,7 @@ public class ParticleProperties {
         org.w3c.dom.Document doc = null;
         FileHandle xmlFile =  Gdx.files.internal(path);
         try {
-            doc = dBuilder.parse(xmlFile.file());
+            doc = dBuilder.parse(xmlFile.read());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (org.xml.sax.SAXException e) {

@@ -15,8 +15,9 @@ import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 import com.mygdx.schoolRPG.tools.IntCoords;
 import com.mygdx.schoolRPG.tools.MultiTile;
+import com.mygdx.schoolRPG.tools.Coords;
 
-import java.awt.geom.Point2D;
+//import java.awt.geom.Point2D;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +33,7 @@ public class World{
     String folderPath;
     ArrayList<Pixmap> maps;
     File tlw;
-    FileInputStream fis;
+    InputStream fis;
     public boolean initialised = false, loaded = false, areasCreated = false;
     public FileHandle worldDir = null;
     int curAreaX = 0, curAreaY = 0, curAreaZ = 0, oldAreaX = 0, oldAreaY = 0, oldAreaZ = 0;
@@ -469,9 +470,10 @@ public class World{
     }
 
     public void loadState() {
-        File currentSave = new File(worldDir + "/saves/state" + save);
+        //File currentSave = new File(worldDir + "/saves/state" + save);
+        FileHandle currentSave = Gdx.files.internal(worldDir + "/saves/state" + save);
         try {
-            FileInputStream saveFile = new FileInputStream(currentSave);
+            InputStream saveFile = currentSave.read();
             for (int i =0; i < flags.size(); ++i) {
                 int flag = saveFile.read();
                 if (flag == 1) {
@@ -549,7 +551,7 @@ public class World{
                     //ObjectCell soc = areas.get(npcsAreas.get(i)).worldObjectsHandler.addSolid(npcs.get(i), this, cell.currentState, cell.items);
                     areas.get(npcs.get(i).spawnArea).worldObjectsHandler.deleteObjectCellsForEntity(npcs.get(i));
                     areas.get(npcs.get(i).spawnArea).worldObjectsHandler.NPCs.remove(npcs.get(i));
-                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, -1);
+                    areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, -1, -1);
                 }
                 itemsCount = saveFile.read();
                 npcs.get(i).inventory.clear();
@@ -590,7 +592,7 @@ public class World{
                 movables.get(i).hitBox.y = toFloat(flo);
                 if (movables.get(i).spawnArea != movablesAreas.get(i)) {
                     ObjectCell cell = areas.get(movables.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(movables.get(i).spawnArea).worldObjectsHandler.solids.indexOf(movables.get(i)));
-                    ObjectCell cel2 = areas.get(movablesAreas.get(i)).worldObjectsHandler.addSolid(movables.get(i), this, cell.currentState, cell.items);
+                    ObjectCell cel2 = areas.get(movablesAreas.get(i)).worldObjectsHandler.addSolid(movables.get(i), this, cell.currentState, cell.items, cell.objectId);
                     for (int j =0; j < objects.size(); ++j) {
                         if (objects.get(j).entity == movables.get(i)) {
                             objects.set(j, cel2);
@@ -665,7 +667,7 @@ public class World{
                 float y = toFloat(flo);
                 Entity itemGlow = new Entity(assets, "item.png", x, y, 0 ,0 ,0);
                 itemGlow.containingItem = item;
-                areas.get(areaId).worldObjectsHandler.addNonSolid(itemGlow, -1);
+                areas.get(areaId).worldObjectsHandler.addNonSolid(itemGlow, -1, -1);
                 itemsOnFloorAreas.add(areaId);
                 itemsOnFloor.add(itemGlow);
             }
@@ -767,7 +769,7 @@ public class World{
         } else {
             try {
 
-                BufferedReader flagsIn = new BufferedReader(new FileReader(folderPath + "/flags"));
+                BufferedReader flagsIn = new BufferedReader(new InputStreamReader(Gdx.files.internal(folderPath + "/flags").read()));
                 String line = flagsIn.readLine();
                 int flagsCount = Integer.parseInt(line);
                 for (int i = 0; i < flagsCount; ++i) {
@@ -780,8 +782,8 @@ public class World{
                         flags.add(true);
                     }
                 }
-
-                fis = new FileInputStream(tlw);
+                FileHandle tlwFH = Gdx.files.internal(tlw.getPath());
+                fis = tlwFH.read();//new FileInputStream(tlw);
 
                 tileIndices = new ArrayList<Integer>();
                 tileTypes = new ArrayList<Integer>();
@@ -975,7 +977,7 @@ public class World{
             updateTiles();
         }
         try {
-            BufferedReader in = new BufferedReader(new FileReader(worldDir.path() + "/sound"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(worldDir.path() + "/sound").read()));
             String line;
             int numTileSteps = Integer.parseInt(in.readLine());
             for (int i = 0; i < numTileSteps; ++i) {
@@ -1014,13 +1016,13 @@ public class World{
         }
         FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
         for (FileHandle entry: particlesDir.list()) {
-            if (entry.file().isDirectory()) {
+            //if (entry.file().isDirectory()) {
                 for (FileHandle entry2: entry.list()) {
                     if (entry2.path().endsWith(".png")) {
                         assets.load(entry2.path(), Texture.class);
                     }
                 }
-            }
+            //}
         }
         loaded = true;
     }
@@ -1031,13 +1033,13 @@ public class World{
         }
         FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
         for (FileHandle entry: particlesDir.list()) {
-            if (entry.file().isDirectory()) {
+            //if (entry.file().isDirectory()) {
                 FileHandle entry3 = Gdx.files.internal(entry.path() + "/stats.xml");
                 if (entry3.exists()) {
                     particles.add(new ParticleProperties(this, assets, entry3.path() , menu));
                     particlesPaths.add(entry.name());
                 }
-            }
+            //}
         }
         //bg = assets.get(folderPath+"/bg.png", Texture.class);
         shapeRenderer = new ShapeRenderer();
@@ -1136,7 +1138,7 @@ public class World{
         map.connectExits();
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new FileReader(worldDir.path() + "/bg/bg"));
+            in = new BufferedReader(new InputStreamReader(Gdx.files.internal(worldDir.path() + "/bg/bg").read()));
             String line = "";
             int numLayers = Integer.parseInt(in.readLine());
             Background defaultBg = new Background();
@@ -1169,7 +1171,7 @@ public class World{
                     }
                 }
             }
-            in = new BufferedReader(new FileReader(worldDir.path() + "/looping"));
+            in = new BufferedReader(new InputStreamReader(Gdx.files.internal(worldDir.path() + "/looping").read()));
             int numLoopingAreas = Integer.parseInt(in.readLine());
             for (int i=0; i < numLoopingAreas; ++i) {
                 line = in.readLine();
@@ -1306,14 +1308,14 @@ public class World{
                     solid.graphicX = solid.x;
                     solid.graphicY = solid.y;
                     if (solid.getClass() == HittableEntity.class) {
-                        toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items);
+                        toArea.worldObjectsHandler.addSolid(solid, this, cell.currentState, cell.items, cell.objectId);
                         movablesAreas.set(movables.indexOf(solid), areas.indexOf(toArea));
                     } else {
                         //ObjectCell soc = toArea.worldObjectsHandler.addSolid(solid, this, -1, null);
                         ((NPC)solid).speedX = 0;
                         ((NPC)solid).speedY = 0;
                         a.worldObjectsHandler.deleteObjectCellsForEntity(solid);
-                        toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1);
+                        toArea.worldObjectsHandler.addNPC((NPC)solid, this, -1, -1);
                         npcsAreas.set(npcs.indexOf(solid), areas.indexOf(toArea));
                         ((NPC)solid).curRoom = map.getRoomByName(toArea.name);
                         if (((NPC)solid).currentTaskPath != null && ((NPC)solid).currentTaskPath.size() > 0 && ((NPC)solid).currentTaskPath.get(0).otherExit.room == ((NPC)solid).curRoom) {
@@ -1398,7 +1400,7 @@ public class World{
         }
     }
 
-    public void changeArea(boolean horizontal, int offX, int offY, int offZ, Point2D teleport) {
+    public void changeArea(boolean horizontal, int offX, int offY, int offZ, Coords teleport) {
         teleporting = (teleport != null);
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         if (curAreaX+offX >= 0 && curAreaX+offX <= areaIds.size()-1 && curAreaY+offY >= 0 && curAreaY+offY <= areaIds.get(0).size()-1 && (areaIds.get(curAreaX + offX).get(curAreaY + offY).get(curAreaZ) != -1 && ((offX != 0 && !a.loopingX) || (offY != 0 && !a.loopingY)))) {
@@ -1425,8 +1427,8 @@ public class World{
                 }
             }
             if (teleporting) {
-                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileX = (int)teleport.getX();
-                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileY = (int)teleport.getY();
+                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileX = (int)teleport.x;
+                areas.get(areaIds.get(curAreaX + offX).get(curAreaY+offY).get(curAreaZ+offZ)).playerTileY = (int)teleport.y;
             }
 
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ)).playerTileX = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).playerTileX-(areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).width-1)*offX;
@@ -1437,8 +1439,8 @@ public class World{
             int speed=0;
 
             if (teleporting) {
-                tileX = (int)teleport.getX();
-                tileY = (int)teleport.getY();
+                tileX = (int)teleport.x;
+                tileY = (int)teleport.y;
             } else if (offZ == 0) {
                 if (horizontal) {
                     pos = a.player.y + ((areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).y+areas.get(areaIds.get(curAreaX+offX).get(curAreaY+offY).get(curAreaZ)).h) - (a.y+a.h))*firtsAreaHeight*a.TILE_HEIGHT;//a.player.hitBox.y;// - inRoomYCoord;
@@ -1603,7 +1605,7 @@ public class World{
                         else npc.y += 10;
                         npc.hitBox.x = npc.x;
                         npc.hitBox.y = npc.y;
-                        toArea.worldObjectsHandler.addNPC(npc, this, -1);
+                        toArea.worldObjectsHandler.addNPC(npc, this, -1, -1);
                         npcsAreas.set(npc.charId, areas.indexOf(toArea));
                         npc.curRoom = map.getRoomByName(toArea.name);
                     }
@@ -1628,7 +1630,7 @@ public class World{
                 Entity itemGlow = new Entity(assets, "item.png", area.player.x, area.player.y, 0 ,0 ,0);
                 //itemGlow.floor = true;
                 itemGlow.containingItem = area.worldObjectsHandler.currentInventory.droppedItem;
-                area.worldObjectsHandler.addNonSolid(itemGlow, -1);
+                area.worldObjectsHandler.addNonSolid(itemGlow, -1, -1);
                 itemsOnFloor.add(itemGlow);
                 itemsOnFloorAreas.add(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
                 area.worldObjectsHandler.currentInventory.droppedItem = null;

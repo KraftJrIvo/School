@@ -4,16 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.*;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -104,7 +103,7 @@ public class NPC extends HittableEntity {
         if (baseName == null) {
             try {
                 float r, g, b;
-                BufferedReader in = new BufferedReader(new FileReader(charPath + "/stats"));
+                BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(charPath + "/stats").read()));
                 String line = in.readLine();
                 name = line;
                 line = in.readLine();
@@ -182,7 +181,9 @@ public class NPC extends HittableEntity {
 
     private void parseTasks() {
         try {
-            BufferedReader in = new BufferedReader(new FileReader(charPath + "/behavior"));
+            FileHandle behFile = Gdx.files.internal(charPath + "/behavior");
+            if (!behFile.exists()) return;
+            BufferedReader in = new BufferedReader(new InputStreamReader(behFile.read()));
             int tasksCount = Integer.parseInt(in.readLine());
             movable = true;
             for (int i =0; i < tasksCount; ++i) {
@@ -541,9 +542,13 @@ public class NPC extends HittableEntity {
     }
 
 
-    public void move(boolean allowToMove) {
+    public void move(boolean allowToMove, GameMenu menu) {
         if (isControlled) {
-            movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
+            if (menu.android) {
+                movingConfiguration.updateMovingAndroid(menu);
+            } else {
+                movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);
+            }
         } else
         {
             //movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, -1, Input.Keys.E);

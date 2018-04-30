@@ -127,7 +127,7 @@ public class Speech {
         }
         font.draw(batch, speaker, textX, textY);
         font.setColor(Color.WHITE);
-        if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER))) {
+        if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.justTouched())) {
             boolean ok = true;
             for (int i =0; i < phrases.size(); ++i) {
                 if (!progress.get(i)) {

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.*;
 
 /**
@@ -25,8 +26,12 @@ public class Player extends NPC {
         controlsBlocked = true;
     }
 
-    public void platformMove() {
-        movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, Input.Keys.Z, Input.Keys.E);
+    public void platformMove(GameMenu menu) {
+        if (menu.android) {
+            movingConfiguration.updateMovingAndroid(menu);
+        } else {
+            movingConfiguration.updateMoving(Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.SHIFT_LEFT, Input.Keys.Z, Input.Keys.E);
+        }
         type = 2;
         if (!controlsBlocked && movingConfiguration.movingLeft > 0) speedX -= 2;
         else if (speedX < 0) speedX += 2;

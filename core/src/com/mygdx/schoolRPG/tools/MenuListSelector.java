@@ -74,10 +74,10 @@ public class MenuListSelector {
         //System.out.println(centerY);
         centerX = Gdx.graphics.getWidth()/screenRatioX/2;
         if (!paused && enabled) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || (Gdx.input.justTouched() && Gdx.input.getX() > 500 && Gdx.input.getY() < 500)) {
                 selectedIndex++;
                 click1.play(parent.soundVolume / 100.0f);
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP))  {
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || (Gdx.input.justTouched() && Gdx.input.getX() > 500 && Gdx.input.getY() > 500))  {
                 selectedIndex--;
                 click1.play(parent.soundVolume / 100.0f);
             }
