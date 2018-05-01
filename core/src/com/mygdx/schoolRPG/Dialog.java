@@ -1,8 +1,11 @@
 package com.mygdx.schoolRPG;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
@@ -26,7 +29,7 @@ import java.util.Arrays;
 /**
  * Created by Kraft on 10.06.2016.
  */
-public class Dialog {
+public class Dialog implements InputProcessor {
 
     ArrayList<Speech> speeches;
     ArrayList<String> changedFlagsNames;
@@ -52,58 +55,8 @@ public class Dialog {
 
     public void reload(int language, int startId) {
         parseXMLDialog(language, startId);
-        /*this.language = language;
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(folderPath + fileName).read()));
-            char c;
-            String line = in.readLine();
-            int choiceId = 0;
-            for (int i = 0; i < speeches.size(); ++i) {
-                while (!line.startsWith("#")) {
-                    line = in.readLine();
-                    if (line == null) {
-                            return;
-                    }
-                }
-                in.readLine();
-                in.readLine();
-                in.readLine();
-                for (int j = 0; j < speeches.get(i).phrases.size(); ++j) {
-                    line = in.readLine();
-                    speeches.get(i).phrases.set(j, line);
-                }
-                line = in.readLine();
-                if (line.charAt(0) == '%') {
-                    line = in.readLine();
-                    choices.get(choiceId).question = line;
-                    for (int j = 0; j < choices.get(choiceId).phrases.size(); ++j) {
-                        in.readLine();
-                        line = in.readLine();
-                        choices.get(choiceId).phrases.set(j, line);
-                    }
-                    choiceId++;
-                }
-            }
-            in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (startId < 0) {
-            currentChoice = choices.get(- startId - 1);
-            currentSpeech = null;
-        } else {
-            currentSpeech = speeches.get(startId);
-            currentChoice = null;
-        }*/
     }
 
-    /*public int getCurrentSpeechId() {
-        int index = speeches.indexOf(currentSpeech);
-        if (currentChoice != null) index = -(choices.indexOf(currentChoice) + 1);
-        return index;
-    }*/
 
     private boolean parseCondition(String condition) {
         if (condition.equals("")) return true;
@@ -265,6 +218,13 @@ public class Dialog {
                 NodeList curSpeechBlockProperties = curSpeechBlock.getChildNodes();
                 String text[] = {curSpeechBlock.getAttribute("textEng"),curSpeechBlock.getAttribute("textRus")};
                 String speaker[] = {curSpeechBlock.getAttribute("speakerNameEng"),curSpeechBlock.getAttribute("speakerNameRus")};
+                int speakerId;
+                try {
+                    speakerId = Integer.parseInt(curSpeechBlock.getAttribute("speakerId"));
+                } catch (Exception e) {
+                    speakerId = mainCharId;
+                }
+
                 String spriteFileName = "";
                 boolean flagChange = false;
                 int flagOwner = -1;
@@ -327,7 +287,7 @@ public class Dialog {
                             phrases.add(speechTransitionsText.get(i).get(j).get(language));
                         }
                     }
-                    Choice choice = new Choice(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", mainCharId, npcs, player, parent);
+                    Choice choice = new Choice(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, npcs, player, parent);
                     speeches.add(choice);
                 } else {
                     if (itemTransfer) {
@@ -335,7 +295,7 @@ public class Dialog {
                         //phrases.add(notOkGivePhrases[language]);
                         phrases.add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
                     }
-                    Speech speech = new Speech(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", mainCharId, flagOwner, flagId, flagVal, npcs, player, parent);
+                    Speech speech = new Speech(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, flagOwner, flagId, flagVal, npcs, player, parent);
                     speeches.add(speech);
                 }
             }
@@ -401,166 +361,8 @@ public class Dialog {
         this.fileName = fileName;
         overlay = assets.get("dialog_overlay1.png", Texture.class);
         parseXMLDialog(language, -1);
-        /*try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(Gdx.files.internal(folder + fileName).read()));
-            char c;
-            String line = in.readLine();
-            int charId = -1;
-            int flagCharId = -1;
-            int texCharId = -1;
-            int flagId = -1;
-            int transId = -1;
-            String imageName = "";
-            String talkPostfix = "";
-            do {
-                c = line.charAt(0);
-
-                if (c == '\uFEFF' || c == '#') {
-                    //Speech spc = new Speech();
-                    ArrayList<String> phrases = new ArrayList<String>();
-                    String name = in.readLine();
-
-                    line = in.readLine();
-                    c = line.charAt(0);
-                    if (c >= '0' && c < '9') {
-                        charId = Integer.parseInt(line);
-                        if (charId != 0) {
-                            texCharId = charId;
-                        }
-                        if (charId == texCharId) {
-                            talkPostfix = "_speaking";
-                        } else {
-                            talkPostfix = "_listening";
-                        }
-                        imageName = in.readLine();
-                        line = in.readLine();
-                    }
-                    do {
-                        phrases.add(line);
-                        line = in.readLine();
-                        c = line.charAt(0);
-                    } while (c != '&' && c != '*' && c != '%' && c != '\uFEFF' && c != '$' && c != '#' && c != '^');
-
-                    if (c == '&') {
-                        line = in.readLine();
-                        transId = Integer.parseInt(line);
-                        if (texCharId <= 0) {
-                            talkPostfix = "";
-                            texCharId = 0;
-                        }
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
-                        speechTransitionsIds.add(transId);
-                        line = in.readLine();
-                        c = line.charAt(0);
-                    } else if (c == '*') {
-                        line = in.readLine();
-                        flagCharId = Integer.parseInt(line);
-                        line = in.readLine();
-                        flagId = Integer.parseInt(line);
-                        line = in.readLine();
-                        int flagVal = Integer.parseInt(line);
-                        boolean flagV = true;
-                        if (flagVal == 0) {
-                            flagV = false;
-                        }
-                        line = in.readLine();
-                        c = line.charAt(0);
-                        if (texCharId <= 0) {
-                            talkPostfix = "";
-                            texCharId = 0;
-                        }
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, flagV, npcs, player, parent));
-                        speechTransitionsIds.add(speechTransitionsIds.size() + 1);
-                    } else if (c == '^') {
-                        int receiverId = Integer.parseInt(in.readLine());
-                        String itemName = in.readLine();
-                        int itemsCount = Integer.parseInt(in.readLine());
-                        String okPhrase = in.readLine();
-                        String okMessage = in.readLine();
-                        String notOkMessage = in.readLine();
-                        int itemsNeeded = itemsCount;
-                        for (int i =0; i < npcs.get(texCharId-1).inventory.size(); ++i) {
-                            if (npcs.get(texCharId-1).inventory.get(i).fileName.equals(itemName)) {
-                                itemsNeeded -= npcs.get(texCharId-1).inventory.get(i).stack;
-                                if (itemsNeeded <= 0) break;
-                            }
-                        }
-                        if (itemsNeeded <= 0) {
-                            phrases.add(okPhrase);
-                            phrases.add(okMessage);
-                            phrases.add("];[" + itemName + ";" + itemsCount + ";" + receiverId);
-                        } else {
-                            phrases.add(notOkMessage);
-                        }
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
-                        speechTransitionsIds.add(transId);
-                        line = in.readLine();
-                    } else {
-                        if (texCharId <= 0) {
-                            talkPostfix = "";
-                            texCharId = 0;
-                        }
-                        speeches.add(new Speech(this, name, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, flagCharId, flagId, false, npcs, player, parent));
-                        speechTransitionsIds.add(speechTransitionsIds.size() + 1);
-                    }
-                } else if (c == '%') {
-                    speechTransitionsIds.set(speechTransitionsIds.size()-1, -1 * (choiceTransitionsIds.size() + 1));
-                    choiceTransitionsIds.add(new ArrayList<Integer>());
-                    talkPostfix = "_listening";
-                    ArrayList<String> phrases = new ArrayList<String>();
-                    line = in.readLine();
-                    phrases.add(line);
-                    line = in.readLine();
-                    while (c != '#') {
-                        transId = Integer.parseInt(line);
-                        line = in.readLine();
-                        phrases.add(line);
-                        choiceTransitionsIds.get(choiceTransitionsIds.size()-1).add(transId);
-                        line = in.readLine();
-                        c = line.charAt(0);
-                    }
-                    if (texCharId <= 0) {
-                        talkPostfix = "";
-                        texCharId = 0;
-                    }
-                    choices.add(new Choice(this, speeches.get(speeches.size()-1).speaker, phrases, assets, charPath + "/" + texCharId + "/graphics/" + imageName + talkPostfix + ".png", charId, npcs, player, parent));
-                } else if (c == '$') {
-                    speechTransitionsIds.set(speechTransitionsIds.size()-1, 999999);
-                    line = in.readLine();
-                    if (line != null) {
-                        c = line.charAt(0);
-                    }
-                }
-            } while (line != null);
-
-            //flagsCount = Integer.parseInt(line);
-            in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        currentSpeech = speeches.get(0);*/
+        Gdx.input.setInputProcessor(this);
     }
-
-    /*private void checkFinished(int id) {
-        if (id >= 0) {
-            if (id >= speechTransitionsIds.size()) {
-                finished = true;
-                return;
-            }
-            currentSpeech = speeches.get(id);e
-            currentChoice = null;
-        } else {
-            id = -1 * id - 1;
-            if (id >= choiceTransitionsIds.size()) {
-                finished = true;
-                return;
-            }
-            currentChoice = choices.get(id);
-            currentSpeech = null;
-        }
-    }*/
 
     public void draw(SpriteBatch batch, boolean paused) {
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
@@ -571,6 +373,8 @@ public class Dialog {
             if (currentSpeech.finished) {
                 int goodId = findTransitionByPriority(currentSpeechId);
                 if (goodId > 0) {
+                    currentSpeech.doActions();
+                    speeches.get(goodId).prevSpeechId = currentSpeechId;
                     currentSpeechId = goodId;
                     currentSpeech = speeches.get(currentSpeechId);
                 } else {
@@ -582,10 +386,72 @@ public class Dialog {
             Choice choice = (Choice)currentSpeech;
             choice.draw(batch, paused);
             if (choice.finished) {
-                currentSpeechId = speechTransitionsIds.get(currentSpeechId).get(choice.selector.getSelectedIndex());
-                 if (currentSpeechId <= 0 || currentSpeechId >= speeches.size()) finished = true;
-                currentSpeech = speeches.get(currentSpeechId);
+                int goodId = speechTransitionsIds.get(currentSpeechId).get(choice.selector.getSelectedIndex());
+                if (goodId <= 0 || goodId >= speeches.size()) finished = true;
+                else {
+                    speeches.get(goodId).prevSpeechId = currentSpeechId;
+                    currentSpeechId = goodId;
+                    currentSpeech = speeches.get(currentSpeechId);
+                }
             }
         }
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        if (amount == -1) {
+            int newSpeechId = speeches.get(currentSpeechId).prevSpeechId;
+            if (newSpeechId > -1) {
+                currentSpeechId = newSpeechId;
+                currentSpeech = speeches.get(currentSpeechId);
+                currentSpeech.undoActions();
+                currentSpeech.reset();
+            }
+        } else if (currentSpeech.isSpeech) {
+            int newSpeechId = findTransitionByPriority(currentSpeechId);
+            if (newSpeechId > -1 && newSpeechId < speeches.size()) {
+                currentSpeech.doActions();
+                speeches.get(newSpeechId).prevSpeechId = currentSpeechId;
+                currentSpeechId = newSpeechId;
+                currentSpeech = speeches.get(currentSpeechId);
+                currentSpeech.reset();
+            }
+        }
+        return false;
     }
 }

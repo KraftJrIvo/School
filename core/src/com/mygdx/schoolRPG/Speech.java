@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class Speech {
     public boolean isSpeech = true;
     String speaker;
+    int speakerId = -1;
     ArrayList<String> phrases;
     ArrayList<Boolean> progress;
     Texture overlay, texture;
@@ -43,6 +44,77 @@ public class Speech {
     int itemsToGiveTo = 0;
     Player player;
     int charId;
+    int prevSpeechId = -1;
+    boolean prevFlagVal;
+
+    public void reset() {
+        oldCharCount = 0;
+        charCount = 0;
+        int nextLineChars = 0;
+        for (int i =0; i < progress.size(); ++i) {
+            progress.set(i, false);
+        }
+        currentPhrase = 0;
+        time = 0;
+        curTime = 0;
+        finished = false;
+    }
+
+    public void undoActions() {
+        if (flagId != -1) {
+            if (charId == 0) {
+                player.world.flags.set(flagId, prevFlagVal);
+                dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
+            } else {
+                flagTarget.flags.set(flagId, prevFlagVal);
+                dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+            }
+            dialog.changedFlagsVals.add(prevFlagVal);
+        }
+        World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
+        for (int i = 0; i < itemsToGiveCount; ++i) {
+            target.takeItem(new Item(world.assets, world.folderPath, itemToGive));
+        }
+        if (itemsToGiveTo == 0) {
+            player.removeItems(itemToGive, itemsToGiveCount);
+        } else {
+            npcs.get(itemsToGiveTo-1).removeItems(itemToGive, itemsToGiveCount);
+        }
+        /*if (target.inventory.size() > 0) {
+            System.out.println(target.inventory.get(0).stack + " " + player.inventory.get(3).stack);
+        } else {
+            System.out.println("0 " + player.inventory.get(3).stack);
+        }*/
+    }
+
+    public void doActions() {
+        if (flagId != -1) {
+            if (charId == 0) {
+                prevFlagVal = player.world.flags.get(flagId);
+                player.world.flags.set(flagId, flagVal);
+                dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
+            } else {
+                prevFlagVal = flagTarget.flags.get(flagId);
+                flagTarget.flags.set(flagId, flagVal);
+                dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+            }
+            dialog.changedFlagsVals.add(flagVal);
+        }
+        target.removeItems(itemToGive, itemsToGiveCount);
+        World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
+        for (int i = 0; i < itemsToGiveCount; ++i) {
+            if (itemsToGiveTo == 0) {
+                player.takeItem(new Item(world.assets, world.folderPath, itemToGive));
+            } else {
+                npcs.get(itemsToGiveTo-1).takeItem(new Item(world.assets, world.folderPath, itemToGive));
+            }
+        }
+        /*if (target.inventory.size() > 0) {
+            System.out.println(target.inventory.get(0).stack + " " + player.inventory.get(3).stack);
+        } else {
+            System.out.println("0 " + player.inventory.get(3).stack);
+        }*/
+    }
 
     public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
         this.menu = menu;
@@ -137,26 +209,7 @@ public class Speech {
             }
             if (ok)  {
 
-                if (flagId != -1) {
-                    if (charId == 0) {
-                        player.world.flags.set(flagId, flagVal);
-                        dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
-                    } else {
-                        flagTarget.flags.set(flagId, flagVal);
-                        dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
-                    }
-                    dialog.changedFlagsVals.add(flagVal);
-                }
                 finished = true;
-                target.removeItems(itemToGive, itemsToGiveCount);
-                World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
-                for (int i = 0; i < itemsToGiveCount; ++i) {
-                    if (itemsToGiveTo == 0) {
-                        player.takeItem(new Item(world.assets, world.folderPath, itemToGive));
-                    } else {
-                        npcs.get(itemsToGiveTo-1).takeItem(new Item(world.assets, world.folderPath, itemToGive));
-                    }
-                }
 
             } else {
                 if (progress.get(currentPhrase)) {
@@ -182,7 +235,7 @@ public class Speech {
                 float phraseOffset = 0;
                 int to;
                 if (nextLineStarted == 1) {
-                    to = nextLineChars;
+                    to = Math.min(nextLineChars, phrases.get(i).length()-1);
                 } else {
                     to = phrases.get(i).length();
                 }

@@ -59,15 +59,18 @@ public class ObjectAdder {
                         curTile = world.tiles.get(world.tileIndices.get(img)).getSingleTile();
                     } else {
                         int startTile = img;
-                        while (world.tileIndices.get(startTile).equals(world.tileIndices.get(img))) startTile--;
+                        if (startTile > 0) {
+                            while (world.tileIndices.get(startTile).equals(world.tileIndices.get(img))) startTile--;
+                            startTile++;
+                        }
                         int imCount = 0;
-                        int iii = 0;
+                        /*int iii = 0;
                         while (iii < i){
                             if (world.tileTypes.get(iii) != 1) {
                                 imCount++;
                             }
                             iii++;
-                        }
+                        }*/
                         curTile = world.tilesets.get(world.tileIndices.get(img)).getTile(img-startTile-imCount);
                     }
                 }
@@ -131,7 +134,7 @@ public class ObjectAdder {
                         y+=blocks.get(7).get(t).get(i);
                         worldObjectsHandler.addNonSolid(new Entity(assets, world.sprites.get(world.tileIndices.get(img)), x, y, 0, 0, blocks.get(5).get(t).get(i)), -1, objectCheckId);
                     } else if (world.tileTypes.get(img) == 1) {
-                        worldObjectsHandler.addNonSolid(new Entity(assets, curTile, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, 0, 0, blocks.get(5).get(t).get(i)), -1, objectCheckId);
+                        worldObjectsHandler.addNonSolid(new Entity(assets, curTile, t*area.TILE_WIDTH - area.TILE_WIDTH/2, i*area.TILE_HEIGHT - area.TILE_HEIGHT/2, 0, 0, blocks.get(5).get(t).get(i)), -1, objectCheckId);
                     } else {
                         worldObjectsHandler.addNonSolid(new Entity(assets, world.animations.get(world.tileIndices.get(img)), t*area.TILE_WIDTH+area.TILE_WIDTH/2-world.animations.get(world.tileIndices.get(img)).getFirstFrame().getRegionWidth()/2, y, 0, 0, blocks.get(5).get(t).get(i)), -1, objectCheckId);
                     }

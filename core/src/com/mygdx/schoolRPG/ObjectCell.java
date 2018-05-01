@@ -77,6 +77,7 @@ public class ObjectCell {
     public ArrayList<ArrayList<Integer>> statesBodyXOffsets;
     public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
     public ArrayList<String> statesFlags;
+    public ArrayList<String> statesTeleportWorlds;
     public ArrayList<String> statesTeleportRooms;
     public ArrayList<Coords> statesTeleportCoords;
     public ArrayList<String> statesDialogs;
@@ -267,7 +268,14 @@ public class ObjectCell {
         } else {
             entity.collidable = true;
         }
-        if (statesTeleportRooms.get(currentState) != null) {
+        if (statesTeleportWorlds.get(currentState) != null) {
+            if (statesTeleportRooms.get(currentState) != null) {
+                area.world.changeWorld(statesTeleportWorlds.get(currentState), statesTeleportRooms.get(currentState), (int)statesTeleportCoords.get(currentState).x, (int)statesTeleportCoords.get(currentState).y);
+            } else {
+                area.world.changeWorld(statesTeleportWorlds.get(currentState), "", -1, -1);
+            }
+        }
+        else if (statesTeleportRooms.get(currentState) != null) {
             Area toArea = area.world.map.getAreaByName(statesTeleportRooms.get(currentState));
             area.world.changeArea(false, toArea.x - area.world.curAreaX, toArea.y - area.world.curAreaY, toArea.z - area.world.curAreaZ, statesTeleportCoords.get(currentState));
         }
@@ -479,6 +487,7 @@ public class ObjectCell {
             statesGotos = new ArrayList<Integer>();
             statesProximityGotos = new ArrayList<Integer>();
             statesProximityRadii = new ArrayList<Integer>();
+            statesTeleportWorlds = new ArrayList<String>();
             statesTeleportRooms = new ArrayList<String>();
             statesTeleportCoords = new ArrayList<Coords>();
 
@@ -570,6 +579,11 @@ public class ObjectCell {
                     statesProximityRadii.add(Integer.parseInt(eElement.getAttribute("proximityRadius")));
                 } else {
                     statesProximityRadii.add(radius);
+                }
+                if (!eElement.getAttribute("teleportWorld").equals("")) {
+                    statesTeleportWorlds.add(eElement.getAttribute("teleportWorld"));
+                } else {
+                    statesTeleportWorlds.add(null);
                 }
                 if (!eElement.getAttribute("teleportRoom").equals("")) {
                     statesTeleportRooms.add(eElement.getAttribute("teleportRoom"));

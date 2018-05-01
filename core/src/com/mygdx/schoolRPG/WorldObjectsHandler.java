@@ -1243,15 +1243,18 @@ public class WorldObjectsHandler {
                     img = world.tiles.get(world.tileIndices.get(blocks.get(layer).get(t).get(i))).getTile(up, down, left, right);
                 } else {
                     int startTile = blocks.get(layer).get(t).get(i);
-                    while (world.tileIndices.get(startTile).equals(world.tileIndices.get(blocks.get(layer).get(t).get(i)))) startTile--;
+                    if (startTile > 0) {
+                        while (startTile > 0 && world.tileIndices.get(startTile).equals(world.tileIndices.get(blocks.get(layer).get(t).get(i)))) startTile--;
+                        startTile++;
+                    }
                     int imCount = 0;
-                    int iii = 0;
+                    /*int iii = 0;
                     while (iii < i){
                         if (world.tileTypes.get(iii) != 1) {
                             imCount++;
                         }
                         iii++;
-                    }
+                    }*/
                     img = world.tilesets.get(world.tileIndices.get(blocks.get(layer).get(t).get(i))).getTile(type - startTile - imCount);
                 }
                 float x = offsetX + realT * (area.TILE_WIDTH) + area.TILE_WIDTH/2 - img.getRegionWidth()/2;

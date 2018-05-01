@@ -128,16 +128,22 @@ public class GameMenu extends Menu {
     }
 
     private void changeWorld(World w) {
-        World newWorld = new World(this, "worlds/" + w.nextWorldDir, curWorld);
-        initialised = false;
-        for (int i =0; i < w.uniqueItemNamesForTransfer.size(); ++i) {
-            copyFile(w.worldDir + "/items", "worlds/" + w.nextWorldDir + "/items", w.uniqueItemNamesForTransfer.get(i) + ".xml", w.uniqueItemNamesForTransfer.get(i) + ".xml");
-            copyFile(w.worldDir + "/items/icons", "worlds/" + w.nextWorldDir + "/items/icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
-            copyFile(w.worldDir + "/items/big_icons", "worlds/" + w.nextWorldDir + "/items/big_icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
-            copyFile(w.worldDir + "/items/sides", "worlds/" + w.nextWorldDir + "/items/sides", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+        if (w.nextWorldRoom != null) {
+            World newWorld = new World(this, "worlds/" + w.nextWorldDir, curWorld);
+            initialised = false;
+            for (int i =0; i < w.uniqueItemNamesForTransfer.size(); ++i) {
+                copyFile(w.worldDir + "/items", "worlds/" + w.nextWorldDir + "/items", w.uniqueItemNamesForTransfer.get(i) + ".xml", w.uniqueItemNamesForTransfer.get(i) + ".xml");
+                copyFile(w.worldDir + "/items/icons", "worlds/" + w.nextWorldDir + "/items/icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+                copyFile(w.worldDir + "/items/big_icons", "worlds/" + w.nextWorldDir + "/items/big_icons", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+                copyFile(w.worldDir + "/items/sides", "worlds/" + w.nextWorldDir + "/items/sides", w.uniqueItemNamesForTransfer.get(i) + ".png", w.uniqueItemNamesForTransfer.get(i) + ".png");
+            }
+            transferringWorld = w;
+            worlds.set(worlds.indexOf(w), newWorld);
+        } else {
+            World newWorld = new World(this, w.nextWorldDir, 0);
+            initialised = false;
+            worlds.set(worlds.indexOf(w), newWorld);
         }
-        transferringWorld = w;
-        worlds.set(worlds.indexOf(w), newWorld);
 
     }
 

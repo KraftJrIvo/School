@@ -235,6 +235,7 @@ public class World{
                 }
             }
             saveState();
+            //updateAmbient();
         }
     }
 
@@ -1027,6 +1028,17 @@ public class World{
         loaded = true;
     }
 
+    private void updateAmbient() {
+        int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
+        areas.get(n).isCurrent = true;
+        if (areasAmbients.get(n) != null && areasAmbients.get(n).length() > 0) {
+            currentSoundPath = areasAmbients.get(n);
+            currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
+            currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
+            startedAmbient = true;
+        }
+    }
+
     public void initialiseResources(AssetManager assets) {
         if (!platformMode) {
             characterMaker.initialiseResources(assets, folderPath);
@@ -1127,14 +1139,7 @@ public class World{
             }
 
         }
-        int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
-        areas.get(n).isCurrent = true;
-        if (areasAmbients.get(n) != null && areasAmbients.get(n).length() > 0) {
-            currentSoundPath = areasAmbients.get(n);
-            currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
-            currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
-            startedAmbient = true;
-        }
+        updateAmbient();
         map.connectExits();
         BufferedReader in = null;
         try {
@@ -1200,14 +1205,15 @@ public class World{
         saveState();
     }
 
-    private void checkSolidsPosition() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
-            for (int i =0; i < objects.size(); ++i) {
-                objects.get(i).soundsAreStopped = true;
-            }
-            if (currentSound != null) currentSound.stop();
-            prepareForWorldChange("game0", "bathroom", 3, 3);
+    public void changeWorld(String worldName, String roomName, int x, int y) {
+        for (int i =0; i < objects.size(); ++i) {
+            objects.get(i).soundsAreStopped = true;
         }
+        if (currentSound != null) currentSound.stop();
+        prepareForWorldChange(worldName, roomName, x, y);
+    }
+
+    private void checkSolidsPosition() {
         Area a = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         for (int i = 0; i < a.worldObjectsHandler.solids.size() + a.worldObjectsHandler.NPCs.size(); ++i) {
             HittableEntity solid;
