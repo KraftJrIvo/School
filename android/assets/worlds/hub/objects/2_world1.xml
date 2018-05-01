@@ -1,0 +1,13 @@
+<object statesCount="1" startState="0" radius="15" offsetX="-8" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           switchCondition=""
+           tex="hatch"
+           texType="sprite"
+           hidePlayer="false"
+		   teleportWorld="ultimatetest1"
+           teleportRoom="garden"
+           teleportX="3"
+           teleportY="3"
+           /> 
+</object>

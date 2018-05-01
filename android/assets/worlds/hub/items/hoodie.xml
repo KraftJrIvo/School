@@ -1,0 +1,10 @@
+<item id = "1" mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
+    <eng 
+        name = "Orange Hoodie" 
+        description = "Best hood in da hood!"
+    />    
+    <rus 
+        name = "Оранжевый Худи" 
+        description = "..или оранжевое худи... ..или оранжевая худи... ..фиг его знает..."
+    />    
+</item>

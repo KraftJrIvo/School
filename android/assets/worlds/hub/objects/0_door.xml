@@ -1,0 +1,12 @@
+<object statesCount="1" startState="0" radius="15" offsetX="-8" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           switchCondition=""
+           tex="door"
+           texType="sprite"
+           hidePlayer="false"
+		   teleportRoom="hub0"
+           teleportX="6"
+           teleportY="6"
+           /> 
+</object>

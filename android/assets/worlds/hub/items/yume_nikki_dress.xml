@@ -1,0 +1,10 @@
+<item id = "0" mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
+    <eng 
+        name = "Madotsuki's sweater and skirt" 
+        description = "Dreams..."
+    />    
+    <rus 
+        name = "Свитер и юбка Мадоцуки" 
+        description = "Сны..."
+    />    
+</item>
