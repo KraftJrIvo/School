@@ -1,0 +1,53 @@
+<object statesCount="10" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="false"
+           tex="num_stand_0"
+           texType="sprite"		   
+		   switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 0;RIGHT;RIGHT"
+           /> 
+    <state id="1"
+           tex="num_stand_1"
+           texType="sprite"
+		   switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 1;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 1;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 1;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 1;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 1;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 1;RIGHT;RIGHT"
+           /> 
+    <state id="2"
+           tex="num_stand_2"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 2;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 2;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 2;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 2;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 2;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 2;RIGHT;RIGHT"
+           /> 
+    <state id="3"
+           tex="num_stand_3"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 3;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 3;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 3;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 3;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 3;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 3;RIGHT;RIGHT"
+           /> 
+    <state id="4"
+           tex="num_stand_4"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 4;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 4;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 4;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 4;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 4;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 4;RIGHT;RIGHT"
+           /> 
+    <state id="5"
+           tex="num_stand_5"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 5;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 5;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 5;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 5;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 5;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 5;RIGHT;RIGHT"
+           /> 
+    <state id="6"
+           tex="num_stand_6"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 6;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 6;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 6;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 6;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 6;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 6;RIGHT;RIGHT"
+           /> 
+    <state id="7"
+           tex="num_stand_7"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 7;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 7;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 7;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 7;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 7;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 7;RIGHT;RIGHT"
+           /> 
+    <state id="8"
+           tex="num_stand_8"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 8;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 8;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 8;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 8;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 8;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 8;RIGHT;RIGHT"
+           /> 
+    <state id="9"
+           tex="num_stand_9"
+           texType="sprite"
+           switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;((num_one+num_two)%100)/10 != 9;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;((num_one-num_two)%100)/10 != 9;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;((num_one*num_two)%100)/10 != 9;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;((num_one/num_two)%100)/10 != 9;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;((num_one%num_two)%100)/10 != 9;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;((num_one^num_two)%100)/10 != 9;RIGHT;RIGHT"
+           /> 
+</object>

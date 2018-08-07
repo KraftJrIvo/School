@@ -1,4 +1,4 @@
-<item id = "1" mass="1" equip_slot="NONE" stackable="true" maxStack="99" flag="TVisOn" replaces="">
+<item id = "1" mass="1" equip_slot="NONE" stackable="true" maxStack="99" var="TVisOn" replaces="">
     <eng 
         name = "Squiggle 2" 
         description = "Some random squiggle 2. Why are you even carrying it around?"

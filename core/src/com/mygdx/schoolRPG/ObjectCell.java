@@ -8,10 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.XmlReader;
 import com.mygdx.schoolRPG.menus.GameMenu;
-import com.mygdx.schoolRPG.tools.AnimationSequence;
-import com.mygdx.schoolRPG.tools.CharacterMaker;
-import com.mygdx.schoolRPG.tools.GlobalSequence;
-import com.mygdx.schoolRPG.tools.Coords;
+import com.mygdx.schoolRPG.tools.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,8 +58,7 @@ public class ObjectCell {
     public int offsetX = 0;
     public int offsetY = 0;
     public ArrayList<Boolean> statesSwitchables;
-    public ArrayList<String> statesConditionFlags;
-    public ArrayList<Boolean> statesConditionFlagVals;
+    public ArrayList<String> statesConditionVars;
     public ArrayList<String> statesTexTypes;
     public ArrayList<String> statesTex;
     public ArrayList<String> statesCharsTex;
@@ -76,12 +72,12 @@ public class ObjectCell {
     public ArrayList<ArrayList<Integer>> statesHeadYOffsets;
     public ArrayList<ArrayList<Integer>> statesBodyXOffsets;
     public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
-    public ArrayList<String> statesFlags;
+    public ArrayList<String> statesVars;
     public ArrayList<String> statesTeleportWorlds;
     public ArrayList<String> statesTeleportRooms;
     public ArrayList<Coords> statesTeleportCoords;
     public ArrayList<String> statesDialogs;
-    public ArrayList<Boolean> statesFlagVals;
+    public ArrayList<String> statesVarVals;
     ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesparticleSpawns;
     public ArrayList<Integer> statesSwitchTimers;
     public ArrayList<Boolean> statesCollidables;
@@ -107,6 +103,7 @@ public class ObjectCell {
     String areaName;
     public boolean objectChecked = false;
     public int objectId = -1;
+    ConditionParser parser;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items, Area area) {
         this.type = type;
@@ -158,9 +155,9 @@ public class ObjectCell {
         h = entity.h;
     }
 
-    public void invalidateAsObject(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId, GameMenu menu) {
+    public void invalidateAsObject(String worldDir, AssetManager assets, ArrayList<String> varNames, ArrayList<Integer> vars, Area area, int charId, GameMenu menu) {
         if (statesSwitchTimers.get(currentState) != -1 && System.currentTimeMillis() - startTime > statesSwitchTimers.get(currentState)) {
-            activate(worldDir, assets, flagNames, flags, area, charId, menu, false, false);
+            activate(worldDir, assets, varNames, vars, area, charId, menu, false, false);
         }
     }
 
@@ -224,9 +221,9 @@ public class ObjectCell {
         }
     }
 
-    public void activate(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, int charId, GameMenu menu, boolean playerActivated, boolean proximity) {
-        if (!proximity && !statesSwitchables.get(currentState) && (flagNames.contains(statesConditionFlags.get(currentState))
-                && statesConditionFlagVals.get(currentState) != flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) return;
+    public void activate(String worldDir, AssetManager assets, ArrayList<String> varNames, ArrayList<Integer> vars, Area area, int charId, GameMenu menu, boolean playerActivated, boolean proximity) {
+        if (!proximity && !statesSwitchables.get(currentState) && (varNames.contains(statesConditionVars.get(currentState))
+                && !parser.parseCondition(statesConditionVars.get(currentState)))) return;
         if (statesSwitchSounds.get(currentState) != null && !menu.paused && playerActivated) {
             statesSwitchSounds.get(currentState).play(menu.soundVolume / 100.0f);
         }
@@ -239,6 +236,35 @@ public class ObjectCell {
             menu.paused = true;
             menu.unpausable = false;
             area.worldObjectsHandler.currentDialog = new Dialog(worldDir + "/chars/0/dialog", statesDialogs.get(currentState) + ".xml", 0, false, area.worldObjectsHandler.NPCs, area.player, assets, worldDir + "/chars", menu.currentLanguage, area.world.menu);
+        }
+        boolean found = false;
+        if (statesVars.get(currentState).length() > 0) {
+            int newVarVal;
+            if (statesVarVals.get(currentState) == null) {
+                if (varNames.contains(statesVars.get(currentState))) {
+                    int index = varNames.indexOf(statesVars.get(currentState));
+                    if (vars.get(index) == 0) newVarVal = 1;
+                    else newVarVal = 0;
+                    vars.set(index, newVarVal);
+                    area.world.changedVarNames.add(varNames.get(index));
+                } else {
+                    newVarVal = 1;
+                    varNames.add(statesVars.get(currentState));
+                    vars.add(newVarVal);
+                    area.world.changedVarNames.add(statesVars.get(currentState));
+                }
+            } else {
+                newVarVal = parser.evalVal(statesVarVals.get(currentState));
+                if (varNames.contains(statesVars.get(currentState))) {
+                    int index = varNames.indexOf(statesVars.get(currentState));
+                    vars.set(index, newVarVal);
+                    area.world.changedVarNames.add(varNames.get(index));
+                } else {
+                    varNames.add(statesVars.get(currentState));
+                    vars.add(newVarVal);
+                    area.world.changedVarNames.add(statesVars.get(currentState));
+                }
+            }
         }
         if (!proximity) {
             if (statesGotos.get(currentState) == -1) {
@@ -253,12 +279,6 @@ public class ObjectCell {
         updateSoundState(menu);
         updateEntityState(assets, worldDir);
         this.charId = charId;
-        for (int i = 0; i < flagNames.size(); ++i) {
-            if (flagNames.get(i).equals(statesFlags.get(currentState))) {
-                if (statesFlagVals.get(currentState) == null) flags.set(i, !flags.get(i));
-                else flags.set(i, statesFlagVals.get(currentState));
-            }
-        }
         updateHiddenPlayer(assets, worldDir);
         area.playerHidden = statesHidePlayer.get(currentState);
         startTime = System.currentTimeMillis();
@@ -297,9 +317,13 @@ public class ObjectCell {
         return false;
     }
 
-    public void checkFlags(String worldDir, AssetManager assets, ArrayList<String> flagNames, ArrayList<Boolean> flags, Area area, GameMenu menu) {
-        if ((flagNames.contains(statesConditionFlags.get(currentState)) && statesConditionFlagVals.get(currentState) == flags.get(flagNames.indexOf(statesConditionFlags.get(currentState))))) {
-            activate(worldDir, assets, flagNames, flags, area, charId, menu, false, false);
+    public void checkVars(String worldDir, AssetManager assets, ArrayList<String> varNames, ArrayList<Integer> vars, Area area, GameMenu menu) {
+        if (statesConditionVars.get(currentState).length() > 0 && parser.parseCondition(statesConditionVars.get(currentState))) {
+            int prevState;
+            do {
+                prevState = currentState;
+                activate(worldDir, assets, varNames, vars, area, charId, menu, false, false);
+            } while (parser.parseCondition(statesConditionVars.get(currentState)));
         }
         if (statesSoundLoops.get(currentState) != null) {
             if (menu.paused || !area.isCurrent) {
@@ -409,7 +433,7 @@ public class ObjectCell {
         return textureRegion;
     }
 
-    public void objectCheck(World world, AssetManager assets, int state, CharacterMaker characterMaker, int objectId) {
+    public void objectCheck(World world, AssetManager assets, int state, CharacterMaker characterMaker, int objectId, ConditionParser parser) {
         objectChecked = true;
         if (entity.texPath == null) return;
         //String baseTex = entity.texPath.substring(entity.texPath.lastIndexOf("/") + 1, entity.texPath.length() - 4);;
@@ -453,14 +477,13 @@ public class ObjectCell {
             isContainer = Boolean.parseBoolean(doc.getDocumentElement().getAttribute("container"));
             NodeList nList = doc.getElementsByTagName("state");
             statesSwitchables = new ArrayList<Boolean>();
-            statesConditionFlags = new ArrayList<String>();
-            statesConditionFlagVals = new ArrayList<Boolean>();
+            statesConditionVars = new ArrayList<String>();
             statesTexTypes = new ArrayList<String>();
             statesTex = new ArrayList<String>();
             names = new ArrayList<String>();
-            statesFlags = new ArrayList<String>();
+            statesVars = new ArrayList<String>();
             statesDialogs = new ArrayList<String>();
-            statesFlagVals = new ArrayList<Boolean>();
+            statesVarVals = new ArrayList<String>();
             statesparticleSpawns = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
             statesIntervals = new ArrayList<Integer>();
             statesHidePlayer = new ArrayList<Boolean>();
@@ -494,7 +517,15 @@ public class ObjectCell {
             for (int i= 0; i< nList.getLength(); ++i) {
                 Node nNode = nList.item(i);
                 Element eElement = (Element) nNode;
-                statesSwitchables.add(Boolean.parseBoolean(eElement.getAttribute("switchable")));
+                if (!eElement.getAttribute("switchable").equals("")) {
+                    statesSwitchables.add(Boolean.parseBoolean(eElement.getAttribute("switchable")));
+                } else {
+                    if (i == 0) {
+                        statesSwitchables.add(false);
+                    } else {
+                        statesSwitchables.add(statesSwitchables.get(i-1));
+                    }
+                }
                 String condition = eElement.getAttribute("switchCondition");
                 if (!eElement.getAttribute("zLayerChange").equals("")) {
                     zPath = Integer.parseInt(eElement.getAttribute("zLayerChange"));
@@ -508,22 +539,16 @@ public class ObjectCell {
                         //world.map.connectExits();
                     }
                 }
-                if (condition.length() > 0 && condition.charAt(0) == '!') {
-                    condition = condition.substring(1);
-                    statesConditionFlagVals.add(false);
-                } else {
-                    statesConditionFlagVals.add(true);
-                }
-                statesConditionFlags.add(condition);
+                statesConditionVars.add(condition);
                 String tex = eElement.getAttribute("tex");
                 statesTex.add(tex);
                 String texType = eElement.getAttribute("texType");
                 statesTexTypes.add(texType);
-                statesFlags.add(eElement.getAttribute("flagName"));
-                if (eElement.getAttribute("flagVal").equals("toggle")) {
-                    statesFlagVals.add(null);
+                statesVars.add(eElement.getAttribute("varName"));
+                if (eElement.getAttribute("varVal").equals("toggle") || eElement.getAttribute("varVal").equals("")) {
+                    statesVarVals.add(null);
                 } else {
-                    statesFlagVals.add(Boolean.parseBoolean(eElement.getAttribute("flagVal")));
+                    statesVarVals.add(eElement.getAttribute("varVal"));
                 }
                 if (eElement.getAttribute("emitInterval").equals("")) {
                     statesIntervals.add(-1);
@@ -665,6 +690,9 @@ public class ObjectCell {
                 }
                 statesDialogs.add(eElement.getAttribute("initDialog"));
             }
+
+            this.parser = parser;
+
             if (isContainer) {
                 nList = doc.getElementsByTagName("eng");
                 Node nNode = nList.item(0);

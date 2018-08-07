@@ -8,8 +8,8 @@
            looping="false"
            framesCount="1"
            
-           flagName="TVisOn"
-           flagVal="false"
+           varName="TVisOn"
+           varVal="1"
            
            emitsParticle="-1"
            emitX="0"
@@ -31,8 +31,8 @@
            looping="true"
            framesCount="2"
            
-           flagName="TVisOn"
-           flagVal="true"
+           varName="TVisOn"
+           varVal="0"
            
            emitsParticle="-1"
            emitX="0"

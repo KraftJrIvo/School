@@ -1,4 +1,4 @@
-<item id = "5" mass="1" equip_slot="NONE" stackable="true" maxStack="99" flag="playerHasShit" replaces="">
+<item id = "5" mass="1" equip_slot="NONE" stackable="true" maxStack="99" var="playerHasShit" replaces="">
     <eng 
         name = "Shit" 
         description = "Human feces. What's wrong with you? Seriously."

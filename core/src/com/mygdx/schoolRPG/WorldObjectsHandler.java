@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.menus.GameMenu;
+import com.mygdx.schoolRPG.tools.ConditionParser;
 
 import java.util.ArrayList;
 
@@ -30,8 +31,8 @@ public class WorldObjectsHandler {
     ArrayList<NPC> NPCs;
     ArrayList<ArrayList<ArrayList<ObjectCell>>> objectCells;
     ArrayList<ObjectCell> objects;
-    ArrayList<String> flagNames;
-    ArrayList<Boolean> flags;
+    ArrayList<String> varNames;
+    ArrayList<Integer> vars;
     ArrayList<Entity> signs;
     ArrayList<ArrayList<String>> signTexts;
     Texture signOverlay;
@@ -42,10 +43,11 @@ public class WorldObjectsHandler {
     public ObjectCell activeObject = null;
     public NPC activeNPC = null;
     public Entity activeItem = null;
+    ConditionParser parser;
 
     //Player player;
     Area area;
-    public WorldObjectsHandler(Area area, ArrayList<ArrayList<ArrayList<Integer>>> blocks, ArrayList<String> flagNames, ArrayList<Boolean> flags) {
+    public WorldObjectsHandler(Area area, ArrayList<ArrayList<ArrayList<Integer>>> blocks, ArrayList<String> varNames, ArrayList<Integer> vars) {
         this.area = area;
         this.blocks = blocks;
         objects = new ArrayList<ObjectCell>();
@@ -57,8 +59,8 @@ public class WorldObjectsHandler {
         particles = new ArrayList<Particle>();
         solids = new ArrayList<HittableEntity>();
         fallingObjects = new ArrayList<Entity>();
-        this.flags = flags;
-        this.flagNames = flagNames;
+        this.vars = vars;
+        this.varNames = varNames;
         NPCs = new ArrayList<NPC>();
         area.lastSpawnTileX = area.playerTileX;
         area.lastSpawnTileY = area.playerTileY;
@@ -71,6 +73,7 @@ public class WorldObjectsHandler {
         }
         signs = new ArrayList<Entity>();
         signTexts = new ArrayList<ArrayList<String>>();
+        parser = new ConditionParser(area.world.npcs, area.player, 0);
     }
 
 
@@ -99,7 +102,7 @@ public class WorldObjectsHandler {
             tileY = area.height - 1;
         }
         if (objectCheckId > -1) {
-            oc.objectCheck(area.world, area.assets, state, area.world.characterMaker, objectCheckId);
+            oc.objectCheck(area.world, area.assets, state, area.world.characterMaker, objectCheckId, parser);
         }
         if (oc.isObject) {
             objects.add(oc);
@@ -185,7 +188,7 @@ public class WorldObjectsHandler {
         npc.spawnArea = world.areas.indexOf(area);
         addObjectCell(new ObjectCell(area.TILE_WIDTH, area.TILE_HEIGHT, npc, ObjectType.NPC, NPCs.size(), true, null, area), state, objectCheckId);
         NPCs.add(npc);
-        world.synchronizeFlags();
+        world.synchronizeVars();
         if (world.npcs.contains(npc)) {
             world.npcsAreas.set(world.npcs.indexOf(npc), world.areas.indexOf(area));
         } else {
@@ -548,8 +551,8 @@ public class WorldObjectsHandler {
                     world.changeArea(false, inRoomXCoord, inRoomYCoord, c, null);
                 }
             }
-            activeObject.activate(worldPath, assets, flagNames, flags, area, 0, menu, true, false);
-            world.synchronizeFlags();
+            if (activeObject.isSwitchable()) activeObject.activate(worldPath, assets, varNames, vars, area, 0, menu, true, false);
+            world.synchronizeVars();
             if (activeObject.isContainer) {
                 menu.drawPause = false;
                 menu.paused = true;
@@ -560,14 +563,6 @@ public class WorldObjectsHandler {
             menu.drawPause = false;
             menu.paused = true;
             menu.unpausable = false;
-            String str = "";
-            for (int j = 0; j < activeNPC.flagsCount; ++j) {
-                if (activeNPC.flags.get(j)) {
-                    str += 1;
-                } else {
-                    str += 0;
-                }
-            }
             currentDialog = new Dialog(worldPath + "/chars/"+ activeNPC.charId, "dialog.xml", activeNPC.charId, false, world.npcs, area.player, assets, worldPath + "/chars", menu.currentLanguage, area.world.menu);
         }
     }
@@ -580,9 +575,15 @@ public class WorldObjectsHandler {
     }
 
     public void invalidateObjects(String worldDir, AssetManager assets, World world) {
+        if (parser.player == null) {
+           parser.player = area.player;
+           world.changedVarNames.addAll(world.varNames);
+        }
         for (int i = 0; i < objects.size(); ++i) {
             //objects.get(i).updateSoundState(world.menu);
-            objects.get(i).checkFlags(worldDir, assets, world.flagNames, world.flags, area, world.menu);
+            if (world.changedVarNames.size() > 0) {
+                objects.get(i).checkVars(worldDir, assets, world.varNames, world.vars, area, world.menu);
+            }
             float ox = objects.get(i).entity.x + objects.get(i).offsetX;
             if (objects.get(i).entity.getClass() != HittableEntity.class) {
                 if (objects.get(i).entity.anim != null) {
@@ -603,6 +604,7 @@ public class WorldObjectsHandler {
                 }
             }
         }
+        world.changedVarNames.clear();
     }
 
     public void checkObjects(String worldDir, AssetManager assets, World world) {
@@ -621,7 +623,7 @@ public class WorldObjectsHandler {
             return;
             /*for (int i = 0; i < objects.size(); ++i) {
                 if (objects.get(i).statesHidePlayer.get(objects.get(i).currentState)) {
-                    objects.get(i).activate(worldPath, assets, flagNames, flags, area);
+                    objects.get(i).activate(worldPath, assets, varNames, vars, area);
                 }
             }*/
         } else {
@@ -684,11 +686,11 @@ public class WorldObjectsHandler {
         }
         for (int i = 0; i < objects.size(); ++i) {
             if (objects.get(i).checkProximity(area.player.x, area.player.y)) {
-                objects.get(i).activate(area.worldPath, assets, flagNames, flags, area, 0, area.world.menu, true, true);
+                objects.get(i).activate(area.worldPath, assets, varNames, vars, area, 0, area.world.menu, true, true);
             }
             for (int j =0; j < NPCs.size(); ++j) {
                 if (objects.get(i).checkProximity(NPCs.get(j).x, NPCs.get(j).y)) {
-                    objects.get(i).activate(area.worldPath, assets, flagNames, flags, area, 0, area.world.menu, true, true);
+                    objects.get(i).activate(area.worldPath, assets, varNames, vars, area, 0, area.world.menu, true, true);
                 }
             }
         }
@@ -714,8 +716,8 @@ public class WorldObjectsHandler {
             menu.paused = true;
             menu.unpausable = false;
             String str = "";
-            for (int j = 0; j < NPCs.get(minDistID).flagsCount; ++j) {
-                if (NPCs.get(minDistID).flags.get(j)) {
+            for (int j = 0; j < NPCs.get(minDistID).varsCount; ++j) {
+                if (NPCs.get(minDistID).vars.get(j)) {
                     str += 1;
                 } else {
                     str += 0;
@@ -844,7 +846,7 @@ public class WorldObjectsHandler {
                     temp.y = t;
                     temp.invalidate();
                     if (temp.isObject) {
-                        temp.invalidateAsObject(area.worldPath, area.world.assets, flagNames, flags, area, 0, area.world.menu);
+                        temp.invalidateAsObject(area.worldPath, area.world.assets, varNames, vars, area, 0, area.world.menu);
                     }
                     /*if (temp.type != ObjectType.NONSOLID && ((int)temp.x != i || (int)temp.y != t)) {
                         if ((int)temp.x >= 0 && (int)temp.y >= 0 && (int)temp.x < area.width && (int)temp.y < area.height) {

@@ -1,4 +1,4 @@
-<item id = "4" mass="1" equip_slot="BODY" stackable="false" maxStack="1" flag="" replaces="">
+<item id = "4" mass="1" equip_slot="BODY" stackable="false" maxStack="1" var="" replaces="">
     <eng 
         name = "Shirt and Pants" 
         description = "Nice shirt! So stylish! (No.)"

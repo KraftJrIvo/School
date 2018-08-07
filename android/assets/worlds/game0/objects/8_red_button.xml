@@ -1,10 +1,10 @@
-<object statesCount="2" startState="0" radius="10" offsetX="0" offsetY="0" container="false">
+<object statesCount="2" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
     <state id="0"
            switchable="true"
            tex="red_button"
            texType="sprite"
-           flagName="door_open"
-           flagVal="toggle"
+           varName="door_open"
+           varVal="toggle"
            switchSound="click.wav"/> 
     <state id="1"
            switchable="false"

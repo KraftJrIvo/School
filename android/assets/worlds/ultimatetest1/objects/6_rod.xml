@@ -8,8 +8,8 @@
            looping="false"
            framesCount="1"
            
-           flagName=""
-           flagVal="false"
+           varName=""
+           varVal="0"
            
            emitsParticle="-1"
            emitX="0"
@@ -31,8 +31,8 @@
            looping="true"
            framesCount="8"
            
-           flagName=""
-           flagVal="true"
+           varName=""
+           varVal="1"
            
            emitsParticle="-1"
            emitX="0"

@@ -3,8 +3,8 @@
            switchable="true"
            tex="blue_button"
            texType="sprite"
-           flagName="portal_open"
-           flagVal="toggle"
+           varName="portal_open"
+           varVal="toggle"
            switchSound="click.wav"/> 
     <state id="1"
            switchable="false"

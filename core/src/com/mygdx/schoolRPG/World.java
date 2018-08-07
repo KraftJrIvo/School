@@ -42,8 +42,9 @@ public class World{
     boolean platformMode = false;
     int width, height, areaWidth, areaHeight, tileWidth, tileHeight;
     CharacterMaker characterMaker;
-    ArrayList<Boolean> flags;
-    ArrayList<String> flagNames;
+    public ArrayList<Integer> vars;
+    public ArrayList<String> varNames;
+    public ArrayList<String> changedVarNames;
     ArrayList<Texture> sprites;
     ArrayList<BlockMultiTile> tiles;
     ArrayList<MultiTile> tilesets;
@@ -92,10 +93,10 @@ public class World{
     public ArrayList<String> uniqueItemNamesForTransfer;
     public ArrayList<ArrayList<String>> itemNamesForTransfer;
     public ArrayList<ArrayList<Integer>> itemCountsForTransfer;
-    public ArrayList<Boolean> worldFlagsForTransfer;
-    public ArrayList<String> worldFlagsNamesForTransfer;
-    public ArrayList<ArrayList<Boolean>> charFlagsForTransfer;
-    public ArrayList<ArrayList<String>> charFlagNamesForTransfer;
+    public ArrayList<Integer> worldVarsForTransfer;
+    public ArrayList<String> worldVarsNamesForTransfer;
+    public ArrayList<ArrayList<Integer>> charVarsForTransfer;
+    public ArrayList<ArrayList<String>> charVarNamesForTransfer;
     public String headWear, bodyWear, objectInHands;
 
     public void prepareForWorldChange(String nextWorldDir, String nextWorldRoom, int nextWorldX, int nextWorldY) {
@@ -104,17 +105,17 @@ public class World{
         this.nextWorldX = nextWorldX;
         this.nextWorldY = nextWorldY;
         if (worldDirsForTransfer == null) worldDirsForTransfer = new ArrayList<String>();
-        worldFlagsForTransfer = flags;
-        worldFlagsNamesForTransfer = flagNames;
+        worldVarsForTransfer = vars;
+        worldVarsNamesForTransfer = varNames;
         charNamesForTransfer = new ArrayList<String>();
         uniqueItemNamesForTransfer = new ArrayList<String>();
-        charFlagNamesForTransfer = new ArrayList<ArrayList<String>>();
-        charFlagsForTransfer = new ArrayList<ArrayList<Boolean>>();
+        charVarNamesForTransfer = new ArrayList<ArrayList<String>>();
+        charVarsForTransfer = new ArrayList<ArrayList<Integer>>();
         itemNamesForTransfer = new ArrayList<ArrayList<String>>();
         itemCountsForTransfer = new ArrayList<ArrayList<Integer>>();
         charNamesForTransfer.add("You");
-        charFlagsForTransfer.add(null);
-        charFlagNamesForTransfer.add(null);
+        charVarsForTransfer.add(null);
+        charVarNamesForTransfer.add(null);
         Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
         curArea.stopAllSounds = true;
         curArea.worldObjectsHandler.invalidateObjects(worldDir.path(), assets, this);
@@ -134,17 +135,17 @@ public class World{
         }
         for (int i = 0; i < npcs.size(); ++i) {
             charNamesForTransfer.add(null);
-            charFlagNamesForTransfer.add(new ArrayList<String>());
-            charFlagsForTransfer.add(new ArrayList<Boolean>());
+            charVarNamesForTransfer.add(new ArrayList<String>());
+            charVarsForTransfer.add(new ArrayList<Integer>());
             itemNamesForTransfer.add(new ArrayList<String>());
             itemCountsForTransfer.add(new ArrayList<Integer>());
         }
         for (int i = -1; i < npcs.size(); ++i) {
             if (i >= 0) {
                 charNamesForTransfer.set(i+1, npcs.get(i).name);
-                for (int j = 0; j < npcs.get(i).flags.size(); ++j) {
-                    charFlagsForTransfer.get(i+1).add(npcs.get(i).flags.get(j));
-                    charFlagNamesForTransfer.get(i+1).add(npcs.get(i).flagNames.get(j));
+                for (int j = 0; j < npcs.get(i).vars.size(); ++j) {
+                    charVarsForTransfer.get(i+1).add(npcs.get(i).vars.get(j));
+                    charVarNamesForTransfer.get(i+1).add(npcs.get(i).varNames.get(j));
                 }
             }
             ArrayList<Item> inv;
@@ -187,12 +188,12 @@ public class World{
             player.graphicX = playerX;
             player.hitBox.y = playerY;
             player.y = playerY;
-            for (int i = 0; i < w.worldFlagsForTransfer.size(); ++i) {
-                if (flagNames.contains(w.worldFlagsNamesForTransfer.get(i))) {
-                    flags.set(flagNames.indexOf(w.worldFlagsNamesForTransfer.get(i)), w.worldFlagsForTransfer.get(i));
+            for (int i = 0; i < w.worldVarsForTransfer.size(); ++i) {
+                if (varNames.contains(w.worldVarsNamesForTransfer.get(i))) {
+                    vars.set(varNames.indexOf(w.worldVarsNamesForTransfer.get(i)), w.worldVarsForTransfer.get(i));
                 } else {
-                    flagNames.add(w.worldFlagsNamesForTransfer.get(i));
-                    flags.add(w.worldFlagsForTransfer.get(i));
+                    varNames.add(w.worldVarsNamesForTransfer.get(i));
+                    vars.add(w.worldVarsForTransfer.get(i));
                 }
             }
             for (int i = 0; i < w.charNamesForTransfer.size(); ++i) {
@@ -206,12 +207,12 @@ public class World{
                         }
                     }
                     if (foundCharId >= 0) {
-                        for (int j = 0; j < w.charFlagsForTransfer.size(); ++j) {
-                            if (npcs.get(foundCharId).flagNames.contains(w.charFlagNamesForTransfer.get(i).get(j))) {
-                                npcs.get(foundCharId).flags.set(npcs.get(foundCharId).flagNames.indexOf(w.charFlagNamesForTransfer.get(i).get(j)), w.charFlagsForTransfer.get(i).get(j));
+                        for (int j = 0; j < w.charVarsForTransfer.size(); ++j) {
+                            if (npcs.get(foundCharId).varNames.contains(w.charVarNamesForTransfer.get(i).get(j))) {
+                                npcs.get(foundCharId).vars.set(npcs.get(foundCharId).varNames.indexOf(w.charVarNamesForTransfer.get(i).get(j)), w.charVarsForTransfer.get(i).get(j));
                             } else {
-                                npcs.get(foundCharId).flagNames.add(w.charFlagNamesForTransfer.get(i).get(j));
-                                npcs.get(foundCharId).flags.add(w.charFlagsForTransfer.get(i).get(j));
+                                npcs.get(foundCharId).varNames.add(w.charVarNamesForTransfer.get(i).get(j));
+                                npcs.get(foundCharId).vars.add(w.charVarsForTransfer.get(i).get(j));
                             }
                         }
                         receiver = npcs.get(foundCharId);
@@ -331,12 +332,8 @@ public class World{
             currentSave.createNewFile();
             FileOutputStream saveFile = new FileOutputStream(currentSave, false);
 
-            for (int i =0; i < flags.size(); ++i) {
-                if (flags.get(i)) {
-                    saveFile.write(1);
-                } else {
-                    saveFile.write(0);
-                }
+            for (int i =0; i < vars.size(); ++i) {
+                saveFile.write(vars.get(i));
             }
             saveFile.write(curAreaX);
             saveFile.write(curAreaY);
@@ -386,12 +383,8 @@ public class World{
             saveFile.write(bodyWear + 1);
             saveFile.write(handsObject + 1);
             for (int i =0; i < npcs.size(); ++i) {
-                for (int j =0; j < npcs.get(i).flags.size(); ++j) {
-                    if (npcs.get(i).flags.get(j)) {
-                        saveFile.write(1);
-                    } else {
-                        saveFile.write(0);
-                    }
+                for (int j =0; j < npcs.get(i).vars.size(); ++j) {
+                    saveFile.write(npcs.get(i).vars.get(j));
                 }
                 saveFile.write(npcsAreas.get(i));
                 saveFile.write(float2ByteArray(npcs.get(i).hitBox.x));
@@ -475,13 +468,9 @@ public class World{
         FileHandle currentSave = Gdx.files.internal(worldDir + "/saves/state" + save);
         try {
             InputStream saveFile = currentSave.read();
-            for (int i =0; i < flags.size(); ++i) {
-                int flag = saveFile.read();
-                if (flag == 1) {
-                    flags.set(i, true);
-                } else {
-                   flags.set(i, false);
-                }
+            for (int i =0; i < vars.size(); ++i) {
+                int var = saveFile.read();
+                vars.set(i, var);
             }
             curAreaX = saveFile.read();
             curAreaY = saveFile.read();
@@ -534,13 +523,9 @@ public class World{
                 player.objectInHands = null;
             }
             for (int i =0; i < npcs.size(); ++i) {
-                for (int j =0; j < npcs.get(i).flags.size(); ++j) {
-                    int flag = saveFile.read();
-                    if (flag == 1) {
-                        npcs.get(i).flags.set(j, true);
-                    } else {
-                        npcs.get(i).flags.set(j, false);
-                    }
+                for (int j =0; j < npcs.get(i).vars.size(); ++j) {
+                    int var = saveFile.read();
+                    npcs.get(i).vars.set(j, var);
                 }
                 npcsAreas.set(i,saveFile.read());
                 saveFile.read(flo);
@@ -737,8 +722,9 @@ public class World{
         assets.load("inventory_overlay2.png", Texture.class);
 
         //assets.load(folderPath + "bg/bg.png", Texture.class);
-        flags = new ArrayList<Boolean>();
-        flagNames = new ArrayList<String>();
+        vars = new ArrayList<Integer>();
+        varNames = new ArrayList<String>();
+        changedVarNames = new ArrayList<String>();
         if (tlw == null) {
             worldDir = Gdx.files.internal(folderPath);
             int curX,curY,curZ=0;
@@ -770,18 +756,14 @@ public class World{
         } else {
             try {
 
-                BufferedReader flagsIn = new BufferedReader(new InputStreamReader(Gdx.files.internal(folderPath + "/flags").read()));
-                String line = flagsIn.readLine();
-                int flagsCount = Integer.parseInt(line);
-                for (int i = 0; i < flagsCount; ++i) {
-                    line = flagsIn.readLine();
-                    flagNames.add(line);
-                    line = flagsIn.readLine();
-                    if (line.equals("0")) {
-                        flags.add(false);
-                    } else {
-                        flags.add(true);
-                    }
+                BufferedReader varsIn = new BufferedReader(new InputStreamReader(Gdx.files.internal(folderPath + "/vars").read()));
+                String line = varsIn.readLine();
+                int varsCount = Integer.parseInt(line);
+                for (int i = 0; i < varsCount; ++i) {
+                    line = varsIn.readLine();
+                    varNames.add(line);
+                    line = varsIn.readLine();
+                    vars.add(Integer.parseInt(line));
                 }
                 FileHandle tlwFH = Gdx.files.internal(tlw.getPath());
                 fis = tlwFH.read();//new FileInputStream(tlw);
@@ -1522,13 +1504,16 @@ public class World{
                 player.objectInHands = oldArea.player.objectInHands;
             }
             startedChanging = false;
+            changedVarNames.addAll(varNames);
         } else {
             Area curarea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             if ((curarea.loopingX && offX != 0) || (curarea.loopingY && offY != 0)){
                 return;
             }
-            if( (offX != 0 && !curarea.loopingX && (curAreaX+offX < 0 || curAreaX+offX > areaIds.size()-1 || areaIds.get(curAreaX + offX).get(curAreaY).get(curAreaZ) == -1)) || (offY != 0 && !curarea.loopingY && (curAreaY+offY < 0 || curAreaY+offY > areaIds.get(0).size()-1 || areaIds.get(curAreaX).get(curAreaY + offY).get(curAreaZ) == -1) && !curarea.loopingY)) {
-                curarea.respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
+            if (!curarea.loopingX || !curarea.loopingY) {
+                if( (offX != 0 && !curarea.loopingX && (curAreaX+offX < 0 || curAreaX+offX > areaIds.size()-1 || areaIds.get(curAreaX + offX).get(curAreaY).get(curAreaZ) == -1)) || (offY != 0 && !curarea.loopingY && (curAreaY+offY < 0 || curAreaY+offY > areaIds.get(0).size()-1 || areaIds.get(curAreaX).get(curAreaY + offY).get(curAreaZ) == -1) && !curarea.loopingY)) {
+                    curarea.respawnPlayer(null, assets, 0, 0, 0, 0, characterMaker);
+                }
             }
         }
         if (teleporting) {
@@ -1560,16 +1545,16 @@ public class World{
 
     }
 
-    public void synchronizeFlags() {
+    public void synchronizeVars() {
         for (int t = 0; t < areas.size(); ++t) {
             if (areas.get(t) == null) continue;
             Area a = areas.get(t);
 
             for (int i = 0; i < a.worldObjectsHandler.NPCs.size(); ++i) {
-                for (int j = 0; j < a.worldObjectsHandler.NPCs.get(i).flags.size(); ++j) {
-                    for (int z = 0; z < flagNames.size(); ++z) {
-                        if (a.worldObjectsHandler.NPCs.get(i).flagNames.get(j).equals(flagNames.get(z))) {
-                            a.worldObjectsHandler.NPCs.get(i).flags.set(j, flags.get(z));
+                for (int j = 0; j < a.worldObjectsHandler.NPCs.get(i).vars.size(); ++j) {
+                    for (int z = 0; z < varNames.size(); ++z) {
+                        if (a.worldObjectsHandler.NPCs.get(i).varNames.get(j).equals(varNames.get(z))) {
+                            a.worldObjectsHandler.NPCs.get(i).vars.set(j, vars.get(z));
                         }
                     }
                 }
@@ -1664,7 +1649,7 @@ public class World{
             checkDialog(curArea);
         } //else if (curArea.worldObjectsHandler.currentInventory != null) {
         curArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
-        synchronizeFlags();
+        synchronizeVars();
         if (!menu.paused) handleNPCTasks();
         checkInventory(curArea);
         //}
@@ -1678,13 +1663,14 @@ public class World{
                     } else {
                         npc = curArea.worldObjectsHandler.NPCs.get(i);
                     }
-                    if (npc.changedFlags.size() > 0) {
-                        for (int j = 0; j < npc.changedFlags.size(); ++j) {
-                            if (flagNames.contains(npc.changedFlags.get(j))) {
-                                flags.set(flagNames.indexOf(npc.changedFlags.get(j)), npc.flags.get(npc.flagNames.indexOf(npc.changedFlags.get(j))));
+                    if (npc.changedVars.size() > 0) {
+                        for (int j = 0; j < npc.changedVars.size(); ++j) {
+                            if (varNames.contains(npc.changedVars.get(j))) {
+                                vars.set(varNames.indexOf(npc.changedVars.get(j)), npc.vars.get(npc.varNames.indexOf(npc.changedVars.get(j))));
+                                changedVarNames.add(npc.changedVars.get(j));
                             }
                         }
-                        npc.changedFlags.clear();
+                        npc.changedVars.clear();
                     }
                 }
                 if (!menu.paused && curArea.worldObjectsHandler.currentDialog == null) {
@@ -1695,10 +1681,11 @@ public class World{
             if (curArea.worldObjectsHandler.currentDialog != null) {
                 curArea.worldObjectsHandler.currentDialog.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentDialog.finished) {
-                    ArrayList<String> changedFlagsNames = curArea.worldObjectsHandler.currentDialog.changedFlagsNames;
-                    for (int i = 0; i < changedFlagsNames.size(); ++i) {
-                        if (flagNames.contains(changedFlagsNames.get(i))) {
-                            flags.set(flagNames.indexOf(changedFlagsNames.get(i)), curArea.worldObjectsHandler.currentDialog.changedFlagsVals.get(i));
+                    ArrayList<String> changedVarsNames = curArea.worldObjectsHandler.currentDialog.changedVarsNames;
+                    for (int i = 0; i < changedVarsNames.size(); ++i) {
+                        if (varNames.contains(changedVarsNames.get(i))) {
+                            vars.set(varNames.indexOf(changedVarsNames.get(i)), curArea.worldObjectsHandler.currentDialog.changedVarsVals.get(i));
+                            changedVarNames.add(curArea.worldObjectsHandler.currentDialog.changedVarsNames.get(i));
                         }
                     }
                     curArea.worldObjectsHandler.currentDialog = null;
@@ -1712,7 +1699,7 @@ public class World{
                 curArea.worldObjectsHandler.currentInventory.draw(batch, menu.drawPause);
                 if (curArea.worldObjectsHandler.currentInventory.closed) {
                     if (curArea.worldObjectsHandler.currentInventory.containerMode) {
-                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, flagNames, flags, curArea, 0, menu, true, false);
+                        curArea.worldObjectsHandler.activeObject.activate(folderPath, assets, varNames, vars, curArea, 0, menu, true, false);
                     }
                     curArea.worldObjectsHandler.currentInventory = null;
                     menu.drawPause = true;

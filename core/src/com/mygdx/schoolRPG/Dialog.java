@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
+import com.mygdx.schoolRPG.tools.ConditionParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -32,8 +33,8 @@ import java.util.Arrays;
 public class Dialog implements InputProcessor {
 
     ArrayList<Speech> speeches;
-    ArrayList<String> changedFlagsNames;
-    ArrayList<Boolean> changedFlagsVals;
+    ArrayList<String> changedVarsNames;
+    ArrayList<Integer> changedVarsVals;
     ArrayList<ArrayList<ArrayList<String>>> speechTransitionsText;
     ArrayList<ArrayList<Integer>> speechTransitionsIds;
     ArrayList<ArrayList<Integer>> speechTransitionsPriorities;
@@ -52,132 +53,10 @@ public class Dialog implements InputProcessor {
     Player player;
     String folder;
     String fileName;
+    ConditionParser parser;
 
     public void reload(int language, int startId) {
         parseXMLDialog(language, startId);
-    }
-
-
-    private boolean parseCondition(String condition) {
-        if (condition.equals("")) return true;
-        String nodes[] = condition.split(";");
-        int openCount = 0;
-        for (int i = 0; i < nodes.length; ++i) {
-            if (nodes[i].equals("LEFT")) {
-                for (int j = i + 1; j < nodes.length; ++j) {
-                    if (nodes[i].equals("LEFT")) openCount++;
-                    else if (nodes[i].equals("RIGHT")) openCount--;
-                    if (nodes[j].equals("RIGHT") && openCount == 0) {
-                        String subStr = "";
-                        for (int z = i+1; z < j; ++z) {
-                            subStr += nodes[z];
-                            if (z < j-1) subStr += ";";
-                        }
-                        boolean out = parseCondition(subStr);
-                        String split[] = condition.split(subStr);
-                        String left = split[0].substring(0, split[0].length() - 6);
-                        String right = split[1].substring(6, split[1].length() - 1);
-                        if (out) {
-                            condition = left + "TRUE" + right;
-                        } else {
-                            condition = left + "FALSE" + right;
-                        }
-                        nodes = condition.split(";");
-                        i = 0;
-                        j = 1;
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < nodes.length; ++i) {
-            if (nodes[i].startsWith("f ")) {
-                String arguments[] = nodes[i].split(" ");
-                //int flagChar = Integer.parseInt(arguments[1]);
-                String flagName = arguments[1];
-                boolean flagVal = Integer.parseInt(arguments[2]) == 1;
-                boolean val = false;
-                if (mainCharId == 0) {
-                    val = (player.world.flags.get(player.world.flagNames.indexOf(flagName)) == flagVal);
-                } else {
-                    for (int j = 0; j < npcs.size(); ++j) {
-                        if (npcs.get(j).charId == mainCharId) {
-                            int flagId = npcs.get(j).flagNames.indexOf(flagName);
-                            if (flagId == -1) continue;
-                            val = (npcs.get(j).flags.get(flagId) == flagVal);
-                            break;
-                        }
-                    }
-                }
-                if (val) {
-                    nodes[i] = "TRUE";
-                } else {
-                    nodes[i] = "FALSE";
-                }
-            } else if (nodes[i].startsWith("i ")) {
-                String arguments[] = nodes[i].split(" ");
-                int ownerId = Integer.parseInt(arguments[1]);
-                String itemName = arguments[2];
-                int itemsCount = Integer.parseInt(arguments[3]);
-                boolean not = Integer.parseInt(arguments[4]) != 1;
-                boolean val = false;
-                if (ownerId == 0) {
-                    int itemsCountFound = 0;
-                    for (int z = 0; z < player.inventory.size(); ++z) {
-                        if (player.inventory.get(z).fileName.equals(itemName)) {
-                            itemsCountFound += player.inventory.get(z).stack;
-                        }
-                    }
-                    val = ((!not && itemsCountFound >= itemsCount)||(not && itemsCountFound < itemsCount));
-                } else {
-                    for (int j = 0; j < npcs.size(); ++j) {
-                        if (npcs.get(j).charId == ownerId) {
-                            int itemsCountFound = 0;
-                            for (int z = 0; z < npcs.get(j).inventory.size(); ++z) {
-                                if (npcs.get(j).inventory.get(z).fileName.equals(itemName)) {
-                                    itemsCountFound += npcs.get(j).inventory.get(z).stack;
-                                }
-                            }
-                            val = ((!not && itemsCountFound >= itemsCount)||(not && itemsCountFound < itemsCount));
-                            break;
-                        }
-                    }
-                }
-                if (val) {
-                    nodes[i] = "TRUE";
-                } else {
-                    nodes[i] = "FALSE";
-                }
-            }
-        }
-        for (int i = 0; i < nodes.length-2; ++i) {
-            if (i >= nodes.length) break;
-            if (nodes[i+1].equals("AND")) {
-                if (nodes[i].equals("TRUE") && nodes[i].equals("TRUE")) {
-                    nodes[i] = "TRUE";
-                } else {
-                    nodes[i] = "FALSE";
-                }
-                for (int j = i+1; i < nodes.length-2; ++i) {
-                    nodes[j] = nodes[j+2];
-                }
-                i = 0;
-            }
-        }
-        for (int i = 0; i < nodes.length-2; ++i) {
-            if (i >= nodes.length) break;
-            if (nodes[i+1].equals("OR")) {
-                if (nodes[i].equals("TRUE") || nodes[i].equals("TRUE")) {
-                    nodes[i] = "TRUE";
-                } else {
-                    nodes[i] = "FALSE";
-                }
-                for (int j = i+1; i < nodes.length-2; ++i) {
-                    nodes[j] = nodes[j+2];
-                }
-                i = 0;
-            }
-        }
-        return nodes[0].equals("TRUE");
     }
 
     private void parseXMLDialog(int language, int startId) {
@@ -213,6 +92,7 @@ public class Dialog implements InputProcessor {
             }
             doc.getDocumentElement().normalize();
             NodeList speechBlocks = doc.getElementsByTagName("speechBlock");
+            parser = new ConditionParser(npcs, player, mainCharId);
             for (int i= 0; i< speechBlocks.getLength(); ++i) {
                 Element curSpeechBlock = (Element) speechBlocks.item(i);
                 NodeList curSpeechBlockProperties = curSpeechBlock.getChildNodes();
@@ -226,10 +106,10 @@ public class Dialog implements InputProcessor {
                 }
 
                 String spriteFileName = "";
-                boolean flagChange = false;
-                int flagOwner = -1;
-                int flagId = -1;
-                boolean flagVal = false;
+                boolean varChange = false;
+                int varOwner = -1;
+                String varId = "";
+                String varVal = "";
                 boolean itemTransfer = false;
                 int giveToId = -1;
                 String itemName = "";
@@ -247,11 +127,11 @@ public class Dialog implements InputProcessor {
                     Node property = curSpeechBlockProperties.item(j);
                     if (property.getNodeName().equals("sprite")) {
                         spriteFileName = ((Element)property).getAttribute("name");
-                    } else if (property.getNodeName().equals("flagChange")) {
-                        flagChange = true;
-                        flagOwner = Integer.parseInt(((Element)property).getAttribute("charId"));
-                        flagId = Integer.parseInt(((Element)property).getAttribute("Id"));
-                        flagVal = Boolean.parseBoolean(((Element)property).getAttribute("value"));
+                    } else if (property.getNodeName().equals("varChange")) {
+                        varChange = true;
+                        varOwner = Integer.parseInt(((Element)property).getAttribute("charId"));
+                        varId = ((Element)property).getAttribute("Id");
+                        varVal = ((Element)property).getAttribute("value");
                     } else if (property.getNodeName().equals("itemTransfer")) {
                         itemTransfer = true;
                         giveToId = Integer.parseInt(((Element)property).getAttribute("to"));
@@ -283,11 +163,11 @@ public class Dialog implements InputProcessor {
                 }
                 if (foundAnswer) {
                     for (int j = 0; j < speechTransitionsText.get(i).size(); ++j) {
-                        if (parseCondition(speechTransitionsConditions.get(i).get(j))) {
+                        if (parser.parseCondition(speechTransitionsConditions.get(i).get(j))) {
                             phrases.add(speechTransitionsText.get(i).get(j).get(language));
                         }
                     }
-                    Choice choice = new Choice(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, npcs, player, parent);
+                    Choice choice = new Choice(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, npcs, player, parent, parser);
                     speeches.add(choice);
                 } else {
                     if (itemTransfer) {
@@ -295,7 +175,7 @@ public class Dialog implements InputProcessor {
                         //phrases.add(notOkGivePhrases[language]);
                         phrases.add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
                     }
-                    Speech speech = new Speech(this, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, flagOwner, flagId, flagVal, npcs, player, parent);
+                    Speech speech = new Speech(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, varOwner, varId, varVal, npcs, player, parent, parser);
                     speeches.add(speech);
                 }
             }
@@ -307,7 +187,6 @@ public class Dialog implements InputProcessor {
                 currentSpeech = speeches.get(currentSpeechId);
             }
         }
-
     }
 
     private int findTransitionByPriority(int id) {
@@ -325,7 +204,7 @@ public class Dialog implements InputProcessor {
             }
             if (maxPriorityId != -1) {
                 checkedLinks.add(maxPriorityId);
-                if (parseCondition(speechTransitionsConditions.get(id).get(maxPriorityId))) {
+                if (parser.parseCondition(speechTransitionsConditions.get(id).get(maxPriorityId))) {
                     return speechTransitionsIds.get(id).get(maxPriorityId);
                 }
             } else {
@@ -347,8 +226,8 @@ public class Dialog implements InputProcessor {
         speechTransitionsIds = new ArrayList<ArrayList<Integer>>();
         speechTransitionsPriorities = new ArrayList<ArrayList<Integer>>();
         speechTransitionsConditions = new ArrayList<ArrayList<String>>();
-        changedFlagsVals = new ArrayList<Boolean>();
-        changedFlagsNames = new ArrayList<String>();
+        changedVarsVals = new ArrayList<Integer>();
+        changedVarsNames = new ArrayList<String>();
         this.monologue = monologue;
         this.language = language;
         //this.fileName = folder + fileName;
@@ -371,9 +250,9 @@ public class Dialog implements InputProcessor {
             parent.dialogSkipping = true;
             currentSpeech.draw(batch, paused);
             if (currentSpeech.finished) {
+                currentSpeech.doActions();
                 int goodId = findTransitionByPriority(currentSpeechId);
                 if (goodId > 0) {
-                    currentSpeech.doActions();
                     speeches.get(goodId).prevSpeechId = currentSpeechId;
                     currentSpeechId = goodId;
                     currentSpeech = speeches.get(currentSpeechId);

@@ -1,0 +1,13 @@
+<object statesCount="2" startState="0" radius="20" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="false"
+           tex="num_stand_+"
+           texType="sprite"		   
+		   switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;num_one+num_two &lt; 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;num_one-num_two &lt; 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;num_one*num_two &lt; 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;num_one/num_two &lt; 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;num_one%num_two &lt; 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;num_one^num_two &lt; 0;RIGHT;RIGHT"
+           /> 
+    <state id="1"
+           tex="num_stand_-"
+           texType="sprite"
+		   switchCondition="LEFT;LEFT;num_op == 0;RIGHT;AND;LEFT;num_one+num_two >= 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 1;RIGHT;AND;LEFT;num_one-num_two >= 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 2;RIGHT;AND;LEFT;num_one*num_two >= 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 3;RIGHT;AND;LEFT;num_one/num_two >= 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 4;RIGHT;AND;LEFT;num_one%num_two >= 0;RIGHT;RIGHT;OR;LEFT;LEFT;num_op == 5;RIGHT;AND;LEFT;num_one^num_two >= 0;RIGHT;RIGHT"
+           /> 
+</object>

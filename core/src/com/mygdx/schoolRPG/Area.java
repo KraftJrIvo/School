@@ -171,7 +171,7 @@ public class Area {
             }
         }
 
-        worldObjectsHandler = new WorldObjectsHandler(this, blocks, world.flagNames, world.flags);
+        worldObjectsHandler = new WorldObjectsHandler(this, blocks, world.varNames, world.vars);
         adder = new ObjectAdder(worldObjectsHandler);
     }
 
@@ -179,9 +179,6 @@ public class Area {
         this.assets = world.assets;
         worldPath = world.worldDir.path();
         if (!initialised) {
-
-            adder.initialiseWorldObjects(assets, world, characterMaker);
-
             if (player == null) {
                 if (platformMode) {
                     player = new Player(assets, world.worldDir+"/chars/0/char.png", (playerTileX*TILE_WIDTH), ((playerTileY)*TILE_HEIGHT), playerWidth, playerHeight, playerFloor, true, characterMaker, world);
@@ -190,6 +187,8 @@ public class Area {
                 }
                 lastSpawnPos = 0;
             }
+            adder.initialiseWorldObjects(assets, world, characterMaker);
+
             cameraX = player.graphicX + player.hitBox.getWidth()/2;
             cameraY = player.graphicY + player.hitBox.getHeight()/2;
             //worldObjectsHandler.setPlayer(player);

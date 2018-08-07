@@ -1,4 +1,4 @@
-<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="99" flag="hasSquiggle" replaces="">
+<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="99" var="hasSquiggle" replaces="">
     <eng 
         name = "Squiggle" 
         description = "Some random squiggle. Why are you even carrying it around?"

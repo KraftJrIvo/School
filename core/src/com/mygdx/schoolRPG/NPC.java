@@ -36,21 +36,21 @@ public class NPC extends HittableEntity {
     boolean pushUp = false, pushDown = false, pushLeft = false, pushRight = false;
     AnimationSequence chargo;
     boolean controlsBlocked = false;
-    int charId = 0;
+    public int charId = 0;
     String name = "";
-    public ArrayList<Boolean> flags;
-    public ArrayList<String> flagNames;
-    public ArrayList<String> changedFlags;
-    public int flagsCount = 0;
+    public ArrayList<Integer> vars;
+    public ArrayList<String> varNames;
+    public ArrayList<String> changedVars;
+    public int varsCount = 0;
     public Color charColor;
     boolean isRunning = false;
     public ArrayList<Item> inventory;
-    int lastHoldedFlag = -1;
+    int lastHoldedVar = -1;
     boolean isControlled;
     MovingConfiguration movingConfiguration;
     Sound speechSound;
     Sound jump, djump, land, step, die;
-    World world;
+    public World world;
     ArrayList<Task> tasks;
     Task currentTask = null;
     ArrayList<Exit> currentTaskPath;
@@ -92,9 +92,9 @@ public class NPC extends HittableEntity {
             land = assets.get("platform_sounds/land.wav");
         }
         this.characterMaker = characterMaker;
-        flags = new ArrayList<Boolean>();
-        flagNames = new ArrayList<String>();
-        changedFlags = new ArrayList<String>();
+        vars = new ArrayList<Integer>();
+        varNames = new ArrayList<String>();
+        changedVars = new ArrayList<String>();
         ArrayList<String> itemsNames = new ArrayList<String>();
         ArrayList<Integer> itemsCounts = new ArrayList<Integer>();
         inventory = new ArrayList<Item>();
@@ -107,16 +107,12 @@ public class NPC extends HittableEntity {
                 String line = in.readLine();
                 name = line;
                 line = in.readLine();
-                flagsCount = Integer.parseInt(line);
-                for (int j =0; j < flagsCount; ++j) {
+                varsCount = Integer.parseInt(line);
+                for (int j =0; j < varsCount; ++j) {
                     line = in.readLine();
-                    flagNames.add(line);
+                    varNames.add(line);
                     line = in.readLine();
-                    if (line.equals("0")) {
-                        flags.add(false);
-                    } else {
-                        flags.add(true);
-                    }
+                    vars.add(Integer.parseInt(line));
                 }
                 line = in.readLine();
                 r = Float.parseFloat(line);
@@ -442,37 +438,28 @@ public class NPC extends HittableEntity {
         }
     }
 
-    public void updateFlagsAfterRemoval(Item droppedItem) {
-        int index = flagNames.indexOf(droppedItem.flagName);
-        if (index < flags.size() && index >= 0 && flags.get(index)) {
-            flags.set(index, false);
-            changedFlags.add(flagNames.get(index));
+    public void updateVarsAfterRemoval(Item droppedItem) {
+        int index = varNames.indexOf(droppedItem.varName);
+        if (index < vars.size() && index >= 0 && vars.get(index) != 0) {
+            vars.set(index, 0);
+            changedVars.add(varNames.get(index));
         }
     }
 
     protected void checkInventory() {
-        //changedFlags.clear();
-        //if (lastInventorySize == inventory.size()) return;
-        for (int i = 0; i < flags.size(); ++i) {
-            boolean found = false;
+        for (int i = 0; i < vars.size(); ++i) {
             for (int j = 0; j < inventory.size(); ++j) {
                 Item item = inventory.get(j);
-                if (item.flagName.equals(flagNames.get(i))) {
-                    //int index = flagNames.indexOf(item.flagName);
-                    found = true;
+                if (item.varName.equals(varNames.get(i))) {
                     if (item.sides == objectInHands || item.sides == headWear || item.sides == bodyWear) {
-                        flags.set(i, true);
-                        changedFlags.add(flagNames.get(i));
-                    } else if (flags.get(i)) {
-                        flags.set(i, false);
-                        changedFlags.add(flagNames.get(i));
+                        vars.set(i, 1);
+                        changedVars.add(varNames.get(i));
+                    } else if (vars.get(i) != 0) {
+                        vars.set(i, 0);
+                        changedVars.add(varNames.get(i));
                     }
                 }
             }
-            /*if (!found && flags.get(i)) {
-                flags.set(i, false);
-                changedFlags.add(flagNames.get(i));
-            }*/
         }
     }
 

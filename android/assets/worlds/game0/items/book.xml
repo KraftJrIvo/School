@@ -1,4 +1,4 @@
-<item id = "0" mass="1" equip_slot="NONE" stackable="false" maxStack="1" flag="" replaces="">
+<item id = "0" mass="1" equip_slot="NONE" stackable="false" maxStack="1" var="" replaces="">
     <eng 
         name = "Book" 
         description = "This is a book. Book about words. It has an end."

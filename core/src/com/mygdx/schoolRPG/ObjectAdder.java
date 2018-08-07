@@ -480,11 +480,11 @@ public class ObjectAdder {
                         if (t == 0 || blocks.get(4).get(t-1).get(i) != 11) worldObjectsHandler.addSolid(he, world, -1, null, objectCheckId);
                     } else {
                         if (img != -1) {
-                            Entity e = new Entity(assets, curTile, t * area.TILE_WIDTH + area.TILE_WIDTH / 2 - curTile.getRegionWidth() / 2, y+2-curTile.getRegionHeight()/2, 0, 0, blocks.get(5).get(t).get(i));
+                            Entity e = new Entity(assets, curTile, t * area.TILE_WIDTH - area.TILE_WIDTH/2, y+2-curTile.getRegionHeight()/2, 0, 0, blocks.get(5).get(t).get(i));
                             e.floor = true;
                             worldObjectsHandler.addNonSolid(e, -1, objectCheckId);
                         } else y+=2;
-                        HittableEntity he = new HittableEntity(assets, (TextureRegion)null, t*area.TILE_WIDTH + area.TILE_WIDTH/2-curTile.getRegionWidth()/2, y,
+                        HittableEntity he = new HittableEntity(assets, (TextureRegion)null, t*area.TILE_WIDTH, y,
                                 width * surfacesCount, height, floorHeight, false, blocks.get(5).get(t).get(i));
                         he.setSides(false, false, true, false);
                         he.isPlatform = true;

@@ -1,12 +1,12 @@
 <dialog>
-  <speechBlock id="0" textEng="Start&#10;" textRus="Начало&#10;" speakerNameEng="" speakerNameRus="">
+  <speechBlock id="0" textEng="Start&#10;" textRus="Начало&#10;" speakerId="" speakerNameEng="" speakerNameRus="">
     <sprite name=""/>
-    <link priority="0" textEng="" textRus="" goto="1" condition="f playerHasBook 0"/>
-    <link priority="1" textEng="" textRus="" goto="4" condition=""/>
+    <link priority="0" textEng="" textRus="" goto="4" condition="playerTookBook"/>
+    <link priority="1" textEng="" textRus="" goto="1" condition=""/>
   </speechBlock>
   <speechBlock id="1" textEng="(A pile of bags. Man, are they huge!)
 &#10;(What's in them, I wonder)&#10;" textRus="(Сумки навалены. Здоровые какие!)
-&#10;(Что в них, интересно)&#10;" speakerNameEng="You" speakerNameRus="Ты">
+&#10;(Что в них, интересно)&#10;" speakerId="" speakerNameEng="You" speakerNameRus="Ты">
     <sprite name="bags"/>
     <link priority="0" textEng="" textRus="" goto="2" condition=""/>
   </speechBlock>
@@ -14,7 +14,7 @@
 &#10;(...)
 &#10;(Hmm... A lot of books)&#10;" textRus="(Посмотрим...)
 &#10;(...)
-&#10;(Хмм... Куча книг)&#10;" speakerNameEng="You" speakerNameRus="Ты">
+&#10;(Хмм... Куча книг)&#10;" speakerId="" speakerNameEng="You" speakerNameRus="Ты">
     <sprite name="bags_open"/>
     <link priority="0" textEng="" textRus="" goto="3" condition=""/>
   </speechBlock>
@@ -24,22 +24,21 @@
 &#10;{At least I'm not a thief}&#10;" textRus="(Возьму одну, если никто не против)
 &#10;{Ты это сказал про себя. Никто и не мог возразить}
 &#10;(Пф-ф-ф зануда)
-&#10;{Я хотя бы не вор}&#10;" speakerNameEng="You" speakerNameRus="Ты">
+&#10;{Я хотя бы не вор}&#10;" speakerId="" speakerNameEng="You" speakerNameRus="Ты">
     <sprite name="book"/>
     <link priority="0" textEng="" textRus="" goto="5" condition=""/>
   </speechBlock>
-  <speechBlock id="4" textEng="(Bags. They're full of books still)
+  <speechBlock id="4" textEng="(Bags. They're still full of books)
 &#10;(I won't take anymore)
 &#10;{Even you have some limits! Who knew...}&#10;" textRus="(Сумки. Они по-прежнему набиты книгами)
 &#10;(Больше не буду брать)
-&#10;{Даже у тебя есть пределы! Кто бы знал...}&#10;" speakerNameEng="You" speakerNameRus="Ты">
+&#10;{Даже у тебя есть пределы! Кто бы знал...}&#10;" speakerId="" speakerNameEng="You" speakerNameRus="Ты">
     <sprite name="bags"/>
-    <flagChange charId="0" Id="1" value="true"/>
   </speechBlock>
-  <speechBlock id="5" textEng="" textRus="" speakerNameEng="You" speakerNameRus="Ты">
+  <speechBlock id="5" textEng="" textRus="" speakerId="" speakerNameEng="You" speakerNameRus="Ты">
     <sprite name="book"/>
-    <flagChange charId="0" Id="1" value="true"/>
+    <varChange charId="0" Id="playerTookBook" value="1"/>
     <itemTransfer to="0" itemName="book" count="1" canGiveEng="[You took a book from one of the bags]" canGiveRus="[Ты взял книгу из одной из сумок]" cantGiveEng="" cantGiveRus=""/>
   </speechBlock>
 </dialog>
-<!--<editor>[{"x":900,"y":200,"lines":[["Start"],["Начало"]],"spriteName":"","w":69.66666666666667,"h":19,"text":["Start","Начало"],"parent":-1,"links":[["",""],["",""]],"linkedTextBlocks":[1,4],"linksPriorities":[0,1],"linksConditions":["f playerHasBook 0",""],"speakerName":["",""],"linkRemove":-1,"isStart":true},{"x":709,"y":276,"lines":[["(A pile of bags. Man, are they huge!)\n","(What's in them, I wonder)"],["(Сумки навалены. Здоровые какие!)\n","(Что в них, интересно)"]],"spriteName":"bags","w":177.52083333333334,"h":34,"text":["(A pile of bags. Man, are they huge!)\n(What's in them, I wonder)","(Сумки навалены. Здоровые какие!)\n(Что в них, интересно)"],"parent":0,"links":[["",""]],"linkedTextBlocks":[2],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":741,"y":354,"lines":[["(Let's see...)\n","(...)\n","(Hmm... A lot of books)"],["(Посмотрим...)\n","(...)\n","(Хмм... Куча книг)"]],"spriteName":"bags_open","w":114.55729166666667,"h":49,"text":["(Let's see...)\n(...)\n(Hmm... A lot of books)","(Посмотрим...)\n(...)\n(Хмм... Куча книг)"],"parent":1,"links":[["",""]],"linkedTextBlocks":[3],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":731,"y":459,"lines":[["(I'll take one if nobody minds)\n","{You said it in your thoughts. Nobody could reply}\n","(Pf-f-f you're boring)\n","{At least I'm not a thief}"],["(Возьму одну, если никто не против)\n","{Ты это сказал про себя. Никто и не мог возразить}\n","(Пф-ф-ф зануда)\n","{Я хотя бы не вор}"]],"spriteName":"book","w":245.359375,"h":64,"text":["(I'll take one if nobody minds)\n{You said it in your thoughts. Nobody could reply}\n(Pf-f-f you're boring)\n{At least I'm not a thief}","(Возьму одну, если никто не против)\n{Ты это сказал про себя. Никто и не мог возразить}\n(Пф-ф-ф зануда)\n{Я хотя бы не вор}"],"parent":2,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":1000,"y":308,"lines":[["(Bags. They're full of books still)\n","(I won't take anymore)\n","{Even you have some limits! Who knew...}"],["(Сумки. Они по-прежнему набиты книгами)\n","(Больше не буду брать)\n","{Даже у тебя есть пределы! Кто бы знал...}"]],"spriteName":"bags","w":201.86979166666666,"h":49,"text":["(Bags. They're full of books still)\n(I won't take anymore)\n{Even you have some limits! Who knew...}","(Сумки. Они по-прежнему набиты книгами)\n(Больше не буду брать)\n{Даже у тебя есть пределы! Кто бы знал...}"],"parent":0,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false,"flagChange":true,"flagCharId":0,"flagId":1,"flagVal":true},{"x":822,"y":582,"lines":[[],[]],"spriteName":"book","w":69.66666666666667,"h":4,"text":["",""],"parent":3,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false,"flagChange":true,"flagCharId":0,"flagId":1,"flagVal":true,"itemTransfer":true,"giveTo":0,"itemName":"book","itemsCount":1,"canGiveSpeech":["[You took a book from one of the bags]","[Ты взял книгу из одной из сумок]"],"cantGiveSpeech":["",""]}]</editor>-->
+<!--<editor>[{"x":900,"y":200,"lines":[["Start"],["Начало"]],"spriteName":"","speakerId":"","w":69.66666666666667,"h":19,"text":["Start","Начало"],"parent":-1,"links":[["",""],["",""]],"linkedTextBlocks":[4,1],"linksPriorities":[0,1],"linksConditions":["playerTookBook",""],"speakerName":["",""],"linkRemove":-1,"isStart":true},{"x":709,"y":276,"lines":[["(A pile of bags. Man, are they huge!)\n","(What's in them, I wonder)"],["(Сумки навалены. Здоровые какие!)\n","(Что в них, интересно)"]],"spriteName":"bags","speakerId":"","w":177.52777099609375,"h":34,"text":["(A pile of bags. Man, are they huge!)\n(What's in them, I wonder)","(Сумки навалены. Здоровые какие!)\n(Что в них, интересно)"],"parent":0,"links":[["",""]],"linkedTextBlocks":[2],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":741,"y":354,"lines":[["(Let's see...)\n","(...)\n","(Hmm... A lot of books)"],["(Посмотрим...)\n","(...)\n","(Хмм... Куча книг)"]],"spriteName":"bags_open","speakerId":"","w":114.5499979654948,"h":49,"text":["(Let's see...)\n(...)\n(Hmm... A lot of books)","(Посмотрим...)\n(...)\n(Хмм... Куча книг)"],"parent":1,"links":[["",""]],"linkedTextBlocks":[3],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":731,"y":459,"lines":[["(I'll take one if nobody minds)\n","{You said it in your thoughts. Nobody could reply}\n","(Pf-f-f you're boring)\n","{At least I'm not a thief}"],["(Возьму одну, если никто не против)\n","{Ты это сказал про себя. Никто и не мог возразить}\n","(Пф-ф-ф зануда)\n","{Я хотя бы не вор}"]],"spriteName":"book","speakerId":"","w":245.3722127278646,"h":64,"text":["(I'll take one if nobody minds)\n{You said it in your thoughts. Nobody could reply}\n(Pf-f-f you're boring)\n{At least I'm not a thief}","(Возьму одну, если никто не против)\n{Ты это сказал про себя. Никто и не мог возразить}\n(Пф-ф-ф зануда)\n{Я хотя бы не вор}"],"parent":2,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":1000,"y":308,"lines":[["(Bags. They're still full of books)\n","(I won't take anymore)\n","{Even you have some limits! Who knew...}"],["(Сумки. Они по-прежнему набиты книгами)\n","(Больше не буду брать)\n","{Даже у тебя есть пределы! Кто бы знал...}"]],"spriteName":"bags","speakerId":"","w":201.8888956705729,"h":49,"text":["(Bags. They're still full of books)\n(I won't take anymore)\n{Even you have some limits! Who knew...}","(Сумки. Они по-прежнему набиты книгами)\n(Больше не буду брать)\n{Даже у тебя есть пределы! Кто бы знал...}"],"parent":0,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false},{"x":822,"y":582,"lines":[[],[]],"spriteName":"book","speakerId":"","w":69.66666666666667,"h":4,"text":["",""],"parent":3,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["You","Ты"],"linkRemove":-1,"isStart":false,"varChange":true,"varCharId":0,"varId":"playerTookBook","varVal":1,"itemTransfer":true,"giveTo":0,"itemName":"book","itemsCount":1,"canGiveSpeech":["[You took a book from one of the bags]","[Ты взял книгу из одной из сумок]"],"cantGiveSpeech":["",""]}]</editor>-->

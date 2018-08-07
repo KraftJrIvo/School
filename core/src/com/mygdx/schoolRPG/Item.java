@@ -33,14 +33,14 @@ public class Item {
     }
     EquipSlot equipSlot;
     float mass;
-    String fileName;
+    public String fileName;
     ArrayList<String> namesInLanguages;
     ArrayList<String> descriptionsInLanguages;
     String replaces;
-    int stack;
+    public int stack;
     boolean stackable;
     int maxStack;
-    String flagName;
+    String varName;
     Texture icon;
     Texture bigIcon;
     GlobalSequence sides;
@@ -63,7 +63,7 @@ public class Item {
         equipSlot = item.equipSlot;
         stackable = item.stackable;
         maxStack = item.maxStack;
-        flagName = item.flagName;
+        varName = item.varName;
         replaces = item.replaces;
         namesInLanguages = item.namesInLanguages;
         descriptionsInLanguages = item.descriptionsInLanguages;
@@ -112,7 +112,7 @@ public class Item {
         }
         stackable = Boolean.parseBoolean(xml.getDocumentElement().getAttribute("stackable"));
         maxStack = Integer.parseInt(xml.getDocumentElement().getAttribute("maxStack"));
-        flagName = xml.getDocumentElement().getAttribute("flag");
+        varName = xml.getDocumentElement().getAttribute("var");
         replaces = xml.getDocumentElement().getAttribute("replaces");
         NodeList nList = xml.getElementsByTagName("eng");
         Node nNode = nList.item(0);

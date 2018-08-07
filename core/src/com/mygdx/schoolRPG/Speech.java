@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
+import com.mygdx.schoolRPG.tools.ConditionParser;
 
 import java.util.ArrayList;
 
@@ -23,10 +24,10 @@ public class Speech {
     ArrayList<Boolean> progress;
     Texture overlay, texture;
     BitmapFont font;
-    int flagId = -1;
-    boolean flagVal;
-    int flagCharId = -1;
-    NPC flagTarget;
+    String varId = "";
+    String varVal;
+    int varCharId = -1;
+    NPC varTarget;
     Menu menu;
     NPC target;
     int currentPhrase;
@@ -45,7 +46,9 @@ public class Speech {
     Player player;
     int charId;
     int prevSpeechId = -1;
-    boolean prevFlagVal;
+    int prevVarVal;
+    ConditionParser parser;
+    Color mainColor;
 
     public void reset() {
         oldCharCount = 0;
@@ -61,15 +64,16 @@ public class Speech {
     }
 
     public void undoActions() {
-        if (flagId != -1) {
+        if (varId.length() > 0) {
             if (charId == 0) {
-                player.world.flags.set(flagId, prevFlagVal);
-                dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
+                player.world.vars.set(player.world.varNames.indexOf(varId), prevVarVal);
+                dialog.changedVarsNames.add(varId);
             } else {
-                flagTarget.flags.set(flagId, prevFlagVal);
-                dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+                int index = varTarget.varNames.indexOf(varId);
+                varTarget.vars.set(index, prevVarVal);
+                dialog.changedVarsNames.add(varId);
             }
-            dialog.changedFlagsVals.add(prevFlagVal);
+            dialog.changedVarsVals.add(prevVarVal);
         }
         World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
         for (int i = 0; i < itemsToGiveCount; ++i) {
@@ -88,17 +92,30 @@ public class Speech {
     }
 
     public void doActions() {
-        if (flagId != -1) {
+        if (varId.length() > 0) {
+            int newVal = parser.evalVal(varVal);
             if (charId == 0) {
-                prevFlagVal = player.world.flags.get(flagId);
-                player.world.flags.set(flagId, flagVal);
-                dialog.changedFlagsNames.add(player.world.flagNames.get(flagId));
+                int index = player.world.varNames.indexOf(varId);
+                prevVarVal = index == -1 ? 0 : player.world.vars.get(index);
+                if (index == -1) {
+                    player.world.varNames.add(varId);
+                    player.world.vars.add(newVal);
+                } else {
+                    player.world.vars.set(index, newVal);
+                }
+                dialog.changedVarsNames.add(varId);
             } else {
-                prevFlagVal = flagTarget.flags.get(flagId);
-                flagTarget.flags.set(flagId, flagVal);
-                dialog.changedFlagsNames.add(flagTarget.flagNames.get(flagId));
+                int index = varTarget.varNames.indexOf(varId);
+                prevVarVal = index == -1 ? 0 : varTarget.vars.get(index);
+                if (index == -1) {
+                    varTarget.varNames.add(varId);
+                    varTarget.vars.add(newVal);
+                } else {
+                    varTarget.vars.set(index, newVal);
+                }
+                dialog.changedVarsNames.add(varId);
             }
-            dialog.changedFlagsVals.add(flagVal);
+            dialog.changedVarsVals.add(newVal);
         }
         target.removeItems(itemToGive, itemsToGiveCount);
         World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
@@ -116,15 +133,17 @@ public class Speech {
         }*/
     }
 
-    public Speech(Dialog dialog, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int flagCharId, int flagId, boolean flagVal, ArrayList<NPC> npcs, Player player, Menu menu) {
+    public Speech(Dialog dialog, int speakerId, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int varCharId, String varId, String varVal, ArrayList<NPC> npcs, Player player, Menu menu, ConditionParser parser) {
         this.menu = menu;
         this.npcs = npcs;
         this.dialog = dialog;
         this.speaker = speaker;
         this.phrases = phrases;
-        this.flagCharId = flagCharId;
-        this.flagVal = flagVal;
+        this.varCharId = varCharId;
+        this.varVal = varVal;
         this.player = player;
+        this.parser = parser;
+        this.speakerId = speakerId;
         progress = new ArrayList<Boolean>();
         for (int i =0; i < phrases.size(); ++i) {
             progress.add(false);
@@ -133,19 +152,21 @@ public class Speech {
         this.charId = charId;
         overlay = assets.get("dialog_overlay2.png", Texture.class);
         font = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
-        this.flagId = flagId;
+        this.varId = varId;
         if (charId == 0) {
             target = player;
         }
+        mainColor = player.charColor;
         if (npcs != null) {
             for (int i =0; i < npcs.size(); ++i) {
                 if (npcs.get(i).charId == charId) {
                     target = npcs.get(i);
-                    //break;
                 }
-                if (npcs.get(i).charId == flagCharId) {
-                    flagTarget = npcs.get(i);
-                    //break;
+                if (npcs.get(i).charId == varCharId) {
+                    varTarget = npcs.get(i);
+                }
+                if (npcs.get(i).charId == speakerId) {
+                    mainColor = npcs.get(i).charColor;
                 }
             }
         }
@@ -194,9 +215,7 @@ public class Speech {
         //System.out.println(screenRatioX + " " + screenRatioY);
         if (texture != null) batch.draw(texture, Gdx.graphics.getWidth()/screenRatioX/2 - texture.getWidth(), 0, texture.getWidth() * 2, texture.getHeight() * 2);
         batch.draw(overlay, Gdx.graphics.getWidth()/screenRatioX/2 - overlay.getWidth() /2, Gdx.graphics.getHeight()/screenRatioY/8);
-        if (target != null) {
-            font.setColor(target.charColor);
-        }
+        font.setColor(mainColor);
         font.draw(batch, speaker, textX, textY);
         font.setColor(Color.WHITE);
         if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.justTouched())) {
@@ -333,7 +352,7 @@ public class Speech {
         }
         oldCharCount = charCount;
         charCount = (int)Math.floor(curTime / millsPerChar);
-
+        if (charCount > phrases.get(currentPhrase).length()) charCount = phrases.get(currentPhrase).length();
         if (charCount != oldCharCount && charCount > 0 && phrases.get(currentPhrase).charAt(charCount - 1) != ' ') {
             float volume = 1.0f;
             if (roundBracketsStarted || squareBracketsStarted || curlyBracketsStarted) {
