@@ -163,7 +163,7 @@ public class Dialog implements InputProcessor {
                 }
                 if (foundAnswer) {
                     for (int j = 0; j < speechTransitionsText.get(i).size(); ++j) {
-                        if (parser.parseCondition(speechTransitionsConditions.get(i).get(j))) {
+                        if (parser.parseCondition(speechTransitionsConditions.get(i).get(j), null)) {
                             phrases.add(speechTransitionsText.get(i).get(j).get(language));
                         }
                     }
@@ -204,7 +204,7 @@ public class Dialog implements InputProcessor {
             }
             if (maxPriorityId != -1) {
                 checkedLinks.add(maxPriorityId);
-                if (parser.parseCondition(speechTransitionsConditions.get(id).get(maxPriorityId))) {
+                if (parser.parseCondition(speechTransitionsConditions.get(id).get(maxPriorityId), null)) {
                     return speechTransitionsIds.get(id).get(maxPriorityId);
                 }
             } else {

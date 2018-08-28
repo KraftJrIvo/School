@@ -655,19 +655,18 @@ public class HittableEntity extends Entity {
             hitBox.y += pSpeed/10;
             if (pSpeed == 0) pSpeed += 1;
             else {
-                pSpeed += 4;
-            }
+                pSpeed += 4;            }
             if (!inWater && !inGoo) {
                 if (pSpeed > 40) {
                     pSpeed = 40;
                 }
             } else if (inGoo) {
-                if (pSpeed > 10) {
-                    pSpeed = 10;
+                if (pSpeed > 6) {
+                    pSpeed = 6;
                 }
             } else {
-                if (pSpeed > 20) {
-                    pSpeed = 20;
+                if (pSpeed > 10) {
+                    pSpeed = 10;
                 }
             }
             canLeft = true;

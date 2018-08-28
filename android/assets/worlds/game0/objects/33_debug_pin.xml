@@ -1,0 +1,9 @@
+<object statesCount="1" startState="0" radius="10" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="false"
+           tex="beacon"
+           texType="sprite"
+           varName="x,y,z"
+		   switchCondition="TRUE"
+           varVal="pinX,pinY,pinZ"/> 
+</object>

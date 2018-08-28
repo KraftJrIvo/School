@@ -46,6 +46,11 @@ public class DeathZone extends Entity {
                     points.add(new MyPoint2f(x-a/2+i, y-i*b/a/2));
                     points.add(new MyPoint2f(x+a/2-i, y-i*b/a/2));
                 }*/
+                //x += 1;
+                //y += 1;
+                a -= 2;
+                b -= 2;
+
                 if (angle == 0) {
                     points.add(new MyPoint2f(x-a/2+a/2, y));
                     points.add(new MyPoint2f(x-a/4+a/2, y-b/2));
@@ -71,6 +76,11 @@ public class DeathZone extends Entity {
                     points.add(new MyPoint2f(x-b/2+a/2, y+a/4));
                     points.add(new MyPoint2f(x+a/2, y+a/2));
                 }
+
+                //x -= 1;
+                //y -= 1;
+                a += 1;
+                b += 1;
             }
         }
         else if (shape == ZoneShape.CIRCLE) {
@@ -121,6 +131,7 @@ public class DeathZone extends Entity {
         for (int i =0; i < points.size(); ++i) {
             if (rect.contains(points.get(i).x, points.get(i).y)) return true;
         }
+
         return false;
     }
 }

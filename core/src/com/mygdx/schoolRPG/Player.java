@@ -59,7 +59,7 @@ public class Player extends NPC {
         }
 
         int jumpStep = 35;
-        if (inGoo) jumpStep = 14;
+        if (inGoo || inWater) jumpStep = 20;
 
         if (!controlsBlocked && movingConfiguration.jump == 1) {
             if (!jumping) {

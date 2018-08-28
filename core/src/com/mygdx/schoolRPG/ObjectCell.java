@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.XmlReader;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.*;
+import javafx.util.Pair;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,6 +74,7 @@ public class ObjectCell {
     public ArrayList<ArrayList<Integer>> statesBodyXOffsets;
     public ArrayList<ArrayList<Integer>> statesBodyYOffsets;
     public ArrayList<String> statesVars;
+    public ArrayList<ParticleProperties.ParticleSpawnProperties> statesJumpAsPrts;
     public ArrayList<String> statesTeleportWorlds;
     public ArrayList<String> statesTeleportRooms;
     public ArrayList<Coords> statesTeleportCoords;
@@ -104,6 +106,12 @@ public class ObjectCell {
     public boolean objectChecked = false;
     public int objectId = -1;
     ConditionParser parser;
+    int forceNextState = -1;
+    boolean jumpedThisState = false;
+    boolean isJumping = false;
+    boolean shouldJump = false;
+    int jumpState = -1;
+    public Particle jumpPrt = null;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items, Area area) {
         this.type = type;
@@ -128,11 +136,11 @@ public class ObjectCell {
     public void reset() {
         x+=cellOffsetX;
         y+=cellOffsetY;
-        entityX = entity.x % width;
+        entityX = entity.x - (x-1) * width;
         if (hIsY) {
-            entityY = entity.h % height;
+            entityY = entity.h - (y-1) * height;
         } else {
-            entityY = entity.y % height;
+            entityY = entity.y - (y-1) * height;
         }
         transfer = false;
         cellOffsetX = 0;
@@ -143,6 +151,12 @@ public class ObjectCell {
         cellOffsetX = (int)Math.floor(entityX / width);
         cellOffsetY = (int)Math.floor(entityY / height);
         if (cellOffsetX == 0 && cellOffsetY == 0) {
+            entityX = entity.x % width;
+            /*if (hIsY) {
+                entityY = entity.h % height;
+            } else {
+                entityY = entity.y % height;
+            }*/
             entityX = entity.x - (x-1) * width;
             if (hIsY) {
                 entityY = entity.h - (y-1) * height;
@@ -221,9 +235,54 @@ public class ObjectCell {
         }
     }
 
+    private ArrayList<Pair<String, Integer>> prepareSpecialVars(Area area) {
+        ArrayList<Pair<String, Integer>> specialVarVals = new ArrayList<Pair<String, Integer>>();
+        specialVarVals.add(new Pair<String, Integer>("x", (int)entity.x));
+        specialVarVals.add(new Pair<String, Integer>("y",(int)entity.y));
+        specialVarVals.add(new Pair<String, Integer>("z",(int)entity.z));
+        specialVarVals.add(new Pair<String, Integer>("state",currentState));
+        specialVarVals.add(new Pair<String, Integer>("px",(int)area.player.x));
+        specialVarVals.add(new Pair<String, Integer>("py",(int)area.player.y));
+        specialVarVals.add(new Pair<String, Integer>("pz",(int)area.player.z));
+        return specialVarVals;
+    }
+
+    private boolean checkSpecialVar(Area area, String name, int val) {
+        ArrayList<Pair<String, Integer>> specialVarVals = prepareSpecialVars(area);
+        for (int i = 0; i < specialVarVals.size(); ++i) {
+            Pair<String, Integer> specialVarVal = specialVarVals.get(i);
+            if (specialVarVal.getKey().equals(name)) {
+                if (name.equals("x")) {
+                    entity.x = val;
+                    entityX = entity.x - (x-1) * width;
+                    return true;
+                } else if (name.equals("y")) {
+                    entity.y = val;
+                    if (hIsY) {
+                        entity.h = val;
+                        entityY = entity.h - (y-1) * height;
+                    } else {
+                        entityY = entity.y - (y-1) * height;
+                    }
+                    return true;
+                } else if (name.equals("z")) {
+                    entity.z = val;
+                    return true;
+                } else if (name.equals("state")) {
+                    forceNextState = val;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void activate(String worldDir, AssetManager assets, ArrayList<String> varNames, ArrayList<Integer> vars, Area area, int charId, GameMenu menu, boolean playerActivated, boolean proximity) {
-        if (!proximity && !statesSwitchables.get(currentState) && (varNames.contains(statesConditionVars.get(currentState))
-                && !parser.parseCondition(statesConditionVars.get(currentState)))) return;
+        if (!proximity && !statesSwitchables.get(currentState) && varNames.contains(statesConditionVars.get(currentState))) {
+            if (!parser.parseCondition(statesConditionVars.get(currentState), prepareSpecialVars(area))) {
+                return;
+            }
+        }
         if (statesSwitchSounds.get(currentState) != null && !menu.paused && playerActivated) {
             statesSwitchSounds.get(currentState).play(menu.soundVolume / 100.0f);
         }
@@ -239,32 +298,46 @@ public class ObjectCell {
         }
         boolean found = false;
         if (statesVars.get(currentState).length() > 0) {
-            int newVarVal;
-            if (statesVarVals.get(currentState) == null) {
-                if (varNames.contains(statesVars.get(currentState))) {
-                    int index = varNames.indexOf(statesVars.get(currentState));
-                    if (vars.get(index) == 0) newVarVal = 1;
-                    else newVarVal = 0;
-                    vars.set(index, newVarVal);
-                    area.world.changedVarNames.add(varNames.get(index));
+            String[] multiVar = statesVars.get(currentState).split(",");
+            String[] multiVal = null;
+            if (statesVarVals.get(currentState) != null) {
+                multiVal = statesVarVals.get(currentState).split(",");
+            }
+            for (int i = 0; i < multiVar.length; ++i) {
+                String curVar = multiVar[i];
+                int newVarVal;
+                if (statesVarVals.get(currentState) == null) { //in case it's TOGGLE (i know)
+                    if (varNames.contains(curVar)) {
+                        int index = varNames.indexOf(curVar);
+                        if (vars.get(index) == 0) newVarVal = 1;
+                        else newVarVal = 0;
+                        vars.set(index, newVarVal);
+                        area.world.changedVarNames.add(varNames.get(index));
+                    } else {
+                        newVarVal = 1;
+                        if (!checkSpecialVar(area, curVar, newVarVal)) {
+                            varNames.add(curVar);
+                            vars.add(newVarVal);
+                            area.world.changedVarNames.add(curVar);
+                        }
+                    }
                 } else {
-                    newVarVal = 1;
-                    varNames.add(statesVars.get(currentState));
-                    vars.add(newVarVal);
-                    area.world.changedVarNames.add(statesVars.get(currentState));
-                }
-            } else {
-                newVarVal = parser.evalVal(statesVarVals.get(currentState));
-                if (varNames.contains(statesVars.get(currentState))) {
-                    int index = varNames.indexOf(statesVars.get(currentState));
-                    vars.set(index, newVarVal);
-                    area.world.changedVarNames.add(varNames.get(index));
-                } else {
-                    varNames.add(statesVars.get(currentState));
-                    vars.add(newVarVal);
-                    area.world.changedVarNames.add(statesVars.get(currentState));
+                    newVarVal = parser.evalVal(multiVal[i], prepareSpecialVars(area));
+                    if (varNames.contains(curVar)) {
+                        int index = varNames.indexOf(curVar);
+                        vars.set(index, newVarVal);
+                        area.world.changedVarNames.add(varNames.get(index));
+                    } else if (!checkSpecialVar(area, curVar, newVarVal)) {
+                        varNames.add(curVar);
+                        vars.add(newVarVal);
+                        area.world.changedVarNames.add(curVar);
+                    }
                 }
             }
+        }
+        if (statesJumpAsPrts.get(currentState) != null) {
+            shouldJump = true;
+            jumpState = currentState;
         }
         if (!proximity) {
             if (statesGotos.get(currentState) == -1) {
@@ -276,6 +349,12 @@ public class ObjectCell {
             currentState = statesProximityGotos.get(currentState);
         }
         currentState = currentState % statesCount;
+        if (forceNextState != -1) {
+            currentState = forceNextState;
+            forceNextState = -1;
+        }
+        jumpedThisState = false;
+        jumpPrt = null;
         updateSoundState(menu);
         updateEntityState(assets, worldDir);
         this.charId = charId;
@@ -318,12 +397,11 @@ public class ObjectCell {
     }
 
     public void checkVars(String worldDir, AssetManager assets, ArrayList<String> varNames, ArrayList<Integer> vars, Area area, GameMenu menu) {
-        if (statesConditionVars.get(currentState).length() > 0 && parser.parseCondition(statesConditionVars.get(currentState))) {
-            int prevState;
+        if (statesConditionVars.get(currentState).length() > 0 && parser.parseCondition(statesConditionVars.get(currentState), prepareSpecialVars(area))) {
             do {
-                prevState = currentState;
                 activate(worldDir, assets, varNames, vars, area, charId, menu, false, false);
-            } while (parser.parseCondition(statesConditionVars.get(currentState)));
+                if (statesCount == 1) break;
+            } while (parser.parseCondition(statesConditionVars.get(currentState), prepareSpecialVars(area)));
         }
         if (statesSoundLoops.get(currentState) != null) {
             if (menu.paused || !area.isCurrent) {
@@ -379,12 +457,45 @@ public class ObjectCell {
     }
 
     public ArrayList<ParticleProperties.ParticleSpawnProperties> checkParticleEmission() {
+        ArrayList<ParticleProperties.ParticleSpawnProperties> allPrts = new ArrayList<ParticleProperties.ParticleSpawnProperties>();
         boolean res = (statesparticleSpawns.get(currentState).size() > 0) && (System.currentTimeMillis() - startTime - lastSpawned) > statesIntervals.get(currentState);
         if (res) {
             lastSpawned = System.currentTimeMillis() - startTime;
-            return statesparticleSpawns.get(currentState);
+            allPrts.addAll(statesparticleSpawns.get(currentState));
         }
-        return null;
+        if (shouldJump && statesJumpAsPrts.get(jumpState) != null && !jumpedThisState && !isJumping) {
+            allPrts.add(statesJumpAsPrts.get(jumpState));
+            jumpedThisState = true;
+            isJumping = true;
+            entity.draw = false;
+            shouldJump = false;
+        }
+        if (isJumping && jumpPrt != null && jumpPrt.floor) {
+            jumpPrt.alpha = 0;
+            isJumping = false;
+            entity.draw = true;
+            entity.x = jumpPrt.x;
+            entity.y = jumpPrt.y;
+            if (entity.tex != null) {
+                entity.x -= entity.tex.getWidth()/2.0f;
+            } else if (entity.texR != null) {
+                entity.x -= entity.texR.getRegionWidth()/2.0f;
+            }else if (entity.anim != null) {
+                entity.x -= entity.anim.getFirstFrame().getRegionWidth()/2.0f;
+            }
+            entity.y += entity.floorHeight/2.0f;
+            entityX = entity.x - (x-1) * width;
+            if (hIsY) {
+                entity.h = jumpPrt.y;
+                entityY = entity.h - (y-1) * height;
+            } else {
+                entityY = entity.y - (y-1) * height;
+            }
+
+        }
+        if (allPrts.isEmpty())
+            return null;
+        return allPrts;
     }
 
     private TextureRegion getDir(ArrayList<GlobalSequence> list, String dir) {
@@ -482,6 +593,7 @@ public class ObjectCell {
             statesTex = new ArrayList<String>();
             names = new ArrayList<String>();
             statesVars = new ArrayList<String>();
+            statesJumpAsPrts = new ArrayList<ParticleProperties.ParticleSpawnProperties>();
             statesDialogs = new ArrayList<String>();
             statesVarVals = new ArrayList<String>();
             statesparticleSpawns = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
@@ -579,6 +691,26 @@ public class ObjectCell {
                     statesSwitchSounds.add(assets.get(world.worldDir + "/sounds/" + switchSoundPath, Sound.class));
                 } else {
                     statesSwitchSounds.add(null);
+                }
+                NodeList jumpAsPrtNode = eElement.getElementsByTagName("jumpAsPrt");
+                if (jumpAsPrtNode.getLength() > 0) {
+                    Element spawnParams = (Element)jumpAsPrtNode.item(0);
+                    statesJumpAsPrts.add(new ParticleProperties().new ParticleSpawnProperties(
+                            assets,
+                            world.worldDir + "/sounds/" + spawnParams.getAttribute("spawnSound"),
+                            spawnParams.getAttribute("name"),
+                            Integer.parseInt(spawnParams.getAttribute("spawnX")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnY")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnZ")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnDir")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnSpeed")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnImpulse")),
+                            Float.parseFloat(spawnParams.getAttribute("dirSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("speedSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
+                    ));
+                } else {
+                    statesJumpAsPrts.add(null);
                 }
                 if (!eElement.getAttribute("switchTimer").equals("")) {
                     statesSwitchTimers.add(Integer.parseInt(eElement.getAttribute("switchTimer")));

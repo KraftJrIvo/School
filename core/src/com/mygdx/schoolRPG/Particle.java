@@ -27,6 +27,7 @@ public class Particle extends Entity {
     float YSpeed = 0;
     int curStateRemainingSpawns;
     long lastSpawned;
+    boolean important = false;
 
     public Particle(AssetManager assets, ParticleProperties pp, ParticleProperties.ParticleSpawnProperties spawnProperties, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
         super(assets, (Texture)null, spawnX + spawnProperties.spawnX, spawnY + spawnProperties.spawnY, pp.h, pp.floorHeight, 0);
@@ -68,8 +69,8 @@ public class Particle extends Entity {
             //speed = speed * pp.statesBounciness.get(curStateId);
         }
         if (pp.statesBounceSounds.get(curStateId) != null) {
-            if (floor && Math.abs(impulse) > 1.0f) {
-                pp.statesBounceSounds.get(curStateId).play((Math.abs(impulse)/5.0f) * pp.menu.soundVolume/100.0f);
+            if (floor && Math.abs(impulse) > 0) {
+                pp.statesBounceSounds.get(curStateId).play((Math.abs(impulse)/2.0f) * pp.menu.soundVolume/100.0f);
             } else {
                 pp.statesBounceSounds.get(curStateId).play((speed/10.0f) * pp.menu.soundVolume/100.0f);
             }

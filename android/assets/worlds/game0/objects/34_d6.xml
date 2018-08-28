@@ -1,0 +1,50 @@
+<object statesCount="6" startState="0" radius="10" offsetX="0" offsetY="0" container="false">
+    <state id="0"
+           switchable="true"
+           tex="d6_1"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+    <state id="1"
+           switchable="true"
+           tex="d6_2"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+    <state id="2"
+           switchable="true"
+           tex="d6_3"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+    <state id="3"
+           switchable="true"
+           tex="d6_4"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+    <state id="4"
+           switchable="true"
+           tex="d6_5"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+    <state id="5"
+           switchable="true"
+           tex="d6_6"
+           texType="sprite"
+           varName="state"
+           varVal="r_0_5"> 
+		<jumpAsPrt name="d6" spawnX="8" spawnY="2" spawnZ="21" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound=""/>	   
+	</state>
+</object>

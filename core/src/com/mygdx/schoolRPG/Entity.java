@@ -52,6 +52,7 @@ public class Entity implements Comparable {
     public TextureRegion charTexR = null;
     public AnimationSequence charAnim = null;
     public boolean drawChar = false;
+    public boolean draw = true;
 
     void setFloor(boolean b) {
         floor = b;
@@ -205,6 +206,7 @@ public class Entity implements Comparable {
             batch.draw(this.active, offsetX + x - this.active.getWidth()/2 + width/2 + activeX, offsetY - y + 3 + height + activeY);
             batch.setColor(Color.WHITE);
         }
+        if (!draw) return;
         float baseR = batch.getColor().r;
         float baseG = batch.getColor().g;
         float baseB = batch.getColor().b;

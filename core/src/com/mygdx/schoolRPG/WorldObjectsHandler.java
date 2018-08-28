@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.ConditionParser;
+import org.w3c.dom.css.Rect;
 
 import java.util.ArrayList;
 
@@ -382,7 +383,7 @@ public class WorldObjectsHandler {
     }
 
     public void invalidateLiquids() {
-
+        if (!fallingObjects.contains(area.player)) fallingObjects.add(area.player);
         for (int i = 0; i < fallingObjects.size(); ++i) {
             boolean inWater = false;
             boolean inGoo = false;
@@ -492,10 +493,12 @@ public class WorldObjectsHandler {
             area.player.invalidatePose(false, false);
             area.player.fall();
         } else {
+            Rectangle normHitbox = new Rectangle(area.player.hitBox.x + 2, area.player.hitBox.y + 5, area.player.hitBox.width-4, area.player.hitBox.height-3);
+            Rectangle nenormHitbox = new Rectangle(area.player.hitBox.x+1, area.player.hitBox.y-area.player.hitBox.height, area.player.hitBox.width-3, area.player.hitBox.height-2);
             for (int i = 0; i < obstacles.size(); i++) {
-                if (obstacles.get(i).collide(area.player.hitBox) && obstacles.get(i).shape == DeathZone.ZoneShape.RECT) {
+                if (obstacles.get(i).collide(normHitbox) && obstacles.get(i).shape == DeathZone.ZoneShape.RECT) {
                     killPlayer(world);
-                } else if (obstacles.get(i).shape != DeathZone.ZoneShape.RECT && obstacles.get(i).collide(new Rectangle(area.player.hitBox.x+1, area.player.hitBox.y-area.player.hitBox.height, area.player.hitBox.width-3, area.player.hitBox.height))) {
+                } else if (obstacles.get(i).shape != DeathZone.ZoneShape.RECT && obstacles.get(i).collide(nenormHitbox)) {
                     killPlayer(world);
                 }
             }
@@ -581,7 +584,7 @@ public class WorldObjectsHandler {
         }
         for (int i = 0; i < objects.size(); ++i) {
             //objects.get(i).updateSoundState(world.menu);
-            if (world.changedVarNames.size() > 0) {
+            if (world.changedVarNames.size() > 0 || world.varNames.size() == 0 || !area.isCurrent) {
                 objects.get(i).checkVars(worldDir, assets, world.varNames, world.vars, area, world.menu);
             }
             float ox = objects.get(i).entity.x + objects.get(i).offsetX;
@@ -601,6 +604,10 @@ public class WorldObjectsHandler {
                 for (int j = 0; j < spawns.size(); ++j) {
                     Particle prt = new Particle(area.assets, world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, ox, oy, oz);
                     addParticle(prt, -1, -1);
+                    if (j == spawns.size() - 1) {
+                        prt.important = true;
+                        objects.get(i).jumpPrt = prt;
+                    }
                 }
             }
         }
@@ -632,30 +639,16 @@ public class WorldObjectsHandler {
             for (int i = 0; i < objects.size(); ++i) {
                 float px = area.player.x;
                 float py = area.player.y;
-                float ox = objects.get(i).entity.x + objects.get(i).offsetX;
-                if (objects.get(i).entity.getClass() != HittableEntity.class) {
-                    if (objects.get(i).entity.anim != null) {
-                        ox += objects.get(i).entity.anim.getFirstFrame().getRegionWidth()/2;
-                    } else if (objects.get(i).entity.tex != null) {
-                        ox += objects.get(i).entity.tex.getWidth()/2;
-                    }
-                }
-                float oy = objects.get(i).entity.y + objects.get(i).offsetY;// + area.TILE_HEIGHT/2;
+                float ox;
+                float oy;
+                ox = objects.get(i).entity.x + objects.get(i).offsetX;
+                oy = objects.get(i).entity.y + objects.get(i).offsetY;
+
                 float dist = (float)Math.sqrt((px - ox) * (px - ox) + (py - oy) * (py - oy));
-                if (dist < objects.get(i).radius && dist < minDist) {
+                if (dist < objects.get(i).radius && dist < minDist && !objects.get(i).isJumping) {
                     minDist = dist;
                     minDistID = i;
                 }
-                /*ArrayList<ParticleProperties.ParticleSpawnProperties> spawns = objects.get(i).checkParticleEmission();
-                if (!world.menu.paused && spawns != null) {
-                    ox = objects.get(i).entity.x;
-                    oy = objects.get(i).entity.y;
-                    float oz = objects.get(i).entity.z;
-                    for (int j = 0; j < spawns.size(); ++j) {
-                        Particle prt = new Particle(area.assets, world.getParticleByName(spawns.get(j).particleName), spawns.get(j), area.platformMode, ox, oy, oz);
-                        addParticle(prt, -1);
-                    }
-                }*/
             }
 
             if (minDistID >= 0) {
@@ -795,12 +788,23 @@ public class WorldObjectsHandler {
             }
             particles.get(i).fall();
             invalidateParticlesCollisions(particles.get(i));
-            if (particles.get(i).alpha <= 0 || particles.get(i).x > area.width*area.TILE_WIDTH || particles.get(i).y > area.height*area.TILE_HEIGHT ||
-                    particles.get(i).x < 0 || (particles.get(i).y < -area.TILE_HEIGHT && !area.platformMode) || particles.get(i).z > 500) {
+            if (particles.get(i).alpha <= 0 || particles.get(i).z > 500) {
                 deleteObjectCellsForEntity(particles.get(i));
                 fallingObjects.remove(particles.get(i));
                 particles.get(i).stopSounds();
+                particles.get(i).floor = true;
                 particles.remove(i);
+            } else if (particles.get(i).x > area.width*area.TILE_WIDTH || particles.get(i).y > area.height*area.TILE_HEIGHT ||
+                    particles.get(i).x < 0 || (particles.get(i).y < -area.TILE_HEIGHT && !area.platformMode)) {
+                if (particles.get(i).important) {
+                    particles.get(i).bounce(false, true);
+                } else {
+                    deleteObjectCellsForEntity(particles.get(i));
+                    fallingObjects.remove(particles.get(i));
+                    particles.get(i).stopSounds();
+                    particles.get(i).floor = true;
+                    particles.remove(i);
+                }
             }
         }
         if (liquidSurfaces != null) {
@@ -964,6 +968,12 @@ public class WorldObjectsHandler {
             deleteObjectCellsForEntity(particles.get(particles.size()-1));
             particles.get(particles.size()-1).stopSounds();
             particles.remove(particles.size()-1);
+        }
+    }
+
+    public void stopParticleSounds() {
+        for (int i = 0; i < particles.size(); ++i) {
+            particles.get(i).stopSounds();
         }
     }
 

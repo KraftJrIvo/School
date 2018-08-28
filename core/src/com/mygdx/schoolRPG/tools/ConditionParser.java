@@ -2,6 +2,7 @@ package com.mygdx.schoolRPG.tools;
 
 import com.mygdx.schoolRPG.NPC;
 import com.mygdx.schoolRPG.Player;
+import javafx.util.Pair;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ public class ConditionParser {
     ArrayList<NPC> npcs;
     public Player player;
     int mainCharId;
+    ArrayList<Pair<String, Integer>> specialVars;
 
     public ConditionParser(ArrayList<NPC> npcs, Player player, int mainCharId) {
         this.npcs = npcs;
@@ -28,6 +30,7 @@ public class ConditionParser {
             }
         }
         int val = 0;
+        boolean valSet = false;
         if (var.startsWith("i_")) {
             String params[] = var.split("_");
             int ownerId = Integer.parseInt(params[1]);
@@ -40,6 +43,7 @@ public class ConditionParser {
                     }
                 }
                 val = itemsCountFound;
+                valSet = true;
             } else {
                 for (int j = 0; j < npcs.size(); ++j) {
                     if (npcs.get(j).charId == ownerId) {
@@ -50,11 +54,27 @@ public class ConditionParser {
                             }
                         }
                         val = itemsCountFound;
+                        valSet = true;
                         break;
                     }
                 }
             }
-        } else {
+        } else if (var.startsWith("r_")) {
+            String params[] = var.split("_");
+            int minVal = Integer.parseInt(params[1]);
+            int maxVal = Integer.parseInt(params[2]);
+            val = minVal + (int)Math.ceil(Math.random() * maxVal);
+            valSet = true;
+        } else if (specialVars != null) {
+            for (Pair<String, Integer> specialVar : specialVars) {
+                if (specialVar.getKey().equals(var)) {
+                    val = specialVar.getValue();
+                    valSet = true;
+                    break;
+                }
+            }
+        }
+        if (!valSet) {
             if (hasLetters) {
                 if (mainCharId == 0) {
                     int index = player.world.varNames.indexOf(var);
@@ -72,11 +92,10 @@ public class ConditionParser {
             } else {
                 if (var.length() > 0) {
                     val = Integer.parseInt(var);
-                } else {
-                    val = 0;
                 }
             }
         }
+
         return val;
     }
 
@@ -147,8 +166,12 @@ public class ConditionParser {
         return result;
     }
 
-    public int evalVal(String expr) {
+    public int evalVal(String expr, ArrayList<Pair<String, Integer>> specialVars) {
         if (expr.length() == 0) return 0;
+        if (specialVars != null) {
+            this.specialVars = specialVars;
+            specialVars = null;
+        }
         if (expr.contains("(")) {
             for (int i = 0; i < expr.length(); ++i) {
                 if (expr.charAt(i) == '(') {
@@ -158,7 +181,7 @@ public class ConditionParser {
                         else if (expr.charAt(j) == ')') openCount--;
                         if (expr.charAt(j) == ')' && openCount == 0) {
                             String subStr = expr.substring(i + 1, j);
-                            int out = evalVal(subStr);
+                            int out = evalVal(subStr, null);
                             String split[] = expr.split(Pattern.quote(subStr));
                             String left = split[0].substring(0, split[0].length() - 1);
                             String right = split[1].substring(1);
@@ -206,8 +229,12 @@ public class ConditionParser {
         return Integer.parseInt(expr);
     }
 
-    public boolean parseCondition(String condition) {
+    public boolean parseCondition(String condition, ArrayList<Pair<String, Integer>> specialVars) {
         if (condition.equals("")) return true;
+        if (specialVars != null) {
+            this.specialVars = specialVars;
+            specialVars = null;
+        }
         String nodes[] = condition.split(";");
         if (condition.contains("LEFT")) {
             for (int i = 0; i < nodes.length; ++i) {
@@ -222,7 +249,7 @@ public class ConditionParser {
                                 subStr += nodes[z];
                                 if (z < j-1) subStr += ";";
                             }
-                            boolean out = parseCondition(subStr);
+                            boolean out = parseCondition(subStr, specialVars);
                             int openCount2;
                             int saveJ = j;
                             if (out) {
@@ -299,9 +326,9 @@ public class ConditionParser {
             boolean val = false;
             int actValLeft;
             if (arguments[0].charAt(0) == '!') {
-                actValLeft = evalVal(arguments[0].substring(1));
+                actValLeft = evalVal(arguments[0].substring(1), null);
             } else {
-                actValLeft = evalVal(arguments[0]);
+                actValLeft = evalVal(arguments[0], null);
             }
             if (arguments.length < 3) {
                 val = actValLeft != 0;
@@ -309,7 +336,7 @@ public class ConditionParser {
                     val = !val;
                 }
             } else if (arguments.length == 3) {
-                int actValRight = evalVal(arguments[2]);
+                int actValRight = evalVal(arguments[2], null);
                 if (arguments[1].equals(">"))
                     val = actValLeft > actValRight;
                 else if (arguments[1].equals("<"))

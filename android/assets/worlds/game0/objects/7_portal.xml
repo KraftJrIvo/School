@@ -12,7 +12,7 @@
            switchable="false"
            switchCondition="portal_open"
            goto="0"/> 
-    <state id="1"
+    <state id="2"
            switchable="false"
            switchTimer="0"
            tex="portal"

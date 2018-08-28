@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.menus.Menu;
 import com.mygdx.schoolRPG.tools.ConditionParser;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 
@@ -93,7 +94,7 @@ public class Speech {
 
     public void doActions() {
         if (varId.length() > 0) {
-            int newVal = parser.evalVal(varVal);
+            int newVal = parser.evalVal(varVal, null);
             if (charId == 0) {
                 int index = player.world.varNames.indexOf(varId);
                 prevVarVal = index == -1 ? 0 : player.world.vars.get(index);

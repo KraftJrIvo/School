@@ -1478,6 +1478,11 @@ public class World{
             curArea.worldObjectsHandler.invalidateObjectCells();
             curArea.isCurrent = true;
             if (areasAmbients.get(n)!= null && areasAmbients.get(n).length() > 0 && (currentSoundPath == null || !currentSoundPath.equals(areasAmbients.get(n)))) {
+                if (currentSound != null) {
+                    currentSound.stop();
+                    currentSound = null;
+                    currentSoundPath = null;
+                }
                 currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
                 currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
                 startedAmbient = true;
@@ -1487,6 +1492,7 @@ public class World{
                 currentSoundPath = null;
                 //startedAmbient = false;
             }
+            oldArea.worldObjectsHandler.stopParticleSounds();
             curAreaX = curArea.x;
             curAreaY = curArea.y;
             curAreaZ = curArea.z;
@@ -1743,7 +1749,7 @@ public class World{
                 }
                 if (Math.abs(areaTransitionZ) < 0.01f && areaTransitionZ != 0) {
                     areaTransitionZ = 0;
-                    oldArea.removeParticles();
+                    //oldArea.removeParticles();
                     oldArea.resetCheckPoints();
                     teleporting = false;
                 }
@@ -1843,12 +1849,12 @@ public class World{
 
             if (areaTransitionX < 0.001f && areaTransitionX != 0) {
                 areaTransitionX = 0;
-                areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                //areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
             }
             if (areaTransitionY < 0.001f && areaTransitionY != 0) {
                 areaTransitionY = 0;
-                areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
+                //areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
             }
             //System.out.println(areaTransitionX);

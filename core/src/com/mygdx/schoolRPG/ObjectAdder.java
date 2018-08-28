@@ -49,8 +49,12 @@ public class ObjectAdder {
                 int img = blocks.get(3).get(t).get(i);
                 int angle = blocks.get(5).get(t).get(i);
                 int objectCheckId = -1;
-                if (angle >= 100) {
-                    objectCheckId = angle - 100;
+                if (angle < 0 || angle > 3) {
+                    if (angle > 0) {
+                        objectCheckId = angle - 100;
+                    } else {
+                        objectCheckId = angle + 156;
+                    }
                 }
                 if (img == -1 && type != 10 && type != 11 && type != 13 && (type < 20 || type > 25) && type > 0) continue;
                 TextureRegion curTile = null;
@@ -490,32 +494,53 @@ public class ObjectAdder {
                         he.isPlatform = true;
                         if (t == 0 || blocks.get(4).get(t-1).get(i) != 11) worldObjectsHandler.addSolid(he, world, -1, null, objectCheckId);
                     }
-                } else if ((type >= 20 && type <= 25) && (t == 0 || blocks.get(4).get(t-1).get(i) != type)) {
-                    int surfacesCount = 0;
-                    while (blocks.get(4).get(t+surfacesCount).get(i) == type) {
-                        surfacesCount++;
-                    }
-                    LiquidSurface ls;
-                    //if (blocks.get(4).get(t).get(i-1) != 20) ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, 0.025f, 0.035f, 0.025f);
-                    if (blocks.get(4).get(t).get(i-1) != type) {
-                        if (type == 20) {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.WATER, false);
-                        } else if (type == 21) {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.GOO, false);
-                        } else {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.NONE, false);
+                } else if ((type >= 20 && type <= 25)) {
+                    int checkPrevSurf = -1;
+                    boolean already = false;
+                    while (t > 0) {
+                        if (blocks.get(4).get(t + checkPrevSurf).get(i) == 2) {
+                            break;
+                        } else if (blocks.get(4).get(t + checkPrevSurf).get(i) == type) {
+                            already = true;
+                            break;
                         }
+                        checkPrevSurf--;
                     }
-                    else {
-                        if (type == 20) {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.WATER, true);
-                        } else if (type == 21) {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.GOO, true);
-                        } else {
-                            ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.NONE, true);
+                    if (!already) {
+                        int surfacesCount = 0;
+                        boolean hasWaterOnTop = false;
+                        int tt = 0;
+                        while (t > 0 && blocks.get(4).get(t + tt).get(i) != 2) tt--;
+                        tt++;
+                        while (t + tt + surfacesCount < blocks.get(4).size() && blocks.get(4).get(t+tt+surfacesCount).get(i) != 2) {
+                            if (blocks.get(4).get(t+tt+surfacesCount).get(i-1) == type) {
+                                hasWaterOnTop = true;
+                            }
+                            //blocks.get(4).get(t+tt+surfacesCount).set(i, 1);
+                            surfacesCount++;
                         }
+                        LiquidSurface ls;
+                        //if (blocks.get(4).get(t).get(i-1) != 20) ls = new LiquidSurface(assets, t*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, 0.025f, 0.035f, 0.025f);
+                        if (!hasWaterOnTop) {
+                            if (type == 20) {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.WATER, false);
+                            } else if (type == 21) {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.GOO, false);
+                            } else {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.NONE, false);
+                            }
+                        }
+                        else {
+                            if (type == 20) {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.WATER, true);
+                            } else if (type == 21) {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.GOO, true);
+                            } else {
+                                ls = new LiquidSurface(assets, (t+tt)*area.TILE_WIDTH, i*area.TILE_HEIGHT, surfacesCount, area.TILE_WIDTH, LiquidSurface.LiquidType.NONE, true);
+                            }
+                        }
+                        worldObjectsHandler.addLiquidSurface(ls, -1, objectCheckId);
                     }
-                    worldObjectsHandler.addLiquidSurface(ls, -1, objectCheckId);
                 } else if (type == 13) {
                     float y = (i)* area.TILE_HEIGHT-area.TILE_HEIGHT/2;
                     if (area.platformMode) {

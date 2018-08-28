@@ -10,7 +10,7 @@
         movePattern="NORMAL"
         collisionGroup="0"
         flySoundLoop=""
-        nextStateCondition="BOUNCE-0-1"
+        nextStateCondition="BOUNCE-1-1"
     />
     <state 
         id="1"
