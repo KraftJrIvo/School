@@ -55,20 +55,20 @@ public class CharacterMaker {
             //if (entry.file().isDirectory()) {
                 FileHandle spriteFile = Gdx.files.internal(entry.path() + "/sprite.png");
                 if (spriteFile.exists()) {
-                    assets.load(entry.path() + "/sprite.png", Texture.class);
+                    //assets.load(entry.path() + "/sprite.png", Texture.class);
                 } else {
-                    assets.load(entry.path() + "/head.png", Texture.class);
+                    //assets.load(entry.path() + "/head.png", Texture.class);
                     FileHandle bodyFile = Gdx.files.internal(entry.path() + "/body.png");
                     if (bodyFile.exists()) {
-                        assets.load(entry.path() + "/body.png", Texture.class);
+                        //assets.load(entry.path() + "/body.png", Texture.class);
                     }
                 }
-                assets.load(entry.path() + "/speech.wav", Sound.class);
+                //assets.load(entry.path() + "/speech.wav", Sound.class);
                 charsCount++;
                 FileHandle curDir1 = Gdx.files.internal(entry.path() + "/graphics");
                 if (curDir1.exists()) {
                     for (FileHandle entry1: curDir1.list()) {
-                        assets.load(entry1.path(), Texture.class);
+                        //assets.load(entry1.path(), Texture.class);
                     }
                 }
             //}
@@ -105,19 +105,9 @@ public class CharacterMaker {
         sprites = new ArrayList<Texture>();
         sounds = new ArrayList<Sound>();
         for (int i =0; i < charsCount; ++i) {
-            if (assets.isLoaded(worldPath + "/chars/" + i + "/sprite.png")) {
-                sprites.add(assets.get(worldPath + "/chars/" + i + "/sprite.png", Texture.class));
-                bodies.add(null);
-                heads.add(null);
-            } else {
-                heads.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/head.png", 3));
-                sprites.add(null);
-                if (assets.isLoaded(worldPath + "/chars/" + i + "/body.png")) {
-                    bodies.add(new GlobalSequence(assets, worldPath + "/chars/" + i + "/body.png", 3));
-                } else {
-                    bodies.add(new GlobalSequence(assets,"char/body_male.png", 3));
-                }
-            }
+            heads.add(null);
+            sprites.add(null);
+            bodies.add(null);
             headWears.add(null);
             bodyWears.add(null);
             sounds.add(null);

@@ -38,7 +38,7 @@ public class ObjectAdder {
         for (int i = 0; i < world.tiles.size(); ++i) {
             if (world.tiles.get(i) != null) {
                 world.tiles.get(i).initialiseIfNeeded(assets);
-            } else {
+            } else if (world.tilesets.get(i) != null) {
                 world.tilesets.get(i).initialiseIfNeeded(assets);
             }
         }

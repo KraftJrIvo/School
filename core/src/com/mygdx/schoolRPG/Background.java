@@ -3,11 +3,13 @@ package com.mygdx.schoolRPG;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
 
 import java.util.ArrayList;
 
 public class Background {
     ArrayList<Texture> layers;
+    ArrayList<AnimationSequence> animLayers;
     ArrayList<Float> layersMovementX;
     ArrayList<Float> layersMovementY;
     ArrayList<Float> layersParallaxX;
@@ -17,6 +19,7 @@ public class Background {
 
     Background() {
         layers = new ArrayList<Texture>();
+        animLayers = new ArrayList<AnimationSequence>();
         layersMovementX = new ArrayList<Float>();
         layersMovementY = new ArrayList<Float>();
         layersParallaxX = new ArrayList<Float>();
@@ -27,6 +30,18 @@ public class Background {
 
     public void addLayer(Texture texture, float mX, float mY, float pX, float pY) {
         layers.add(texture);
+        animLayers.add(null);
+        layersMovementX.add(mX);
+        layersMovementY.add(mY);
+        layersParallaxX.add(pX);
+        layersParallaxY.add(pY);
+        layersOffsetsX.add(0f);
+        layersOffsetsY.add(0f);
+    }
+
+    public void addLayer(AnimationSequence anim, float mX, float mY, float pX, float pY) {
+        layers.add(null);
+        animLayers.add(anim);
         layersMovementX.add(mX);
         layersMovementY.add(mY);
         layersParallaxX.add(pX);
@@ -54,7 +69,11 @@ public class Background {
             int yLoops = screenSizeY / layers.get(i).getHeight() + 3;
             for (int z = 0; z < xLoops; ++z) {
                 for (int zz = 0; zz < yLoops; ++zz) {
-                    batch.draw(layers.get(i), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1), layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1));
+                    if (animLayers.get(i) == null) {
+                        batch.draw(layers.get(i), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1), layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1));
+                    } else {
+                        batch.draw(animLayers.get(i).getCurrentFrame(false), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1), layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1));
+                    }
                 }
             }
         }

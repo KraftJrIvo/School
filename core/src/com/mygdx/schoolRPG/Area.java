@@ -13,8 +13,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.schoolRPG.menus.GameMenu;
+import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.CharacterMaker;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.FileHandler;
@@ -29,9 +34,10 @@ public class Area {
     float zoom = 2.0f;
     boolean platformMode = false;
     String name;
-    ArrayList<ArrayList<ArrayList<Integer>>> blocks;
+    ArrayList<ArrayList<ArrayList<Integer>>> blocks; //10xWxH; 0-layer1;1-layer2;2-layer3;3-layer4;4-id;5-angle(or objId if >= 100);6-x;7-y;8-2;9-h;
     WorldObjectsHandler worldObjectsHandler;
     ObjectAdder adder;
+    ObjectLoader loader;
     int width, height, x, y, z, w, h;
     Player player;
     int playerTileX=0, playerTileY=0;
@@ -62,8 +68,12 @@ public class Area {
 
     public boolean containsSpawn = false;
 
+    public boolean loaded = false;
+    public boolean loading = false;
+    public String ambient = "";
 
-    public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world) {
+
+    public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world, String name) {
         TILE_WIDTH = tileWidth;
         TILE_HEIGHT = tileHeight;
         this.world = world;
@@ -173,11 +183,21 @@ public class Area {
 
         worldObjectsHandler = new WorldObjectsHandler(this, blocks, world.varNames, world.vars);
         adder = new ObjectAdder(worldObjectsHandler);
+        loader = new ObjectLoader(worldObjectsHandler);
+        this.name = name;
+    }
+
+    public void load() {
+        loading = true;
+        if (loaded) return;
+        this.assets = world.assets;
+        loader.loadObjects(assets, world);
+        loaded = true;
     }
 
     public void initialiseResources(AssetManager assets, World world, CharacterMaker characterMaker) {
-        this.assets = world.assets;
         worldPath = world.worldDir.path();
+        loader.initializeObjects(assets, world);
         if (!initialised) {
             if (player == null) {
                 if (platformMode) {
@@ -203,7 +223,67 @@ public class Area {
             worldObjectsHandler.signOverlay = assets.get(worldPath+"/sign_overlay.png");
             signFont = new BitmapFont(Gdx.files.internal(worldPath + "/sign_font.fnt"), Gdx.files.internal(worldPath + "/sign_font.png"), false);
         }
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(Gdx.files.internal(world.worldDir.path() + "/bg/bg").read()));
+            String line = "_";
+            boolean defaultBG = true;
+            while (line != null) {
+                if (line.equals(name)) {
+                    defaultBG = false;
+                }
+                line = in.readLine();
+            }
+            in = new BufferedReader(new InputStreamReader(Gdx.files.internal(world.worldDir.path() + "/bg/bg").read()));
+            int numLayers = Integer.parseInt(in.readLine());
+            bg = new Background();
 
+            for (int i = 0; i < numLayers; ++i) {
+                line = in.readLine();
+                String vals[] = line.split(" ");
+                if (defaultBG) {
+                    if (vals.length == 5) {
+                        bg.addLayer(assets.get(world.worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+                    } else {
+                        int framesCount = Integer.parseInt(vals[1]);
+                        int fps = Integer.parseInt(vals[2]);
+                        bg.addLayer(new AnimationSequence(assets, world.worldDir.path() + "/bg/" + vals[0] + ".png",  fps, true, framesCount), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+                    }
+                }
+            }
+            if (!defaultBG) {
+                int numCustomBGGroups = Integer.parseInt(in.readLine());
+                for (int z = 0; z < numCustomBGGroups; ++z) {
+                    int numCustomBGs = Integer.parseInt(in.readLine());
+                    ArrayList<Area> customAreas = new ArrayList<Area>();
+                    boolean thiss = false;
+                    for (int i = 0; i < numCustomBGs; ++i) {
+                        line = in.readLine();
+                        if (line.equals(name)) thiss = true;
+                        customAreas.add(world.map.getAreaByName(line));
+                    }
+                    numLayers = Integer.parseInt(in.readLine());
+                    for (int j = 0; j < numLayers; ++j) {
+                        line = in.readLine();
+                        String vals[] = line.split(" ");
+                        if (thiss) {
+                            if (vals.length == 5) {
+                                bg.addLayer(assets.get(world.worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+                            } else {
+                                int framesCount = Integer.parseInt(vals[1]);
+                                int fps = Integer.parseInt(vals[2]);
+                                bg.addLayer(new AnimationSequence(assets, world.worldDir.path() + "/bg/" + vals[0] + ".png",  fps, true, framesCount), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //System.out.println();
         initialised = true;
     }
 

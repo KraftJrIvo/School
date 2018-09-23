@@ -11,11 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.schoolRPG.menus.GameMenu;
-import com.mygdx.schoolRPG.tools.AnimationSequence;
-import com.mygdx.schoolRPG.tools.CharacterMaker;
-import com.mygdx.schoolRPG.tools.IntCoords;
-import com.mygdx.schoolRPG.tools.MultiTile;
-import com.mygdx.schoolRPG.tools.Coords;
+import com.mygdx.schoolRPG.tools.*;
 
 //import java.awt.geom.Point2D;
 import java.io.*;
@@ -840,8 +836,8 @@ public class World{
                     buff = new byte[areaWidth*areaHeight*12];
                     fis.read(buff);
                     if (curCoordX != 246) {
-                        Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this);
-                        newArea.name = name1;
+                        Area newArea = new Area(curCoordX, curCoordY, curCoordZ, areaWidth/firtsAreaWidth, areaHeight/firtsAreaHeight, buff, areaWidth, areaHeight, tileWidth, tileHeight, platformMode, this, name1);
+                        newArea.ambient = name2;
                         areas.add(newArea);
                         map.addRoom(newArea, curCoordX, curCoordY, curCoordZ, newArea.width / firtsAreaWidth, newArea.height / firtsAreaHeight, name1);
                         if (newArea.containsSpawn) {
@@ -875,20 +871,27 @@ public class World{
                 e.printStackTrace();
             }
 
+            worldDir = Gdx.files.internal(folderPath);
+
             if (platformMode) {
                 assets.load("platform_sounds/jump.wav", Sound.class);
                 assets.load("platform_sounds/djump.wav", Sound.class);
                 assets.load("platform_sounds/die.wav", Sound.class);
                 assets.load("platform_sounds/step.wav", Sound.class);
                 assets.load("platform_sounds/land.wav", Sound.class);
+                FileHandle fh = Gdx.files.internal(worldDir + "/sign.png");
+                if (fh.exists()) assets.load(fh.path(), Texture.class);
+                fh = Gdx.files.internal(worldDir + "/sign_overlay.png");
+                if (fh.exists()) assets.load(fh.path(), Texture.class);
+                fh = Gdx.files.internal(worldDir + "/save.png");
+                if (fh.exists()) assets.load(fh.path(), Texture.class);
             }
-            worldDir = Gdx.files.internal(folderPath);
 
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
                     continue;
                 }
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
                 names.add(entry.name().substring(0, entry.name().length() - 4));
                 tileTypes.add(0);
                 tileIndices.add(spritesCount);
@@ -900,7 +903,7 @@ public class World{
                 if (!entry.file().getName().contains(".png")){
                     continue;
                 }
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
                 names.add("tiles\\" + entry.name().substring(0, entry.name().length() - 4));
                 tileTypes.add(1);
                 tileIndices.add(tilesetsCount);
@@ -912,28 +915,29 @@ public class World{
                 if (!entry.file().getName().contains(".png")){
                     continue;
                 }
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
             }
+            assets.load(folderPath + "/sounds/default.wav", Sound.class);
             worldDir = Gdx.files.internal(folderPath+"/objects/util");
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
                     continue;
                 }
-                assets.load(entry.path(), Texture.class);
+               // assets.load(entry.path(), Texture.class);
             }
             worldDir = Gdx.files.internal(folderPath+"/items/icons");
             for (FileHandle entry: worldDir.list()) {
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
             }
             worldDir = Gdx.files.internal(folderPath+"/items/big_icons");
             for (FileHandle entry: worldDir.list()) {
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
             }
             worldDir = Gdx.files.internal(folderPath+"/items/sides");
             for (FileHandle entry: worldDir.list()) {
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
             }
-            worldDir = Gdx.files.internal(folderPath+"/sounds");
+            /*worldDir = Gdx.files.internal(folderPath+"/sounds");
             for (FileHandle entry: worldDir.list()) {
                 if (entry.isDirectory()) {
                     for (FileHandle entry2: entry.list()) {
@@ -942,13 +946,13 @@ public class World{
                 } else {
                     assets.load(entry.path(), Sound.class);
                 }
-            }
+            }*/
             worldDir = Gdx.files.internal(folderPath+"/anim");
             for (FileHandle entry: worldDir.list()) {
                 if (!entry.file().getName().contains(".png")){
                     continue;
                 }
-                assets.load(entry.path(), Texture.class);
+                //assets.load(entry.path(), Texture.class);
                 names.add("anim\\" + entry.name().substring(0, entry.name().length() - 4));
                 tileTypes.add(2);
                 tileIndices.add(animsLoaded);
@@ -1002,11 +1006,12 @@ public class World{
             //if (entry.file().isDirectory()) {
                 for (FileHandle entry2: entry.list()) {
                     if (entry2.path().endsWith(".png")) {
-                        assets.load(entry2.path(), Texture.class);
+                        //assets.load(entry2.path(), Texture.class);
                     }
                 }
             //}
         }
+        areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).load();
         loaded = true;
     }
 
@@ -1030,7 +1035,7 @@ public class World{
             //if (entry.file().isDirectory()) {
                 FileHandle entry3 = Gdx.files.internal(entry.path() + "/stats.xml");
                 if (entry3.exists()) {
-                    particles.add(new ParticleProperties(this, assets, entry3.path() , menu));
+                    particles.add(null);
                     particlesPaths.add(entry.name());
                 }
             //}
@@ -1070,7 +1075,11 @@ public class World{
                             tileTypes.set(i, 0);
                         }*/
                     }
-                    sprites.add(assets.get(entry.path(), Texture.class));
+                    if (assets.isLoaded(entry.path())) {
+                        sprites.add(assets.get(entry.path(), Texture.class));
+                    } else {
+                        sprites.add(null);
+                    }
                 }
                 tiles = new ArrayList<BlockMultiTile>();
                 tilesets = new ArrayList<MultiTile>();
@@ -1079,14 +1088,19 @@ public class World{
                     if (!entry.file().getName().contains(".png")){
                         continue;
                     }
-                    if (entry.file().getName().contains("tileset")) {
-                        Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
-                        Matcher m = p.matcher(entry.file().getName());
-                        m.find();
-                        tiles.add(null);
-                        tilesets.add(new MultiTile(assets.get(entry.path(), Texture.class), Integer.parseInt(m.group(1)),  Integer.parseInt(m.group(2))));
+                    if (assets.isLoaded(entry.path())){
+                        if (entry.file().getName().contains("tileset")) {
+                            Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
+                            Matcher m = p.matcher(entry.file().getName());
+                            m.find();
+                            tiles.add(null);
+                            tilesets.add(new MultiTile(assets.get(entry.path(), Texture.class), Integer.parseInt(m.group(1)),  Integer.parseInt(m.group(2))));
+                        } else {
+                            tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
+                            tilesets.add(null);
+                        }
                     } else {
-                        tiles.add(new BlockMultiTile(assets.get(entry.path(), Texture.class)));
+                        tiles.add(null);
                         tilesets.add(null);
                     }
                 }
@@ -1096,16 +1110,21 @@ public class World{
                     if (!entry.file().getName().contains(".png")){
                         continue;
                     }
-                    animations.add(new AnimationSequence(assets, entry.path(), 12, true));
+                    if (assets.isLoaded(entry.path())){
+                        animations.add(new AnimationSequence(assets, entry.path(), 12, true));
+                    } else {
+                        animations.add(null);
+                    }
                 }
                 worldDir = Gdx.files.internal(folderPath);
             }
         }
         //System.out.println(areas.size() + " " + areaIds.size());
-        for (int t = 0; t < areas.size(); ++t) {
+        /*for (int t = 0; t < areas.size(); ++t) {
             if (areas.get(t) == null) continue;
             areas.get(t).initialiseResources(assets, this, characterMaker);
-        }
+        }*/
+        areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialiseResources(assets, this, characterMaker);
 
         if (areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).initialised) {
             initialised = true;
@@ -1123,41 +1142,10 @@ public class World{
         }
         updateAmbient();
         map.connectExits();
+        loadNearAreas();
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new InputStreamReader(Gdx.files.internal(worldDir.path() + "/bg/bg").read()));
             String line = "";
-            int numLayers = Integer.parseInt(in.readLine());
-            Background defaultBg = new Background();
-            for (int i = 0; i < numLayers; ++i) {
-                line = in.readLine();
-                String vals[] = line.split(" ");
-                defaultBg.addLayer(assets.get(worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
-            }
-            for (int i =0; i < areas.size(); ++i) {
-                areas.get(i).bg = defaultBg;
-            }
-            int numCustomBGGroups = Integer.parseInt(in.readLine());
-            for (int z = 0; z < numCustomBGGroups; ++z) {
-                int numCustomBGs = Integer.parseInt(in.readLine());
-                ArrayList<Area> customAreas = new ArrayList<Area>();
-                for (int i = 0; i < numCustomBGs; ++i) {
-                    line = in.readLine();
-                    customAreas.add(map.getAreaByName(line));
-                }
-                Background bg = new Background();
-                numLayers = Integer.parseInt(in.readLine());
-                for (int j = 0; j < numLayers; ++j) {
-                    line = in.readLine();
-                    String vals[] = line.split(" ");
-                    bg.addLayer(assets.get(worldDir.path() + "/bg/" + vals[0] + ".png", Texture.class), Float.parseFloat(vals[1]),  Float.parseFloat(vals[2]),  Float.parseFloat(vals[3]),  Float.parseFloat(vals[4]));
-                }
-                for (int j = 0; j < customAreas.size(); ++j) {
-                    if (customAreas.get(j) != null) {
-                        customAreas.get(j).bg = bg;
-                    }
-                }
-            }
             in = new BufferedReader(new InputStreamReader(Gdx.files.internal(worldDir.path() + "/looping").read()));
             int numLoopingAreas = Integer.parseInt(in.readLine());
             for (int i=0; i < numLoopingAreas; ++i) {
@@ -1459,10 +1447,6 @@ public class World{
             }
 
             //areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).worldObjectsHandler.setPlayer(areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).player);
-            if (offZ == 0) {
-                areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed, characterMaker);
-            }
-            else areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).respawnPlayerZ(worldDir.path(), assets, tileX, tileY, characterMaker);
 
 
 
@@ -1474,6 +1458,11 @@ public class World{
             oldArea.worldObjectsHandler.invalidateObjects(folderPath, assets, this);
             int n = areaIds.get(oldAreaX+offX).get(oldAreaY+offY).get(oldAreaZ+offZ);
             Area curArea = areas.get(n);
+            curArea.initialiseResources(assets, this, characterMaker);
+            if (offZ == 0) {
+                areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).respawnPlayer(worldDir.path(), assets, tileX, tileY, pos, speed, characterMaker);
+            }
+            else areas.get(areaIds.get(curAreaX+offX).get(curAreaY + offY).get(curAreaZ + offZ)).respawnPlayerZ(worldDir.path(), assets, tileX, tileY, characterMaker);
             //curArea.invalidate(this);
             curArea.worldObjectsHandler.invalidateObjectCells();
             curArea.isCurrent = true;
@@ -1531,6 +1520,20 @@ public class World{
             initialised = false;
         }*/
         //saveState();
+    }
+
+    public void loadNearAreas() {
+        Area curarea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        for (int i = 0; i < map.getRoomByName(curarea.name).exits.size(); ++i) {
+            Exit e = map.getRoomByName(curarea.name).exits.get(i);
+            if (e.otherExit != null) {
+                Area a = map.getAreaByName(e.otherExit.room.name);
+                if (!a.loaded) {
+                    a.load();
+                }
+            }
+        }
+
     }
 
     public void invalidate() {
@@ -1603,7 +1606,7 @@ public class World{
                         npc.hitBox.x = npc.x;
                         npc.hitBox.y = npc.y;
                         toArea.worldObjectsHandler.addNPC(npc, this, -1, -1);
-                        npcsAreas.set(npc.charId, areas.indexOf(toArea));
+                        npcsAreas.set(this.npcs.indexOf(npc), areas.indexOf(toArea));
                         npc.curRoom = map.getRoomByName(toArea.name);
                     }
                 }
@@ -1752,6 +1755,7 @@ public class World{
                     //oldArea.removeParticles();
                     oldArea.resetCheckPoints();
                     teleporting = false;
+                    loadNearAreas();
                 }
             } else if (areaTransitionX != 0) {
                 if (oldAreaX < curAreaX) {
@@ -1851,11 +1855,13 @@ public class World{
                 areaTransitionX = 0;
                 //areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
+                loadNearAreas();
             }
             if (areaTransitionY < 0.001f && areaTransitionY != 0) {
                 areaTransitionY = 0;
                 //areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).removeParticles();
                 areas.get(areaIds.get(oldAreaX).get(oldAreaY).get(oldAreaZ)).resetCheckPoints();
+                loadNearAreas();
             }
             //System.out.println(areaTransitionX);
         }

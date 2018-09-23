@@ -52,7 +52,15 @@ public class SchoolRPG extends ApplicationAdapter {
 		if (menus.get(curMenuId).nextMenu != curMenuId) {
 			changeMenu(menus.get(curMenuId).nextMenu, menus.get(curMenuId).nextMenuSetting, menus.get(curMenuId).nextMenuMessage);
 		}
-		if (assets.update()) {
+		GameMenu gm = null;
+		World w = null;
+		Area a = null;
+		if (menus.get(curMenuId).getClass() == GameMenu.class) {
+			gm = (GameMenu)menus.get(curMenuId);
+			w = gm.worlds.get(gm.curWorld);
+			a = w.areas.get(w.areaIds.get(w.curAreaX).get(w.curAreaY).get(w.curAreaZ));
+		}
+		if (assets.update() || gm != null && w.initialised && a != null && a.loaded) {
 			menus.get(curMenuId).initialiseResources();
 			if (menus.get(curMenuId).initialised) {
 				menus.get(curMenuId).draw(batch, renderer);

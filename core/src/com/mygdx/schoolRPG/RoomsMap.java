@@ -337,6 +337,7 @@ public class RoomsMap {
                 if (curLevel > 0 && (doneExits.contains(exit) || exitQueueLevels.get(i) != curLevel)) {
                     continue;
                 }
+                if (exit == null || exit.otherExit == null) continue;
                 RoomNode room = exit.otherExit.room;
                 int dist = Math.abs(goal.roomX - room.roomX) + Math.abs(goal.roomY - room.roomY) + Math.abs(goal.roomZ - room.roomZ);
                 if (dist < bestDist) {
