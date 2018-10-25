@@ -42,6 +42,11 @@ public class ObjectLoader {
         initializedParticlesNames = new ArrayList<String>();
     }
 
+    public ObjectLoader() {
+        loadedParticlesNames = new ArrayList<String>();
+        initializedParticlesNames = new ArrayList<String>();
+    }
+
     public void loadObjects(AssetManager assets, World world) {
         this.assets = assets;
         ArrayList<String> loadList = new ArrayList<String>();
@@ -203,7 +208,7 @@ public class ObjectLoader {
         }
     }
 
-    private void loadItem(AssetManager assets, World world, String itemName) {
+    public void loadItem(AssetManager assets, World world, String itemName) {
         FileHandle path = Gdx.files.internal(world.worldDir + "/items/icons/" + itemName + ".png");
         assets.load(path.path(), Texture.class);
         path = Gdx.files.internal(world.worldDir + "/items/big_icons/" + itemName + ".png");

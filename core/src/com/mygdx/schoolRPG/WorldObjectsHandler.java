@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.battleSystem.Battle;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.ConditionParser;
 import org.w3c.dom.css.Rect;
@@ -40,6 +41,7 @@ public class WorldObjectsHandler {
     Texture staticFloor;
     Texture dynamicFloor;
     Dialog currentDialog = null;
+    Battle currentBattle = null;
     Inventory currentInventory = null;
     public ObjectCell activeObject = null;
     public NPC activeNPC = null;

@@ -1,0 +1,47 @@
+<unit name="Jeremy">
+	<stats
+		baseHp="30"
+		baseAp="3"
+		baseStr="3"
+		baseVit="1"
+		baseDex="1"
+		baseExpReward="100"
+	/>	
+	<skills>
+		<skill name="humanPunch" prob="1"/>
+	</skills>
+	<inventory>		
+		<item name="thing" prob="1"/>
+	</inventory>
+	<held-item name=""/>
+	<drops>		
+		<dropGroup prob="1">
+			<drop name="money" min="69" max="69" prob="1"/>
+		</dropGroup>
+	</drops>
+	<states>
+		<state condition="">
+			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
+			<hit tex="idle" animFps="0" animLoop="false" animFrames="1" sound="hit.wav">
+				<particle name="blood" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="1" maxNum="3"/>
+			</hit>
+		</state>
+		<death-state tex="idle" anim="false" animFps="0" animLoop="false" animFrames="1" sound="hit.wav"/>
+	</states>
+	<fighter tex="fight" animFps="0" animLoop="false" animFrames="1"/>
+	<start-speech>
+		<speech rus="Дже-е-еро-о-оним-о-о-о-о!" ang="Je-e-ero-o-onimo-o!"/>
+	</start-speech>
+	<round-speech>
+		<speech rus="Ща будет!" ang="I'll show you!"/>
+		<speech rus="Ну, держитесь!" ang="Hold on to your socks!"/>
+		<speech rus="Всем лежать, чёрт возьми!" ang="Everybody lie down, dammit!"/>
+	</round-speech>
+	<hit-speech>
+		<speech rus="Aй!" ang="Aaa!"/>
+		<speech rus="Ау!" ang="Whoah!"/>
+		<speech rus="Больно!" ang="Painful!"/>
+	</hit-speech>
+	<damage-types-susceptibilies>
+	</damage-types-susceptibilies>
+</unit>

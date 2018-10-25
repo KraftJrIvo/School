@@ -17,7 +17,7 @@ public class Background {
     ArrayList<Float> layersOffsetsX;
     ArrayList<Float> layersOffsetsY;
 
-    Background() {
+    public Background() {
         layers = new ArrayList<Texture>();
         animLayers = new ArrayList<AnimationSequence>();
         layersMovementX = new ArrayList<Float>();
@@ -63,16 +63,16 @@ public class Background {
         }
     }
 
-    public void draw(SpriteBatch batch, int screenSizeX, int screenSizeY) {
+    public void draw(SpriteBatch batch, int screenSizeX, int screenSizeY, int offsetX, int offsetY) {
         for (int i = 0; i < layers.size(); ++i) {
             int xLoops = screenSizeX / layers.get(i).getWidth() + 3;
             int yLoops = screenSizeY / layers.get(i).getHeight() + 3;
             for (int z = 0; z < xLoops; ++z) {
                 for (int zz = 0; zz < yLoops; ++zz) {
                     if (animLayers.get(i) == null) {
-                        batch.draw(layers.get(i), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1), layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1));
+                        batch.draw(layers.get(i), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1) + offsetX, layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1) + offsetY);
                     } else {
-                        batch.draw(animLayers.get(i).getCurrentFrame(false), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1), layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1));
+                        batch.draw(animLayers.get(i).getCurrentFrame(false), layersOffsetsX.get(i) + layers.get(i).getWidth() * (z-1) + offsetX, layersOffsetsY.get(i) + layers.get(i).getHeight() * (zz - 1) + offsetY);
                     }
                 }
             }

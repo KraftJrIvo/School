@@ -467,7 +467,7 @@ public class Area {
 
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
             //batch.draw(world.bg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            bg.draw(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
+            bg.draw(batch, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, alpha));
         }
 

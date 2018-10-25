@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.mygdx.schoolRPG.battleSystem.Battle;
+import com.mygdx.schoolRPG.battleSystem.BattleSystem;
+import com.mygdx.schoolRPG.battleSystem.Unit;
 import com.mygdx.schoolRPG.menus.GameMenu;
 import com.mygdx.schoolRPG.tools.*;
 
@@ -63,12 +66,12 @@ public class World{
     ArrayList<String> particlesPaths;
     int spritesCount = 0, tilesetsCount = 0;
     Texture bg;
-    AssetManager assets;
+    public AssetManager assets;
     int firtsAreaWidth;
     int firtsAreaHeight;
     ShapeRenderer shapeRenderer;
     int animsLoaded = 0;
-    GameMenu menu;
+    public GameMenu menu;
     public Sound currentSound;
     long currentSoundId = -1;
     String currentSoundPath;
@@ -94,6 +97,8 @@ public class World{
     public ArrayList<ArrayList<Integer>> charVarsForTransfer;
     public ArrayList<ArrayList<String>> charVarNamesForTransfer;
     public String headWear, bodyWear, objectInHands;
+
+    public BattleSystem battleSystem;
 
     public void prepareForWorldChange(String nextWorldDir, String nextWorldRoom, int nextWorldX, int nextWorldY) {
         this.nextWorldDir = nextWorldDir;
@@ -264,6 +269,8 @@ public class World{
         folderPath = worldPath;
         tlw = new File(worldPath+"/world1.tlw");
         this.save = save;
+        worldDir = Gdx.files.internal(worldPath);
+
     }
 
     public void updateTiles() {
@@ -693,6 +700,7 @@ public class World{
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         loadedState = true;
     }
 
@@ -716,13 +724,16 @@ public class World{
         assets.load("prt_shadow.png", Texture.class);
         assets.load("inventory_overlay3.png", Texture.class);
         assets.load("inventory_overlay2.png", Texture.class);
-
+        worldDir = Gdx.files.internal(folderPath);
+        if (Gdx.files.internal(worldDir + "/skills/skills.xml").exists()) {
+            battleSystem = new BattleSystem(this);
+        }
+        if (battleSystem != null) battleSystem.load(this);
         //assets.load(folderPath + "bg/bg.png", Texture.class);
         vars = new ArrayList<Integer>();
         varNames = new ArrayList<String>();
         changedVarNames = new ArrayList<String>();
         if (tlw == null) {
-            worldDir = Gdx.files.internal(folderPath);
             int curX,curY,curZ=0;
             int count = 0;
             for (FileHandle entry: worldDir.list()) {
@@ -1018,7 +1029,7 @@ public class World{
     private void updateAmbient() {
         int n = areaIds.get(curAreaX).get(curAreaY).get(curAreaZ);
         areas.get(n).isCurrent = true;
-        if (areasAmbients.get(n) != null && areasAmbients.get(n).length() > 0) {
+        if (areasAmbients.get(n) != null && areasAmbients.get(n).length() > 0 && areas.get(n).worldObjectsHandler.currentBattle == null) {
             currentSoundPath = areasAmbients.get(n);
             currentSound = assets.get(folderPath + "/sounds/" + areasAmbients.get(n), Sound.class);
             currentSoundId = currentSound.loop(menu.musicVolume/100.0f);
@@ -1030,6 +1041,7 @@ public class World{
         if (!platformMode) {
             characterMaker.initialiseResources(assets, folderPath);
         }
+        if (battleSystem != null) battleSystem.initializeResources(this);
         FileHandle particlesDir = Gdx.files.internal(folderPath + "/particles");
         for (FileHandle entry: particlesDir.list()) {
             //if (entry.file().isDirectory()) {
@@ -1651,6 +1663,27 @@ public class World{
             if (Gdx.input.isKeyJustPressed(Input.Keys.F9)) {
                 loadState();
             }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+                ArrayList<Unit> yourUnits = new ArrayList<Unit>();
+                yourUnits.add(new Unit(this, "you", 1));
+                yourUnits.add(new Unit(this, "jeremy", 1));
+                yourUnits.add(new Unit(this, "slime", 1));
+                ArrayList<Unit> enemyUnits;
+                enemyUnits = new ArrayList<Unit>();
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                Battle battle = new Battle(this, enemyUnits, yourUnits, "music/KraftJrIvo - Business.mp3");
+                loaded = false;
+                battle.load(this);
+                curArea.worldObjectsHandler.currentBattle = battle;
+            }
+        }
+        if (curArea.worldObjectsHandler.currentBattle != null && curArea.worldObjectsHandler.currentBattle.loaded) {
+            curArea.worldObjectsHandler.currentBattle.initializeResources(this);
         }
         if ((!menu.paused && curArea.worldObjectsHandler.currentDialog == null) || curArea.playerHidden) {
             checkAreaObjects(curArea);
@@ -1702,6 +1735,21 @@ public class World{
                     menu.drawPause = true;
                     menu.paused = false;
                     menu.unpausable = true;
+                }
+            }
+            if (curArea.worldObjectsHandler.currentBattle != null && curArea.worldObjectsHandler.currentBattle.initialized) {
+                if (currentSound != null) {
+                    currentSound.stop();
+                    currentSound = null;
+                }
+                curArea.worldObjectsHandler.currentBattle.draw(batch);
+                if (curArea.worldObjectsHandler.currentBattle.finished) {
+                    curArea.worldObjectsHandler.currentBattle = null;
+                    menu.dialogSkipping = false;
+                    menu.drawPause = true;
+                    menu.paused = false;
+                    menu.unpausable = true;
+                    updateAmbient();
                 }
             }
             if (curArea.worldObjectsHandler.currentInventory != null) {

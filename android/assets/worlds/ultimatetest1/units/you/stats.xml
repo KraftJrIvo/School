@@ -1,0 +1,36 @@
+<unit name="You">
+	<stats
+		baseHp="20"
+		baseAp="0"
+		baseStr="1"
+		baseVit="1"
+		baseDex="1"
+		baseExpReward="100"
+	/>	
+	<skills>
+		<skill name="humanPunch" prob="1"/>
+	</skills>
+	<inventory>		
+	</inventory>
+	<held-item name=""/>
+	<drops>		
+	</drops>
+	<states>
+		<state condition="">
+			<idle tex="idle" anim="false" animFps="0" animFrames="1" animLoop="false" soundLoop=""/>
+			<hit tex="idle" anim="false" animFps="0" animFrames="1" animLoop="false" sound="hit.wav">
+				<particle name="blood" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="1" maxNum="3"/>
+			</hit>
+		</state>
+		<death-state tex="idle" anim="false" animFps="0" animLoop="false" animFrames="1" sound="hit.wav"/>
+	</states>
+	<fighter tex="fight" anim="false" animFps="0" animLoop="false" animFrames="1"/>
+	<start-speech>
+	</start-speech>
+	<round-speech>
+	</round-speech>
+	<hit-speech>
+	</hit-speech>
+	<damage-types-susceptibilies>
+	</damage-types-susceptibilies>
+</unit>

@@ -1,0 +1,10 @@
+<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="64" var="" replaces="">
+    <eng 
+        name = "Slime ball" 
+        description = "Eeeky ball of green goo."
+    />    
+    <rus 
+        name = "Комок слизи" 
+        description = "Мерзкий шарик зелёной слизи."
+    />    
+</item>
