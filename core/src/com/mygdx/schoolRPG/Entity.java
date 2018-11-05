@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class Entity implements Comparable {
 
-    float x, y, z=0, h, r = 0;
+    public float x, y, z=0, h, r = 0;
     float zSpeed = 0;
     Texture tex, texDef;
     TextureRegion texR;
@@ -28,7 +28,7 @@ public class Entity implements Comparable {
     int type;
     float floorHeight;
     boolean floor = false;
-    float alpha = 1.0f;
+    public float alpha = 1.0f;
     float scale = 1.0f;
     boolean centered = false, falling = false;
     float fallY = 0;

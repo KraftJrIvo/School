@@ -14,6 +14,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
 public class UnitStats {
+    public boolean dead = false;
     public int level;
     public int baseHp;
     public int hp;

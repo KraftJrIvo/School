@@ -375,7 +375,8 @@ public class ObjectLoader {
         }
     }
 
-    private void loadParticle(World world, String name) {
+    public void loadParticle(World world, String name) {
+        if (assets == null) assets = world.assets;
         FileHandle particlesDir = Gdx.files.internal(world.worldDir + "/particles/" + name);
         for (FileHandle entry: particlesDir.list()) {
             if (entry.path().endsWith(".png")) {
@@ -426,51 +427,53 @@ public class ObjectLoader {
     }
 
     public void initializeObjects(AssetManager assets, World world) {
-        for (int k = 0; k < 4; ++k) {
-            if (k == 2) continue;
-            for (int i = 0; i < area.width; ++i) {
-                for (int t = 0; t < area.height; ++t) {
-                    int id = blocks.get(k).get(i).get(t);
-                    if (id >= 0) {
-                        if (world.names.get(id) == null) {
-                            while (world.names.get(id) == null) id--;
-                        }
-                        String path = world.worldDir + "/" + world.names.get(id) + ".png";
-                        int type = world.tileTypes.get(id);
-                        int index = world.tileIndices.get(id);
-                        if (!world.names.get(id).equals("")) {
-                            if (type == 0 && world.sprites.size() > index) {
-                                world.sprites.set(index, new Texture(path));
-                            } else if (type == 1) {
-                                if (path.contains("tileset") && world.tilesets.size() > index) {
-                                    Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
-                                    Matcher m = p.matcher(world.names.get(id));
-                                    m.find();
-                                    world.tilesets.set(index, new MultiTile(assets.get(path.replace("\\", "/"), Texture.class), Integer.parseInt(m.group(1)),  Integer.parseInt(m.group(2))));
-                                } else {
-                                    world.tiles.set(index, new BlockMultiTile(assets.get(path.replace("\\", "/"), Texture.class)));
-                                }
-                            } else if (world.animations.size() > index) {
-                                world.animations.set(index, new AnimationSequence(assets, path.replace("\\", "/"), 12, true));
+        if (area != null) {
+            for (int k = 0; k < 4; ++k) {
+                if (k == 2) continue;
+                for (int i = 0; i < area.width; ++i) {
+                    for (int t = 0; t < area.height; ++t) {
+                        int id = blocks.get(k).get(i).get(t);
+                        if (id >= 0) {
+                            if (world.names.get(id) == null) {
+                                while (world.names.get(id) == null) id--;
                             }
-                        }
-                    } else if (blocks.get(4).get(i).get(t) != -1 && blocks.get(4).get(i).get(t) + 56 >= 1) {
-                        int idd = blocks.get(4).get(i).get(t) + 56;
-                        FileHandle fh = Gdx.files.internal(world.worldDir + "/chars/" + idd + "/stats");
-                        if (fh.exists()) {
-                            if (blocks.get(5).get(i).get(t) == 0) {
-                                if (assets.isLoaded(world.worldDir + "/chars/" + idd + "/sprite.png")) {
-                                    world.characterMaker.sprites.set(idd, assets.get(world.worldDir + "/chars/" + idd + "/sprite.png", Texture.class));
-                                } else {
-                                    world.characterMaker.heads.set(idd, new GlobalSequence(assets, world.worldDir + "/chars/" + idd + "/head.png", 3));
-                                    if (assets.isLoaded(world.worldDir + "/chars/" + idd + "/body.png")) {
-                                        world.characterMaker.bodies.set(idd, new GlobalSequence(assets, world.worldDir + "/chars/" + idd + "/body.png", 3));
+                            String path = world.worldDir + "/" + world.names.get(id) + ".png";
+                            int type = world.tileTypes.get(id);
+                            int index = world.tileIndices.get(id);
+                            if (!world.names.get(id).equals("")) {
+                                if (type == 0 && world.sprites.size() > index) {
+                                    world.sprites.set(index, new Texture(path));
+                                } else if (type == 1) {
+                                    if (path.contains("tileset") && world.tilesets.size() > index) {
+                                        Pattern p = Pattern.compile("(\\d+)x(\\d+)", Pattern.CASE_INSENSITIVE);
+                                        Matcher m = p.matcher(world.names.get(id));
+                                        m.find();
+                                        world.tilesets.set(index, new MultiTile(assets.get(path.replace("\\", "/"), Texture.class), Integer.parseInt(m.group(1)),  Integer.parseInt(m.group(2))));
                                     } else {
-                                        world.characterMaker.bodies.set(idd, new GlobalSequence(assets,"char/body_male.png", 3));
+                                        world.tiles.set(index, new BlockMultiTile(assets.get(path.replace("\\", "/"), Texture.class)));
                                     }
+                                } else if (world.animations.size() > index) {
+                                    world.animations.set(index, new AnimationSequence(assets, path.replace("\\", "/"), 12, true));
                                 }
-                            } else {
+                            }
+                        } else if (blocks.get(4).get(i).get(t) != -1 && blocks.get(4).get(i).get(t) + 56 >= 1) {
+                            int idd = blocks.get(4).get(i).get(t) + 56;
+                            FileHandle fh = Gdx.files.internal(world.worldDir + "/chars/" + idd + "/stats");
+                            if (fh.exists()) {
+                                if (blocks.get(5).get(i).get(t) == 0) {
+                                    if (assets.isLoaded(world.worldDir + "/chars/" + idd + "/sprite.png")) {
+                                        world.characterMaker.sprites.set(idd, assets.get(world.worldDir + "/chars/" + idd + "/sprite.png", Texture.class));
+                                    } else {
+                                        world.characterMaker.heads.set(idd, new GlobalSequence(assets, world.worldDir + "/chars/" + idd + "/head.png", 3));
+                                        if (assets.isLoaded(world.worldDir + "/chars/" + idd + "/body.png")) {
+                                            world.characterMaker.bodies.set(idd, new GlobalSequence(assets, world.worldDir + "/chars/" + idd + "/body.png", 3));
+                                        } else {
+                                            world.characterMaker.bodies.set(idd, new GlobalSequence(assets,"char/body_male.png", 3));
+                                        }
+                                    }
+                                } else {
 
+                                }
                             }
                         }
                     }

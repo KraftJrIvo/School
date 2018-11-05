@@ -44,6 +44,7 @@ public class Item {
     Texture icon;
     Texture bigIcon;
     GlobalSequence sides;
+    public boolean consumable;
 
     public String getName(int language) {
         return namesInLanguages.get(language);

@@ -1,7 +1,10 @@
 package com.mygdx.schoolRPG;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.Entity;
 import com.mygdx.schoolRPG.menus.MainMenu;
@@ -211,44 +214,45 @@ public class Particle extends Entity {
 
     @Override
     public void fall() {
+        float deltaTime = Gdx.graphics.getDeltaTime() * 20.0f;
         while (direction > 2 * 3.1415f) direction -= 2 * 3.1415f;
         while (direction < 0) direction += 2 * 3.1415f;
         if (platformMode) {
             if (pp.statesMovePatterns.get(curStateId) == ParticleProperties.MovePattern.NORMAL) {
-                XSpeed = (float)Math.cos(direction) * speed;
-                YSpeed = -impulse;
-                x += XSpeed;
-                y += YSpeed;
-                impulse -= pp.statesWeights.get(curStateId);
+                XSpeed = (float)Math.cos(direction) * speed * deltaTime;
+                YSpeed = -impulse * deltaTime;
+                x += XSpeed * deltaTime;
+                y += YSpeed * deltaTime;
+                impulse -= pp.statesWeights.get(curStateId) * deltaTime;
                 //speed -= (Math.abs(Math.cos(direction)) + Math.abs(Math.sin(direction)))* pp.statesInertia.get(curStateId);
                 if (speed < 0) speed = 0;
             } else if (pp.statesMovePatterns.get(curStateId) == ParticleProperties.MovePattern.RANDOM) {
-                x += Math.random() * speed;
-                y += Math.random() * speed;
+                x += Math.random() * speed * deltaTime;
+                y += Math.random() * speed * deltaTime;
             }
         } else {
             if (pp.statesMovePatterns.get(curStateId) == ParticleProperties.MovePattern.NORMAL) {
-                XSpeed = (float)Math.cos(direction) * speed;
-                YSpeed = (float)Math.sin(direction) * speed * 0.7f;
-                x += XSpeed;
-                y += YSpeed;
-                z += impulse;
+                XSpeed = (float)Math.cos(direction) * speed * deltaTime;
+                YSpeed = (float)Math.sin(direction) * speed * 0.7f * deltaTime;
+                x += XSpeed * deltaTime;
+                y += YSpeed * deltaTime;
+                z += impulse * deltaTime;
                 if (z <= 0) {
                     z = 0;
                     bounce(true, false);
                 }
-                impulse -= pp.statesWeights.get(curStateId);
+                impulse -= pp.statesWeights.get(curStateId) * deltaTime;
                 //speed -= (Math.abs(Math.cos(direction)) + Math.abs(Math.sin(direction)))* pp.statesInertia.get(curStateId);
                 if (speed < 0) speed = 0;
             } else if (pp.statesMovePatterns.get(curStateId) == ParticleProperties.MovePattern.RANDOM) {
                 //x += Math.random() * speed - speed/2.0f;
                 //y += Math.random() * speed - speed/2.0f;
-                direction += Math.random() * speed - speed/2.0f;
-                XSpeed = (float)Math.cos(direction) * speed;
-                YSpeed = (float)Math.sin(direction) * speed * 0.7f;
-                x += XSpeed;
-                y += YSpeed;
-                z += Math.random() * speed - speed/2.0f;
+                direction += Math.random() * speed - speed/2.0f * deltaTime;
+                XSpeed = (float)Math.cos(direction) * speed * deltaTime;
+                YSpeed = (float)Math.sin(direction) * speed * 0.7f * deltaTime;
+                x += XSpeed * deltaTime;
+                y += YSpeed * deltaTime;
+                z += Math.random() * speed - speed/2.0f * deltaTime;
             }
         }
         if (!falling || floor) {
@@ -264,6 +268,16 @@ public class Particle extends Entity {
             }
         }
         checkTimerState();
+    }
+
+    public void drawBattle(SpriteBatch batch) {
+        batch.setColor(new Color(1.0f, 1.0f, 1.0f, alpha));
+        if (anim != null) {
+            batch.draw(anim.getCurrentFrame(false), x - anim.getFirstFrame().getRegionWidth() / 2.0f, y + z, anim.getFirstFrame().getRegionWidth() * 2.0f, anim.getFirstFrame().getRegionHeight() * 2.0f);
+        } else {
+            batch.draw(tex, x - tex.getWidth() / 2.0f, y + z, tex.getWidth() * 2.0f, tex.getHeight() * 2.0f);
+        }
+        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     @Override

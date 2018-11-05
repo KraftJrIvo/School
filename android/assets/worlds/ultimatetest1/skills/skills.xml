@@ -14,11 +14,18 @@
 	</status-effects>
 	<skills>
 		<skill name="humanPunch" APcost="0" cooldown="0" positive="false">
-			<animation type="melee-fist" sprite="fist" sound="punch.wav"/>
+			<name rus="Удар кулаком" eng="Fist punch"/>
+			<animation type="melee-fist" name="fist" fps="0" frames="1" looping="false" sound="punch.wav"/>
 			<damage damageType="melee-fist" baseDamage="10"/>
 		</skill>
+			<skill name="slimeBasicAttack" APcost="0" cooldown="0" positive="false">
+			<name rus="Удар слизня" eng="Slime punch"/>
+			<animation type="melee-fist" name="slimeFist" fps="0" frames="1" looping="false" sound="slimePunch.wav"/>
+			<damage damageType="melee-fist" baseDamage="5"/>
+		</skill>
 		<skill name="slimePoisonSpit" APcost="1" cooldown="3" positive="false">
-			<animation type="ranged-spit" prt="slimeSpit"/>
+			<name rus="Ядовитый плевок" eng="Poison spit"/>
+			<animation type="ranged-spit" name="slimeBall"  fps="0" frames="1" looping="false"/>
 			<damage damageType="poison" baseDamage="10"/>
 			<status-effect name="poisoned"  rounds="3"/>
 		</skill>

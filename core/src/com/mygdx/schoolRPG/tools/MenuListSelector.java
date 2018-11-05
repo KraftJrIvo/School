@@ -16,12 +16,12 @@ import java.util.ArrayList;
  * Created by Kraft on 09.06.2016.
  */
 public class MenuListSelector {
-    public ArrayList<String> titles;
+    public ArrayList<ArrayList<String>> titles;
     Texture cursor;
     BitmapFont font;
     int selectedIndex = 0;
     float cursorAngle = 0;
-    float height;
+    public float height;
     public float xOffset;
     public float yOffset;
     boolean centerAlign;
@@ -33,14 +33,14 @@ public class MenuListSelector {
     Menu parent;
     Sound click1;
 
-    public MenuListSelector(ArrayList<String> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign, Menu parent) {
+    public MenuListSelector(ArrayList<ArrayList<String>> titles, AssetManager assets, String cursor, BitmapFont font, int height, float xOffset, float yOffset, boolean centerAlign, Menu parent) {
         this.centerAlign = centerAlign;
         this.titles = titles;
         this.cursor = assets.get(cursor, Texture.class);
         this.font = font;
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
-        this.height = height/screenRatioY;
+        this.height = height;
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         titlesGap = font.getLineHeight();// * 2;
@@ -55,7 +55,7 @@ public class MenuListSelector {
     }
 
     public void addItem(String item) {
-        titles.add(item);
+        titles.get(parent.currentLanguage).add(item);
     }
 
     public int getSelectedIndex() {
@@ -82,11 +82,11 @@ public class MenuListSelector {
                 click1.play(parent.soundVolume / 100.0f);
             }
             if (selectedIndex < 0) {
-                selectedIndex = titles.size() - 1;
+                selectedIndex = titles.get(parent.currentLanguage).size() - 1;
                 if (!looping) {
                     enabled = false;
                 }
-            } else if (selectedIndex > titles.size() - 1) {
+            } else if (selectedIndex > titles.get(parent.currentLanguage).size() - 1) {
                 selectedIndex = 0;
                 if (!looping) {
                     enabled = false;
@@ -95,19 +95,19 @@ public class MenuListSelector {
             cursorAngle += 0.5f;
         }
 
-        for (int i = 0; i < titles.size(); ++i) {
+        for (int i = 0; i < titles.get(parent.currentLanguage).size(); ++i) {
             if (centerAlign) {
-                font.draw(batch, titles.get(i), xOffset + centerX - font.getBounds( titles.get(i)).width/2, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
+                font.draw(batch, titles.get(parent.currentLanguage).get(i), xOffset + centerX - font.getBounds( titles.get(parent.currentLanguage).get(i)).width/2, yOffset + centerY - titlesGap * titles.get(parent.currentLanguage).size() / 2 + titlesGap * (titles.get(parent.currentLanguage).size() - i - 1));
             } else {
-                font.draw(batch, titles.get(i), xOffset, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - i - 1));
+                font.draw(batch, titles.get(parent.currentLanguage).get(i), xOffset, yOffset - titlesGap * titles.get(parent.currentLanguage).size() / 2 + titlesGap * (titles.size() - i - 1));
             }
         }
         if (enabled) {
             if (centerAlign) {
-                batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
-                batch.draw(new TextureRegion(cursor), xOffset + centerX + font.getBounds( titles.get(selectedIndex)).width/2 + 10, yOffset + centerY - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, -cursorAngle, true);
+                batch.draw(new TextureRegion(cursor), xOffset + centerX - font.getBounds( titles.get(parent.currentLanguage).get(selectedIndex)).width/2 - 20, yOffset + centerY - titlesGap * titles.get(parent.currentLanguage).size() / 2 + titlesGap * (titles.get(parent.currentLanguage).size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+                batch.draw(new TextureRegion(cursor), xOffset + centerX + font.getBounds( titles.get(parent.currentLanguage).get(selectedIndex)).width/2 + 10, yOffset + centerY - titlesGap * titles.get(parent.currentLanguage).size() / 2 + titlesGap * (titles.get(parent.currentLanguage).size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, -cursorAngle, true);
             } else {
-                batch.draw(new TextureRegion(cursor), xOffset - 20, yOffset - titlesGap * titles.size() / 2 + titlesGap * (titles.size() - selectedIndex - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
+                batch.draw(new TextureRegion(cursor), xOffset - 20, yOffset - titlesGap * titles.get(parent.currentLanguage).size() / 2 + titlesGap * (titles.get(parent.currentLanguage).size() - (selectedIndex + (Math.max(titles.get(0).size() - 2, 0))) - 1) - cursor.getWidth(), 5.5f, 5.5f, 11, 11, 3, 3, cursorAngle, true);
             }
         }
     }

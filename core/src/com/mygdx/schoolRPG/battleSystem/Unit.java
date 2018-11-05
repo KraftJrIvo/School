@@ -3,6 +3,7 @@ package com.mygdx.schoolRPG.battleSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,6 +11,7 @@ import com.mygdx.schoolRPG.Item;
 import com.mygdx.schoolRPG.ObjectLoader;
 import com.mygdx.schoolRPG.ParticleProperties;
 import com.mygdx.schoolRPG.World;
+import com.mygdx.schoolRPG.battleSystem.ui.UnitsDrawGroup;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,7 +45,9 @@ public class Unit {
     ArrayList<Sound> statesIdleLoops;
     ArrayList<Sound> statesHitSounds;
     ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesIdlePrt;
-    ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesHitPrt;
+    public ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesHitPrt;
+    ArrayList<ArrayList<Integer>> statesIdlePrtMinMax;
+    ArrayList<ArrayList<Integer>> statesHitPrtMinMax;
 
     AnimationSequence fighterTex;
 
@@ -51,10 +55,22 @@ public class Unit {
     ArrayList<ArrayList<String>> roundSpeeches;
     ArrayList<ArrayList<String>> hitSpeeches;
 
+    int baseHeight;
+
+    boolean wasHit = false;
+    float hitAlpha = 0;
+    float hitOffset = 0;
+    float hitOffsetSpeed = 0;
+    float hitShake = 0f;
+
+    ObjectLoader loader;
+
     String name;
+    ArrayList<String> nickname;
 
     public Unit(World w, String name, int level) {
         this.name = name;
+        loader = new ObjectLoader();
         stats = new UnitStats(w, name, level);
         FileHandle statsXML = Gdx.files.internal(w.worldDir + "/units/" + name + "/stats.xml");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -74,6 +90,14 @@ public class Unit {
         }
         doc.getDocumentElement().normalize();
 
+        Element unitElem = (Element) doc.getElementsByTagName("unit").item(0);
+        baseHeight = Integer.parseInt(unitElem.getAttribute("baseHeight"));
+
+        Element nameElem = (Element) doc.getElementsByTagName("name").item(0);
+        nickname = new ArrayList<String>();
+        nickname.add(nameElem.getAttribute("eng"));
+        nickname.add(nameElem.getAttribute("rus"));
+
         skills = new ArrayList<Skill>();
         NodeList skillList = doc.getElementsByTagName("skill");
         for (int i = 0; i < skillList.getLength(); ++i) {
@@ -81,7 +105,7 @@ public class Unit {
             Element eElement = (Element) nNode;
             float probability = Float.parseFloat(eElement.getAttribute("prob"));
             if (Math.random() < probability) {
-                skills.add(w.battleSystem.getSkillByName(eElement.getAttribute("name")));
+                skills.add(new Skill(w.battleSystem.getSkillByName(eElement.getAttribute("name"))));
             }
         }
 
@@ -131,6 +155,8 @@ public class Unit {
         statesHitSounds = new ArrayList<Sound>();
         statesIdlePrt = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
         statesHitPrt = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
+        statesIdlePrtMinMax = new ArrayList<ArrayList<Integer>>();
+        statesHitPrtMinMax = new ArrayList<ArrayList<Integer>>();
         NodeList statesList = doc.getElementsByTagName("state");
         for (int i = 0; i < statesList.getLength() + 1; ++i) {
             Node nNode;
@@ -147,6 +173,8 @@ public class Unit {
             statesHitSounds.add(null);
             statesIdlePrt.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
             statesHitPrt.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
+            statesIdlePrtMinMax.add(new ArrayList<Integer>());
+            statesHitPrtMinMax.add(new ArrayList<Integer>());
             Element idle = (Element) eElement.getElementsByTagName("idle").item(0);
             Element hit = (Element) eElement.getElementsByTagName("hit").item(0);
             /*statesIdleTexes.set(i, new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + idle.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(idle.getAttribute("animFps")), Boolean.parseBoolean(idle.getAttribute("animLoop")), Integer.parseInt(idle.getAttribute("animFps"))));
@@ -157,6 +185,7 @@ public class Unit {
             if (!hit.getAttribute("sound").equals("")) {
                 statesHitSounds.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + hit.getAttribute("sound"), Sound.class));
             }*/
+
             if (idle != null) {
                 NodeList particlesSpawns = idle.getElementsByTagName("particle");
                 for (int j = 0; j < particlesSpawns.getLength(); ++j) {
@@ -175,6 +204,9 @@ public class Unit {
                             Float.parseFloat(spawnParams.getAttribute("speedSpread")),
                             Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
                     ));
+                    statesIdlePrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("minNum")));
+                    statesIdlePrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("maxNum")));
+                    loader.loadParticle(w, spawnParams.getAttribute("name"));
                 }
             }
             if (hit != null) {
@@ -195,6 +227,9 @@ public class Unit {
                             Float.parseFloat(spawnParams.getAttribute("speedSpread")),
                             Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
                     ));
+                    statesHitPrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("minNum")));
+                    statesHitPrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("maxNum")));
+                    loader.loadParticle(w, spawnParams.getAttribute("name"));
                 }
             }
         }
@@ -239,6 +274,11 @@ public class Unit {
         effects = new ArrayList<StatusEffect>();
     }
 
+    public void playHitSound(World w) {
+        statesHitSounds.get(currentState).play(w.menu.soundVolume / 100.0f);
+    }
+
+
     public void load(World w) {
         FileHandle statsXML = Gdx.files.internal(w.worldDir + "/units/" + name + "/stats.xml");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -281,7 +321,6 @@ public class Unit {
         w.assets.load(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class);
 
         NodeList dgList = doc.getElementsByTagName("dropGroup");
-        ObjectLoader loader = new ObjectLoader();
         for (int i = 0; i < dgList.getLength(); ++i) {
             Node nNode = dgList.item(i);
             Element eElement = (Element) nNode;
@@ -336,7 +375,6 @@ public class Unit {
         fighterTex = new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(fighterSpriteElement.getAttribute("animFps")), Boolean.parseBoolean(fighterSpriteElement.getAttribute("animLoop")), Integer.parseInt(fighterSpriteElement.getAttribute("animFrames")));
 
         NodeList dgList = doc.getElementsByTagName("dropGroup");
-        ObjectLoader loader = new ObjectLoader();
         for (int i = 0; i < dgList.getLength(); ++i) {
             Node nNode = dgList.item(i);
             Element eElement = (Element) nNode;
@@ -348,13 +386,44 @@ public class Unit {
             }
         }
 
+        loader.initializeObjects(w.assets, w);
     }
 
-
-
-    public void draw(SpriteBatch batch, float x, float y, float scale) {
-        TextureRegion tex = statesIdleTexes.get(currentState).getCurrentFrame(false);
-        batch.draw(tex, x, y - tex.getRegionHeight(), tex.getRegionWidth()/2.0f, tex.getRegionHeight()/2.0f, tex.getRegionWidth(), tex.getRegionHeight(), scale, scale, 0);
+    public void draw(World w, UnitsDrawGroup udg, SpriteBatch batch, float x, float y, float scale) {
+        TextureRegion tex;
+        float shakeX = 0, shakeY = 0;
+        if (wasHit || (!statesHitTexes.get(currentState).hasEnded() && !statesHitTexes.get(currentState).looping) || (hitAlpha != 0 && hitShake != 0)) {
+            shakeX = hitShake * (int)Math.floor(Math.random() * 2.0f) - 1.0f;
+            shakeY = hitShake * (int)Math.floor(Math.random() * 2.0f) - 1.0f;
+            batch.setColor(new Color(1.0f, 1.0f - hitAlpha, 1.0f - hitAlpha, 1.0f));
+            tex = statesHitTexes.get(currentState).getCurrentFrame(false);
+        } else {
+            tex = statesIdleTexes.get(currentState).getCurrentFrame(false);
+        }
+        if (wasHit) {
+            hitOffsetSpeed = 1.0f;
+            hitAlpha =  1.0f;
+            hitShake = 5.0f;
+            for (int i = 0; i < statesHitPrt.get(currentState).size(); ++i) {
+                ParticleProperties.ParticleSpawnProperties pp = statesHitPrt.get(currentState).get(i);
+                int r = (int)Math.floor(Math.random() * (statesHitPrtMinMax.get(i).get(1) - statesHitPrtMinMax.get(i).get(0)) + 1) + statesHitPrtMinMax.get(i).get(0);
+                float xSpread = ((float)Math.random() * 2.0f - 1.0f) * tex.getRegionWidth()/2.0f;
+                float ySpread = ((float)Math.random()) * tex.getRegionWidth()/2.0f;
+                for (int j = 0; j < r; ++j) {
+                    udg.addParticle(w, w.getParticleByName(pp.particleName), statesHitPrt.get(currentState).get(i), x + scale * tex.getRegionWidth()/2.0f + xSpread, y - tex.getRegionHeight() - baseHeight + ySpread, 1.0f);
+                }
+            }
+        }
+        batch.draw(tex, x + shakeX, y - tex.getRegionHeight() - baseHeight + shakeY, 0, 0, tex.getRegionWidth(), tex.getRegionHeight(), scale, scale, 0);
+        batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+        hitOffset += hitOffsetSpeed;
+        if (hitAlpha > 0) hitAlpha -= 0.05f;
+        else hitAlpha = 0;
+        if (hitShake > 0) hitShake -= 0.5f;
+        else hitShake = 0;
+        if (hitOffsetSpeed > 0) hitOffsetSpeed -= 0.1f;
+        else hitOffset -= 0.1f;
+        wasHit = false;
     }
 
 }

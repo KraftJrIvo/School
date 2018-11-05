@@ -87,11 +87,14 @@ public class Menu {
             resume = assets.get("play.png", Texture.class);
             exit = assets.get("play.png", Texture.class);
             options = assets.get("play.png", Texture.class);
-            ArrayList<String> list = new ArrayList<String>();
-
+            ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+            list.add(new ArrayList<String>());
+            list.add(new ArrayList<String>());
             pauseSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
         }
-        ArrayList<String> list2 = new ArrayList<String>();
+        ArrayList<ArrayList<String>> list2 = new ArrayList<ArrayList<String>>();
+        list2.add(new ArrayList<String>());
+        list2.add(new ArrayList<String>());
         /*list2.add("Music Volume: " + musicVolume);
         list2.add("Sound Volume: " + soundVolume);
         list2.add("Language: " + languages.get(currentLanguage));
@@ -115,39 +118,38 @@ public class Menu {
     }
 
     public void updateLanguage() {
-        ArrayList<String> list = new ArrayList<String>();
-        ArrayList<String> list2 = new ArrayList<String>();
-        if (currentLanguage == 0) {
-            list.add("Music Volume: " + musicVolume);
-            list.add("Sound Volume: " + soundVolume);
-            list.add("Language: " + languages.get(currentLanguage));
-            if (fullScreen) {
-                list.add("Fullscreen: On");
-            } else {
-                list.add("Fullscreen: Off");
-            }
-            list.add("Reset to defaults");
-            list.add("Back");
-            list2.add("Continue");
-            list2.add("Options");
-            list2.add("Exit to main menu");
-        } else if (currentLanguage == 1) {
-            list.add("Громкость Музыки: " + musicVolume);
-            list.add("Громкость 3вука: " + soundVolume);
-            list.add("Язык: " + languages.get(currentLanguage));
-            if (fullScreen) {
-                list.add("Полный экран: Да");
-            } else {
-                list.add("Полный экран: Нет");
-            }
-            list.add("Вернуть настройки по умолчанию");
-            list.add("Назад");
-            list2.add("Продолжить");
-            list2.add("Опции");
-            list2.add("Выйти в Главное Меню");
+        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+        list.add(new ArrayList<String>());
+        list.add(new ArrayList<String>());
+        ArrayList<ArrayList<String>> list2 = new ArrayList<ArrayList<String>>();
+        list2.add(new ArrayList<String>());
+        list2.add(new ArrayList<String>());
+        list.get(0).add("Music Volume: " + musicVolume);
+        list.get(0).add("Sound Volume: " + soundVolume);
+        list.get(0).add("Language: " + languages.get(currentLanguage));
+        if (fullScreen) {
+            list.get(0).add("Fullscreen: On");
         } else {
-            return;
+            list.get(0).add("Fullscreen: Off");
         }
+        list.get(0).add("Reset to defaults");
+        list.get(0).add("Back");
+        list2.get(0).add("Continue");
+        list2.get(0).add("Options");
+        list2.get(0).add("Exit to main menu");
+        list.get(1).add("Громкость Музыки: " + musicVolume);
+        list.get(1).add("Громкость 3вука: " + soundVolume);
+        list.get(1).add("Язык: " + languages.get(currentLanguage));
+        if (fullScreen) {
+            list.get(1).add("Полный экран: Да");
+        } else {
+            list.get(1).add("Полный экран: Нет");
+        }
+        list.get(1).add("Вернуть настройки по умолчанию");
+        list.get(1).add("Назад");
+        list2.get(1).add("Продолжить");
+        list2.get(1).add("Опции");
+        list2.get(1).add("Выйти в Главное Меню");
         optionsSelector.titles = list;
         if (allowPause) pauseSelector.titles = list2;
     }

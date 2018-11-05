@@ -1,4 +1,5 @@
-﻿<unit name="Slime">
+﻿<unit baseHeight="10">
+	<name rus="Слизь" eng="Slime"/>
 	<stats
 		baseHp="10"
 		baseAp="1"
@@ -9,7 +10,7 @@
 	/>	
 	<skills>
 		<skill name="slimeBasicAttack" prob="1"/>
-		<skill name="slimePoisonSpit" prob="1"/>
+		<!--<skill name="slimePoisonSpit" prob="1"/>-->
 	</skills>
 	<inventory>		
 	</inventory>
@@ -28,13 +29,13 @@
 		<state condition="hp &gt; maxHp/2">
 			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
 			<hit tex="idle" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
-				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="2" maxNum="5"/>
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="2" spawnImpulse="2" dirSpread="6.28" speedSpread="2" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
 			</hit>
 		</state>
 		<state condition="">
 			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
 			<hit tex="idle" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
-				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="1" maxNum="3"/>
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="1" dirSpread="6.28" speedSpread="2" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
 			</hit>
 		</state>
 		<death-state tex="idle" animFps="0" animLoop="false" animFrames="1" sound="death.mp3"/>

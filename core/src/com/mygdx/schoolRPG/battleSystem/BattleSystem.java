@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.mygdx.schoolRPG.ObjectLoader;
 import com.mygdx.schoolRPG.World;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -95,11 +96,17 @@ public class BattleSystem {
         }
         doc.getDocumentElement().normalize();
         NodeList skList = doc.getElementsByTagName("skill");
+        ObjectLoader loader = new ObjectLoader();
         for (int i = 0; i < skList.getLength(); ++i) {
             Node nNode = skList.item(i);
             Element eElement = (Element) nNode;
             Element eElement2 = (Element)eElement.getElementsByTagName("animation").item(0);
-            if (!eElement2.getAttribute("sprite").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("sprite") + ".png", Texture.class);
+            if (eElement2.getAttribute("type").equals("melee-fist")) {
+                if (!eElement2.getAttribute("name").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("name") + "_front.png", Texture.class);
+                if (!eElement2.getAttribute("name").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("name") + "_back.png", Texture.class);
+            } else {
+                loader.loadParticle(w, eElement2.getAttribute("name"));
+            }
             if (!eElement2.getAttribute("sound").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("sound"), Sound.class);
         }
     }
@@ -144,8 +151,14 @@ public class BattleSystem {
                 Element eElement2 = (Element) nNode2;
                 statusEffects.add(getStatusEffectByName(eElement2.getAttribute("name")));
             }
+            Element nameElem = (Element) eElement.getElementsByTagName("name").item(0);
+            ArrayList<String> title = new ArrayList<String>();
+            title.add(nameElem.getAttribute("eng"));
+            title.add(nameElem.getAttribute("rus"));
             Skill.SkillAnimationType sat = Skill.getSkillAnimationTypeFromString(((Element)eElement.getElementsByTagName("animation").item(0)).getAttribute("type"));
-            skills.add(new Skill(w, eElement.getAttribute("name"), Integer.parseInt(eElement.getAttribute("APcost")), Integer.parseInt(eElement.getAttribute("cooldown")), Boolean.parseBoolean(eElement.getAttribute("positive")), damageTypes, baseDamages, sat, statusEffects));
+            Element anim = ((Element)eElement.getElementsByTagName("animation").item(0));
+            skills.add(new Skill(w, eElement.getAttribute("name"), title, Integer.parseInt(eElement.getAttribute("APcost")), Integer.parseInt(eElement.getAttribute("cooldown")), Boolean.parseBoolean(eElement.getAttribute("positive")), damageTypes, baseDamages, sat, statusEffects,
+                    anim.getAttribute("name"), Integer.parseInt(anim.getAttribute("fps")), Boolean.parseBoolean(anim.getAttribute("looping")), Integer.parseInt(anim.getAttribute("frames")), anim.getAttribute("sound")));
         }
     }
 

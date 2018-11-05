@@ -57,7 +57,7 @@ public class ParticleProperties {
         }
     }
     public class ParticleSpawnProperties{
-        String particleName;
+        public String particleName;
         float spawnX;
         float spawnY;
         float spawnZ;

@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AnimationSequence {
 	int fps;
-	boolean looping;
+	public boolean looping;
 	Coords pos;
 	float scale = 1.0f;
 	GlobalSequence gs = null;
@@ -96,6 +96,10 @@ public class AnimationSequence {
 	/*public void setSequence() {
 		gs.setSequence();
 	}*/
+
+	public boolean hasEnded() {
+		return currentFrame == gs.getLength() - 1;
+	}
 
 	public int getCurrentFrameId() {
 		return currentFrame;

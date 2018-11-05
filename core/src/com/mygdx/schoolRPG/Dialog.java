@@ -154,7 +154,9 @@ public class Dialog implements InputProcessor {
                         }
                     }
                 }
-                ArrayList<String> phrases = new ArrayList<String>(Arrays.asList(text[language].split("\n")));
+                ArrayList<ArrayList<String>> phrases = new ArrayList<ArrayList<String>>();
+                phrases.add(new ArrayList<String>(Arrays.asList(text[0].split("\n"))));
+                phrases.add(new ArrayList<String>(Arrays.asList(text[1].split("\n"))));
                 for (int j = 0; j < phrases.size(); ++j) {
                     if (j >= phrases.size()) break;
                     if (phrases.get(j).equals("")) {
@@ -164,16 +166,19 @@ public class Dialog implements InputProcessor {
                 if (foundAnswer) {
                     for (int j = 0; j < speechTransitionsText.get(i).size(); ++j) {
                         if (parser.parseCondition(speechTransitionsConditions.get(i).get(j), null)) {
-                            phrases.add(speechTransitionsText.get(i).get(j).get(language));
+                            phrases.add(speechTransitionsText.get(i).get(j));
                         }
                     }
                     Choice choice = new Choice(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, npcs, player, parent, parser);
                     speeches.add(choice);
                 } else {
                     if (itemTransfer) {
-                        phrases.add(okGivePhrases[language]);
+                        phrases.get(0).add(okGivePhrases[0]);
+                        phrases.get(1).add(okGivePhrases[1]);
                         //phrases.add(notOkGivePhrases[language]);
-                        phrases.add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
+                        phrases.get(0).add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
+                        phrases.get(1
+                        ).add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
                     }
                     Speech speech = new Speech(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, varOwner, varId, varVal, npcs, player, parent, parser);
                     speeches.add(speech);

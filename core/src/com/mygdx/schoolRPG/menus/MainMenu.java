@@ -107,7 +107,7 @@ public class MainMenu extends Menu {
                         }
                         worldsIds.add(index + gameNum, worldId);
                         worldsStates.add(index + gameNum, gameNum - 1);
-                        gameSelector.titles.add(index + gameNum, worldsNames.get(worldId) + " - Continue Game " + gameNum);
+                        gameSelector.titles.get(0).add(index + gameNum, worldsNames.get(worldId) + " - Continue Game " + gameNum);
                     }
                     nextMenuMessage = worldsPaths.get(worldId);
                     nextMenuSetting = worldsStates.get(index);
@@ -133,18 +133,17 @@ public class MainMenu extends Menu {
     @Override
     public void updateLanguage() {
         super.updateLanguage();
-        ArrayList<String> list = new ArrayList<String>();
-        if (currentLanguage == 0) {
-            list.add("Play");
-            list.add("Options");
-            list.add("Info");
-            list.add("Exit");
-        } else {
-            list.add("Играть");
-            list.add("Опции");
-            list.add("Инфо");
-            list.add("Выйти");
-        }
+        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+        list.add(new ArrayList<String>());
+        list.add(new ArrayList<String>());
+        list.get(0).add("Play");
+        list.get(0).add("Options");
+        list.get(0).add("Info");
+        list.get(0).add("Exit");
+        list.get(1).add("Играть");
+        list.get(1).add("Опции");
+        list.get(1).add("Инфо");
+        list.get(1).add("Выйти");
         if (selector != null) {
             selector.titles = list;
         } else {
@@ -190,7 +189,9 @@ public class MainMenu extends Menu {
         worldsIds = new ArrayList<Integer>();
         worldsNames = new ArrayList<String>();
         worldsPaths = new ArrayList<String>();
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+        list.add(new ArrayList<String>());
+        list.add(new ArrayList<String>());
         FileHandle worldsDir = Gdx.files.internal("worlds");
         for (FileHandle entry: worldsDir.list()) {
             if (entry.isDirectory()) {
@@ -216,11 +217,8 @@ public class MainMenu extends Menu {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if (currentLanguage == 0) {
-                        list.add(name + " - Start New Game");
-                    } else {
-                        list.add(name + " - Начать Новую Игру");
-                    }
+                    list.get(0).add(name + " - Start New Game");
+                    list.get(1).add(name + " - Начать Новую Игру");
                     worldsIds.add(worldsPaths.size());
                     worldsNames.add(name);
                     worldsPaths.add(entry.path());
@@ -229,11 +227,8 @@ public class MainMenu extends Menu {
                     if (statesDir.exists()) {
                         int stateNumber = 1;
                         for (FileHandle state: statesDir.list()) {
-                            if (currentLanguage == 0) {
-                                list.add(name + " - Continue Game " + stateNumber);
-                            } else {
-                                list.add(name + " - Продолжить Игру " + stateNumber);
-                            }
+                            list.get(0).add(name + " - Continue Game " + stateNumber);
+                            list.get(1).add(name + " - Продолжить Игру " + stateNumber);
                             worldsIds.add(worldsPaths.size()-1);
                             worldsStates.add(stateNumber-1);
                             stateNumber++;
@@ -242,11 +237,8 @@ public class MainMenu extends Menu {
                 }
             }
         }
-        if (currentLanguage == 0) {
-            list.add("Back");
-        } else {
-            list.add("Назад");
-        }
+        list.get(0).add("Back");
+        list.get(1).add("Назад");
         gameSelector = new MenuListSelector(list, assets, "cursor.png", mainFont, Gdx.graphics.getHeight(), 0, 0, true, this);
     }
 

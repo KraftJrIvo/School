@@ -165,7 +165,7 @@ public class World{
     }
 
 
-    ParticleProperties getParticleByName(String name) {
+    public ParticleProperties getParticleByName(String name) {
         for (int i =0; i < particles.size(); ++i) {
             if (particlesPaths.get(i).equals(name)) {
                 return particles.get(i);
@@ -721,12 +721,20 @@ public class World{
         assets.load("blank.png", Texture.class);
         assets.load("blank2.png", Texture.class);
         assets.load("shadow.png", Texture.class);
+        assets.load("stats_bar_edge.png", Texture.class);
+        assets.load("stats_bar_hp.png", Texture.class);
+        assets.load("stats_bar_ap.png", Texture.class);
+        assets.load("stats_bar_xp.png", Texture.class);
+        assets.load("battle-select-top-marker.png", Texture.class);
+        assets.load("battle-select-marker.png", Texture.class);
         assets.load("prt_shadow.png", Texture.class);
         assets.load("inventory_overlay3.png", Texture.class);
         assets.load("inventory_overlay2.png", Texture.class);
         worldDir = Gdx.files.internal(folderPath);
         if (Gdx.files.internal(worldDir + "/skills/skills.xml").exists()) {
             battleSystem = new BattleSystem(this);
+            assets.load(worldDir + "/bg/battle_trans_top.png", Texture.class);
+            assets.load(worldDir + "/bg/battle_trans_bottom.png", Texture.class);
         }
         if (battleSystem != null) battleSystem.load(this);
         //assets.load(folderPath + "bg/bg.png", Texture.class);
@@ -1737,12 +1745,15 @@ public class World{
                     menu.unpausable = true;
                 }
             }
-            if (curArea.worldObjectsHandler.currentBattle != null && curArea.worldObjectsHandler.currentBattle.initialized) {
+            if (curArea.worldObjectsHandler.currentBattle != null) {
                 if (currentSound != null) {
                     currentSound.stop();
                     currentSound = null;
                 }
-                curArea.worldObjectsHandler.currentBattle.draw(batch);
+                //menu.drawPause = false;
+                menu.paused = true;
+                menu.unpausable = false;
+                curArea.worldObjectsHandler.currentBattle.draw(this, batch);
                 if (curArea.worldObjectsHandler.currentBattle.finished) {
                     curArea.worldObjectsHandler.currentBattle = null;
                     menu.dialogSkipping = false;

@@ -21,7 +21,7 @@ public class Speech {
     public boolean isSpeech = true;
     String speaker;
     int speakerId = -1;
-    ArrayList<String> phrases;
+    ArrayList<ArrayList<String>> phrases;
     ArrayList<Boolean> progress;
     Texture overlay, texture;
     BitmapFont font;
@@ -134,7 +134,7 @@ public class Speech {
         }*/
     }
 
-    public Speech(Dialog dialog, int speakerId, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, int varCharId, String varId, String varVal, ArrayList<NPC> npcs, Player player, Menu menu, ConditionParser parser) {
+    public Speech(Dialog dialog, int speakerId, String speaker, ArrayList<ArrayList<String>> phrases, AssetManager assets, String texPath, int charId, int varCharId, String varId, String varVal, ArrayList<NPC> npcs, Player player, Menu menu, ConditionParser parser) {
         this.menu = menu;
         this.npcs = npcs;
         this.dialog = dialog;
@@ -146,7 +146,7 @@ public class Speech {
         this.parser = parser;
         this.speakerId = speakerId;
         progress = new ArrayList<Boolean>();
-        for (int i =0; i < phrases.size(); ++i) {
+        for (int i =0; i < phrases.get(menu.currentLanguage).size(); ++i) {
             progress.add(false);
         }
         if (assets.isLoaded(texPath)) texture = assets.get(texPath, Texture.class);
@@ -174,8 +174,8 @@ public class Speech {
         currentPhrase = 0;
         time = 0;
         curTime = 0;
-        for (int i = 0; i < phrases.size(); ++i) {
-            String phrase = phrases.get(i);
+        for (int i = 0; i < phrases.get(menu.currentLanguage).size(); ++i) {
+            String phrase = phrases.get(menu.currentLanguage).get(i);
             if (phrase.charAt(0) == ']' && phrase.charAt(1) == ';' && phrase.charAt(2) == '[') {
                 boolean numbersStarted = false;
                 boolean receiverStarted = false;
@@ -203,7 +203,7 @@ public class Speech {
                 }
                 itemsToGiveCount = Integer.parseInt(numba);
                 itemsToGiveTo = Integer.parseInt(numba2);
-                phrases.remove(phrase);
+                phrases.get(menu.currentLanguage).remove(phrase);
             }
         }
     }
@@ -255,12 +255,12 @@ public class Speech {
                 float phraseOffset = 0;
                 int to;
                 if (nextLineStarted == 1) {
-                    to = Math.min(nextLineChars, phrases.get(i).length()-1);
+                    to = Math.min(nextLineChars, phrases.get(menu.currentLanguage).get(i).length()-1);
                 } else {
-                    to = phrases.get(i).length();
+                    to = phrases.get(menu.currentLanguage).get(i).length();
                 }
                 for (int j= 0; j < to; ++j) {
-                    char ch = phrases.get(i).charAt(j);
+                    char ch = phrases.get(menu.currentLanguage).get(i).charAt(j);
                     String curChar = ""+ch;
                     switch (ch) {
                         case '(':
@@ -353,19 +353,19 @@ public class Speech {
         }
         oldCharCount = charCount;
         charCount = (int)Math.floor(curTime / millsPerChar);
-        if (charCount > phrases.get(currentPhrase).length()) charCount = phrases.get(currentPhrase).length();
-        if (charCount != oldCharCount && charCount > 0 && phrases.get(currentPhrase).charAt(charCount - 1) != ' ') {
+        if (charCount > phrases.get(menu.currentLanguage).get(currentPhrase).length()) charCount = phrases.get(menu.currentLanguage).get(currentPhrase).length();
+        if (charCount != oldCharCount && charCount > 0 && phrases.get(menu.currentLanguage).get(currentPhrase).charAt(charCount - 1) != ' ') {
             float volume = 1.0f;
             if (roundBracketsStarted || squareBracketsStarted || curlyBracketsStarted) {
                 volume = 0.5f;
             }
             target.speechSound.play(volume * menu.soundVolume/100.0f);
         }
-        int lineChars = phrases.get(currentPhrase).substring(0, Math.min(charCount, phrases.get(currentPhrase).length()-1)).length();
+        int lineChars = phrases.get(menu.currentLanguage).get(currentPhrase).substring(0, Math.min(charCount, phrases.get(menu.currentLanguage).get(currentPhrase).length()-1)).length();
         if (!progress.get(currentPhrase) && lineChars > 0) {
             nextLineChars = lineChars;
         }
-        if (charCount == phrases.get(currentPhrase).length()) {
+        if (charCount == phrases.get(menu.currentLanguage).get(currentPhrase).length()) {
             progress.set(currentPhrase, true);
             nextLineChars = 0;
         }

@@ -24,9 +24,9 @@ public class Inventory {
     ArrayList<String> titles2;
     ArrayList<Texture> sprites;
     ArrayList<Texture> sprites2;
-    ArrayList<String> inventoryOpts;
-    ArrayList<String> containerOpts;
-    ArrayList<String> otherOpts;
+    ArrayList<ArrayList<String>> inventoryOpts;
+    ArrayList<ArrayList<String>> containerOpts;
+    ArrayList<ArrayList<String>> otherOpts;
     ArrayList<String> inventory2TitlesInLanguages;
     CircularSelector itemsSelector;
     CircularSelector containerItemsSelector;
@@ -74,43 +74,51 @@ public class Inventory {
         for (int i = 0; i < items.size(); ++i) {
             titles.add(items.get(i).getName(language));
         }
-        inventoryOpts = new ArrayList<String>();
-        containerOpts = new ArrayList<String>();
-        otherOpts = new ArrayList<String>();
-        inventoryOpts.add("---");
-        containerOpts.add("---");
+        inventoryOpts = new ArrayList<ArrayList<String>>();
+        containerOpts = new ArrayList<ArrayList<String>>();
+        otherOpts = new ArrayList<ArrayList<String>>();
+        inventoryOpts.add(new ArrayList<String>());
+        inventoryOpts.add(new ArrayList<String>());
+        containerOpts.add(new ArrayList<String>());
+        containerOpts.add(new ArrayList<String>());
+        otherOpts.add(new ArrayList<String>());
+        otherOpts.add(new ArrayList<String>());
+        inventoryOpts.get(0).add("---");
+        inventoryOpts.get(1).add("---");
+        containerOpts.get(0).add("---");
+        containerOpts.get(1).add("---");
         if (language == 0) {
             inventory1Title = "Inventory";
             if (containerMode) {
-                inventoryOpts.add("Store");
-                inventoryOpts.add("Store All");
+                inventoryOpts.get(0).add("Store");
+                inventoryOpts.get(0).add("Store All");
             } else {
-                inventoryOpts.add("Use");
+                inventoryOpts.get(0).add("Use");
             }
             //inventoryOpts.add("Info");
             if (!containerMode) {
-                inventoryOpts.add("Drop");
+                inventoryOpts.get(0).add("Drop");
             }
-            containerOpts.add("Take");
-            containerOpts.add("Take All");
+            containerOpts.get(0).add("Take");
+            containerOpts.get(0).add("Take All");
             //containerOpts.add("Info");
-            otherOpts.add("Back");
+            otherOpts.get(0).add("Back");
         } else {
             inventory1Title = "Инвентарь";
             if (containerMode) {
-                inventoryOpts.add("Сложить");
-                inventoryOpts.add("Сложить Все");
+                inventoryOpts.get(1).add("Сложить");
+                inventoryOpts.get(1).add("Сложить Все");
             } else {
-                inventoryOpts.add("Использовать");
+                inventoryOpts.get(1).add("Использовать");
             }
             //inventoryOpts.add("Инфо");
             if (!containerMode) {
-                inventoryOpts.add("Выбросить");
+                inventoryOpts.get(1).add("Выбросить");
             }
-            containerOpts.add("Взять");
-            containerOpts.add("Взять Все");
+            containerOpts.get(1).add("Взять");
+            containerOpts.get(1).add("Взять Все");
             //containerOpts.add("Инфо");
-            otherOpts.add("Назад");
+            otherOpts.get(1).add("Назад");
         }
         if (containerMode) {
             inventory2Title = inventory2TitlesInLanguages.get(language);
@@ -218,28 +226,28 @@ public class Inventory {
             Item currentItem = items.get(itemsSelector.getSelectedIndex());
             if (currentItem.sides == owner.headWear || currentItem.sides == owner.bodyWear) {
                 if (language == 0) {
-                    invenoryOptions.titles.set(1, "Take off");
+                    invenoryOptions.titles.get(0).set(1, "Take off");
                 } else {
-                    invenoryOptions.titles.set(1, "Снять");
+                    invenoryOptions.titles.get(1).set(1, "Снять");
                 }
             } else if (currentItem.sides == owner.objectInHands) {
                 if (language == 0) {
-                    invenoryOptions.titles.set(1, "Unequip");
+                    invenoryOptions.titles.get(0).set(1, "Unequip");
                 } else {
-                    invenoryOptions.titles.set(1, "Убрать из рук");
+                    invenoryOptions.titles.get(1).set(1, "Убрать из рук");
                 }
             } else {
                 if (currentItem.equipSlot == Item.EquipSlot.HEAD || currentItem.equipSlot == Item.EquipSlot.BODY) {
                     if (language == 0) {
-                        invenoryOptions.titles.set(1, "Wear");
+                        invenoryOptions.titles.get(0).set(1, "Wear");
                     } else {
-                        invenoryOptions.titles.set(1, "Надеть");
+                        invenoryOptions.titles.get(1).set(1, "Надеть");
                     }
                 } else {
                     if (language == 0) {
-                        invenoryOptions.titles.set(1, "Equip");
+                        invenoryOptions.titles.get(0).set(1, "Equip");
                     } else {
-                        invenoryOptions.titles.set(1, "Взять в руки");
+                        invenoryOptions.titles.get(1).set(1, "Взять в руки");
                     }
                 }
             }
@@ -285,14 +293,14 @@ public class Inventory {
         if (items.size() > 0 && items.get(itemsSelector.getSelectedIndex()).stack > 1) {
             str += " (" + items.get(itemsSelector.getSelectedIndex()).stack + ")";
         }
-        invenoryOptions.titles.set(0, str + "  ->");
+        invenoryOptions.titles.get(parent.currentLanguage).set(0, str + "  ->");
 
         if (containerMode) {
             String str2 = "<-  " + containerItemsSelector.curTitle;
             if (containerItems.size() > 0 && containerItems.get(containerItemsSelector.getSelectedIndex()).stack > 1) {
                 str2 += " (" + containerItems.get(containerItemsSelector.getSelectedIndex()).stack + ")";
             }
-            containerOptions.titles.set(0, str2 + "  ->");
+            containerOptions.titles.get(parent.currentLanguage).set(0, str2 + "  ->");
 
             if (otherOptions.enabled) {
                 if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {

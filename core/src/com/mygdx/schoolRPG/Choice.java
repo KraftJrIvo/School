@@ -21,11 +21,11 @@ public class Choice extends Speech {
     String question;
     Menu parent;
 
-    public Choice(Dialog dialog, int speakerId, String speaker, ArrayList<String> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player, Menu parent, ConditionParser parser) {
+    public Choice(Dialog dialog, int speakerId, String speaker, ArrayList<ArrayList<String>> phrases, AssetManager assets, String texPath, int charId, ArrayList<NPC> npcs, Player player, Menu parent, ConditionParser parser) {
         super(dialog, speakerId, speaker, phrases, assets, texPath, charId, -1, "", "", npcs, player, parent, parser);
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         //System.out.println();
-        question = phrases.get(0);
+        question = phrases.get(menu.currentLanguage).get(0);
         phrases.remove(0);
         selector = new MenuListSelector(phrases, assets, "cursor.png", font, overlay.getHeight() - 20, 350, 175, false, parent);
         transitionId = -1;

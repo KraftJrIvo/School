@@ -62,6 +62,7 @@ public class DesktopLauncher {
 		}
 		config.width = 1280;
 		config.height = 720;
+		config.foregroundFPS = 60;
 		new LwjglApplication(new SchoolRPG(false, config.fullscreen, soundVolume, musicVolume, currentLanguage), config);
 	}
 }
