@@ -27,7 +27,7 @@ public class Entity implements Comparable {
     AssetManager assets;
     int type;
     float floorHeight;
-    boolean floor = false;
+    public boolean floor = false;
     public float alpha = 1.0f;
     float scale = 1.0f;
     boolean centered = false, falling = false;

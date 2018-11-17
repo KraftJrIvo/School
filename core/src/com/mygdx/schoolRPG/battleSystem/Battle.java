@@ -157,7 +157,7 @@ public class Battle {
                             }
                         }
                         int r3 = (int)Math.floor(Math.random() * possibleToHitUnits.size());
-                        friendlyGroup.setCurSkill(possibleToUseSkills.get(r2), null, possibleToHitUnits.get(r3));
+                        friendlyGroup.setCurSkill(possibleToUseSkills.get(r2), curUnit, possibleToHitUnits.get(r3));
                     }
                 }
             }
@@ -202,7 +202,7 @@ public class Battle {
                             enemyGroup.showSelector = false;
                             showTurnOptions = false;
                             showMovesList = false;
-                            enemyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), null, enemyGroup.getSelectedUnit());
+                            enemyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, enemyGroup.getSelectedUnit());
                             friendlyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, null);
                         }
                     }

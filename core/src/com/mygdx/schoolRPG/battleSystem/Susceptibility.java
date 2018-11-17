@@ -2,12 +2,12 @@ package com.mygdx.schoolRPG.battleSystem;
 
 import com.mygdx.schoolRPG.World;
 
-public class Succeptibility {
+public class Susceptibility {
     DamageType damageType;
-    int percent;
+    float percent;
     boolean positive;
 
-    public Succeptibility(World w, DamageType damageType, int percent) {
+    public Susceptibility(World w, DamageType damageType, float percent) {
         this.damageType = damageType;
         this.percent = percent;
         positive = (percent < 100);

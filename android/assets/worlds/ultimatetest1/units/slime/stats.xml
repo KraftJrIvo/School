@@ -29,13 +29,13 @@
 		<state condition="hp &gt; maxHp/2">
 			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
 			<hit tex="idle" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
-				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="2" spawnImpulse="2" dirSpread="6.28" speedSpread="2" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0.5" spawnImpulse="2" dirSpread="6.28" speedSpread="0.5" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
 			</hit>
 		</state>
 		<state condition="">
 			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
 			<hit tex="idle" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
-				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="1" dirSpread="6.28" speedSpread="2" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0.5" spawnImpulse="1" dirSpread="6.28" speedSpread="0.5" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
 			</hit>
 		</state>
 		<death-state tex="idle" animFps="0" animLoop="false" animFrames="1" sound="death.mp3"/>

@@ -3,6 +3,7 @@ package com.mygdx.schoolRPG.battleSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.mygdx.schoolRPG.ObjectLoader;
 import com.mygdx.schoolRPG.World;
@@ -14,7 +15,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -26,9 +26,10 @@ public class BattleSystem {
 
     public static Color hex2Rgb(String colorStr) {
         return new Color(
-                Integer.valueOf( colorStr.substring( 1, 3 ), 16 ),
-                Integer.valueOf( colorStr.substring( 3, 5 ), 16 ),
-                Integer.valueOf( colorStr.substring( 5, 7 ), 16 ) );
+                (float)Integer.valueOf( colorStr.substring( 1, 3 ), 16 ) / 255.0f,
+                (float)Integer.valueOf( colorStr.substring( 3, 5 ), 16 ) / 255.0f,
+                (float)Integer.valueOf( colorStr.substring( 5, 7 ), 16 ) / 255.0f,
+                1.0f );
     }
 
     public BattleSystem(World w) {
@@ -141,7 +142,7 @@ public class BattleSystem {
             for (int j = 0; j < dtList.getLength(); ++j) {
                 Node nNode2 = dtList.item(j);
                 Element eElement2 = (Element) nNode2;
-                damageTypes.add(getDamageTypeByName(eElement2.getAttribute("name")));
+                damageTypes.add(getDamageTypeByName(eElement2.getAttribute("damageType")));
                 baseDamages.add(Integer.parseInt(eElement2.getAttribute("baseDamage")));
             }
             ArrayList<StatusEffect> statusEffects = new ArrayList<StatusEffect>();

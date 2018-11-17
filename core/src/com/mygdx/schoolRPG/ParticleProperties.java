@@ -87,8 +87,8 @@ public class ParticleProperties {
             this.spawnY = spawnY;
             this.spawnZ = spawnZ;
             this.spawnDir = (float)Math.random() * 6.28f;
-            this.spawnSpeed = (float)Math.random() * 3.0f;
-            this.spawnImpulse = (float)Math.random() * 3.0f;
+            this.spawnSpeed = 0.5f + (float)Math.random() * 1.5f;
+            this.spawnImpulse = 3.0f + (float)Math.random() * 2.0f;
             this.dirSpread = 0;
             this.speedSpread = 0;
             this.impulseSpread = 0;
@@ -96,26 +96,26 @@ public class ParticleProperties {
     }
     public float h=0, floorHeight=0, r = 1;
     GameMenu menu;
-    ArrayList<Texture> statesTexes;
-    ArrayList<AnimationSequence> statesAnims;
-    ArrayList<Integer> statesIds;
-    ArrayList<String> statesTexNames;
-    ArrayList<Integer> statesFramesNumbers;
-    ArrayList<Float> statesWeights;
-    ArrayList<Float> statesBounciness;
-    ArrayList<Float> statesInertia;
-    ArrayList<Float> statesAlphaSteps;
-    ArrayList<MovePattern> statesMovePatterns;
-    ArrayList<Boolean> statesFloors;
-    ArrayList<Integer> statesCollisionGroups;
-    ArrayList<Integer> statesSpawnIntervals;
-    ArrayList<Integer> statesSpawnsCounts;
-    ArrayList<Sound> statesFlySoundLoops;
-    ArrayList<Sound> statesBounceSounds;
-    ArrayList<String> statesFlySoundLoopsNames;
-    ArrayList<String> statesBounceSoundsNames;
-    ArrayList<ArrayList<StateChangeCondition>> statesChangeConditions;
-    ArrayList<ArrayList<ParticleSpawnProperties>> statesparticleSpawns;
+    public ArrayList<Texture> statesTexes;
+    public ArrayList<AnimationSequence> statesAnims;
+    public ArrayList<Integer> statesIds;
+    public ArrayList<String> statesTexNames;
+    public ArrayList<Integer> statesFramesNumbers;
+    public ArrayList<Float> statesWeights;
+    public ArrayList<Float> statesBounciness;
+    public  ArrayList<Float> statesInertia;
+    public ArrayList<Float> statesAlphaSteps;
+    public ArrayList<MovePattern> statesMovePatterns;
+    public ArrayList<Boolean> statesFloors;
+    public ArrayList<Integer> statesCollisionGroups;
+    public ArrayList<Integer> statesSpawnIntervals;
+    public ArrayList<Integer> statesSpawnsCounts;
+    public ArrayList<Sound> statesFlySoundLoops;
+    public ArrayList<Sound> statesBounceSounds;
+    public ArrayList<String> statesFlySoundLoopsNames;
+    public ArrayList<String> statesBounceSoundsNames;
+    public ArrayList<ArrayList<StateChangeCondition>> statesChangeConditions;
+    public ArrayList<ArrayList<ParticleSpawnProperties>> statesparticleSpawns;
 
     public ParticleProperties() {
     }

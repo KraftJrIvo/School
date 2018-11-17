@@ -1,6 +1,7 @@
 package com.mygdx.schoolRPG.battleSystem;
 
-import java.awt.*;
+
+import com.badlogic.gdx.graphics.Color;
 
 public class DamageType {
     String name;
@@ -8,5 +9,6 @@ public class DamageType {
 
     public DamageType(String name, Color color) {
         this.name = name;
+        this.color = color;
     }
 }

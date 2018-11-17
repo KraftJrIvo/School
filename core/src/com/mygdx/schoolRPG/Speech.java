@@ -221,7 +221,7 @@ public class Speech {
         font.setColor(Color.WHITE);
         if (!paused && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.justTouched())) {
             boolean ok = true;
-            for (int i =0; i < phrases.size(); ++i) {
+            for (int i =0; i < phrases.get(menu.currentLanguage).size(); ++i) {
                 if (!progress.get(i)) {
                     ok = false;
                     break;
@@ -247,7 +247,7 @@ public class Speech {
         boolean shakingTextStarted = false;//@@
         int rainbowTextStarted = -1;//##
         int nextLineStarted = 0;
-        for (int i= 0; i < phrases.size(); ++i) {
+        for (int i= 0; i < phrases.get(menu.currentLanguage).size(); ++i) {
             if (!progress.get(i)) {
                 nextLineStarted++;
             }

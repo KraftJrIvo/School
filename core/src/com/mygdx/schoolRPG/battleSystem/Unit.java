@@ -7,10 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.mygdx.schoolRPG.Item;
-import com.mygdx.schoolRPG.ObjectLoader;
-import com.mygdx.schoolRPG.ParticleProperties;
-import com.mygdx.schoolRPG.World;
+import com.mygdx.schoolRPG.*;
 import com.mygdx.schoolRPG.battleSystem.ui.UnitsDrawGroup;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import org.w3c.dom.Element;
@@ -35,7 +32,7 @@ public class Unit {
     ArrayList<ArrayList<Integer>> dropMaxs;
     Item heldItem;
     int damageStatesNum;
-    ArrayList<Succeptibility> succeptibilities;
+    ArrayList<Susceptibility> susceptibilities;
     ArrayList<StatusEffect> effects;
 
     int currentState;
@@ -57,6 +54,8 @@ public class Unit {
 
     int baseHeight;
 
+    ArrayList<Integer> hitDamages;
+    ArrayList<DamageType> hitDTs;
     boolean wasHit = false;
     float hitAlpha = 0;
     float hitOffset = 0;
@@ -264,14 +263,17 @@ public class Unit {
             hitSpeeches.get(i).add(hs.getAttribute("rus"));
         }
 
-        succeptibilities = new ArrayList<Succeptibility>();
+        susceptibilities = new ArrayList<Susceptibility>();
         NodeList succList = doc.getElementsByTagName("susceptibility");
         for (int i = 0; i < succList.getLength(); ++i) {
             Element succ = (Element) succList.item(i);
-            succeptibilities.add(new Succeptibility(w, w.battleSystem.getDamageTypeByName(succ.getAttribute("name")), Integer.parseInt(succ.getAttribute("percent"))));
+            susceptibilities.add(new Susceptibility(w, w.battleSystem.getDamageTypeByName(succ.getAttribute("damageType" +
+                    "")), Float.parseFloat(succ.getAttribute("percent"))));
         }
 
         effects = new ArrayList<StatusEffect>();
+        hitDamages = new ArrayList<Integer>();
+        hitDTs = new ArrayList<DamageType>();
     }
 
     public void playHitSound(World w) {
@@ -389,6 +391,21 @@ public class Unit {
         loader.initializeObjects(w.assets, w);
     }
 
+    public void hit(ArrayList<DamageType> dts, ArrayList<Integer> damages) {
+        hitDTs = (ArrayList<DamageType>)dts.clone();
+        for (int i = 0; i < dts.size(); ++i) {
+            boolean found = false;
+            for (int j = 0; j < susceptibilities.size(); ++j) {
+                if (susceptibilities.get(j).damageType.equals(dts.get(i))) {
+                    hitDamages.add((int)(damages.get(i) * susceptibilities.get(j).percent));
+                    found = true;
+                }
+            }
+            if (!found) hitDamages.add(damages.get(i));
+        }
+        wasHit = true;
+    }
+
     public void draw(World w, UnitsDrawGroup udg, SpriteBatch batch, float x, float y, float scale) {
         TextureRegion tex;
         float shakeX = 0, shakeY = 0;
@@ -408,10 +425,13 @@ public class Unit {
                 ParticleProperties.ParticleSpawnProperties pp = statesHitPrt.get(currentState).get(i);
                 int r = (int)Math.floor(Math.random() * (statesHitPrtMinMax.get(i).get(1) - statesHitPrtMinMax.get(i).get(0)) + 1) + statesHitPrtMinMax.get(i).get(0);
                 float xSpread = ((float)Math.random() * 2.0f - 1.0f) * tex.getRegionWidth()/2.0f;
-                float ySpread = ((float)Math.random()) * tex.getRegionWidth()/2.0f;
+                float ySpread = ((float)Math.random()) * tex.getRegionHeight()/2.0f;
                 for (int j = 0; j < r; ++j) {
-                    udg.addParticle(w, w.getParticleByName(pp.particleName), statesHitPrt.get(currentState).get(i), x + scale * tex.getRegionWidth()/2.0f + xSpread, y - tex.getRegionHeight() - baseHeight + ySpread, 1.0f);
+                    udg.addParticle(w, w.getParticleByName(pp.particleName), statesHitPrt.get(currentState).get(i), x + scale * tex.getRegionWidth()/2.0f + xSpread, y - tex.getRegionHeight() - baseHeight - 20, ySpread);
                 }
+            }
+            for (int i = 0; i < hitDamages.size(); ++i) {
+                udg.addParticle(new Particle(w.assets, "" + hitDamages.get(i), hitDTs.get(i).color, false, x + scale * tex.getRegionWidth()/2.0f, y - tex.getRegionHeight() - baseHeight - 20, 1.0f));
             }
         }
         batch.draw(tex, x + shakeX, y - tex.getRegionHeight() - baseHeight + shakeY, 0, 0, tex.getRegionWidth(), tex.getRegionHeight(), scale, scale, 0);
@@ -423,7 +443,11 @@ public class Unit {
         else hitShake = 0;
         if (hitOffsetSpeed > 0) hitOffsetSpeed -= 0.1f;
         else hitOffset -= 0.1f;
-        wasHit = false;
+        if (wasHit) {
+            hitDamages.clear();
+            hitDTs.clear();
+            wasHit = false;
+        }
     }
 
 }

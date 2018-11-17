@@ -87,7 +87,11 @@ public class UnitsDrawGroup {
         particles.add(new Particle(w.assets, props, sprops, false, x, y, z));
     }
 
-    private void updateParticles(float centerX, float centerY) {
+    public void addParticle(Particle p) {
+        particles.add(p);
+    }
+
+    private void updateParticles() {
         for (int i = 0; i < particles.size(); ++i) {
             Particle prt = particles.get(i);
             prt.fall();
@@ -95,11 +99,21 @@ public class UnitsDrawGroup {
         }
     }
 
+    private void drawParticleShadows(World w, SpriteBatch batch) {
+        for (int i = 0; i < particles.size(); ++i) {
+            Particle prt = particles.get(i);
+            if (prt.text.length() == 0 &&  (prt.floor || prt.pp.statesMovePatterns.get(prt.curStateId) == ParticleProperties.MovePattern.NONE)) continue;
+            float ww = 16.0f + prt.z / 2.0f;
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, prt.alpha * (0.45f-prt.z/50)));
+            batch.draw(w.assets.get("prt_shadow.png", Texture.class), prt.x - ww/2, prt.y + ww/2, ww, ww);
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+    }
+
     private void drawParticlesUpTo(SpriteBatch batch, float from, float upTo) {
         ArrayList<Particle> prtToDraw = new ArrayList<Particle>();
         for (int i = 0; i < particles.size(); ++i) {
             Particle prt = particles.get(i);
-            prt.fall();
             if (prt.y <= upTo && prt.y > from) prtToDraw.add(prt);
         }
         for (int i = 0; i < prtToDraw.size(); ++i) {
@@ -121,6 +135,7 @@ public class UnitsDrawGroup {
     }
 
     public void draw(World w, SpriteBatch batch, float centerX, float centerY, Unit curUnit) {
+        drawParticleShadows(w, batch);
         if (showSelector) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
                 if (selectedRowUnit > 0) selectedRowUnit--;
@@ -168,9 +183,9 @@ public class UnitsDrawGroup {
         float rememberI = 0;
         for (int i = layers.size() - 1; i >= 0; --i) {
             if (i == layers.size() - 1) {
-                drawParticlesUpTo(batch,globalY + layerDist * (layers.size() - 1) - layerDist / 2.0f, 999);
+                drawParticlesUpTo(batch,globalY + layerDist * (layers.size() - 1) - layerDist, 999);
             } else {
-                drawParticlesUpTo(batch,globalY + layerDist * (i) - layerDist / 2.0f, globalY + layerDist * (i + 1) - layerDist / 2.0f);
+                drawParticlesUpTo(batch,globalY + layerDist * (i) - layerDist, globalY + layerDist * (i + 1) - layerDist);
             }
             float curW = 0;
             float scale = 2 * (float)Math.pow(layerCoeff, i);
@@ -207,10 +222,10 @@ public class UnitsDrawGroup {
             }
         }
         if (curSkill != null) {
-            if (skillAttacker != null) {
-                curSkill.draw(w, batch, true, rememberX + rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight()/2.0f, skillAttacker, rememberScale);
-            } else if (skillTarget != null) {
-                curSkill.draw(w, batch, false, rememberX + rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight(), skillTarget, rememberScale);
+            if (skillTarget != null) {
+                curSkill.draw(w, batch, skillAttacker, skillTarget, false, rememberX + rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight(), rememberScale);
+            } else if (skillAttacker != null) {
+                curSkill.draw(w, batch, skillAttacker, skillAttacker, true, rememberX + rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight()/2.0f, rememberScale);
             }
             if (curSkill.finished) {
                 curSkill.turnUpdate();
@@ -219,8 +234,10 @@ public class UnitsDrawGroup {
                 skillAttacker = null;
             }
         }
-        drawParticlesUpTo(batch,-999, globalY - layerDist / 2.0f);
-        updateParticles(centerX, centerY);
+        drawParticlesUpTo(batch,-999, globalY - layerDist);
+        updateParticles();
+        //if (units.size() == 3) addParticle(new Particle(w.assets, "" + (int)(Math.random()*10), new Color((float) Math.random(), (float)Math.random(),(float)Math.random(), 1.0f), false, Gdx.input.getX(), Gdx.input.getY(), 1.0f));
+        //if (units.size() == 3) addParticle(w, w.getParticleByName(units.get(0).statesHitPrt.get(0).get(0).particleName), units.get(0).statesHitPrt.get(0).get(0), Gdx.input.getX(), Gdx.input.getY(), 0);
     }
 
 }

@@ -1,2 +1,30 @@
 <dialog>
+  <speechBlock id="0" textEng="Start&#10;" textRus="Начало&#10;" speakerId="" speakerNameEng="" speakerNameRus="">
+    <sprite name=""/>
+    <link priority="0" textEng="" textRus="" goto="1" condition=""/>
+  </speechBlock>
+  <speechBlock id="1" textEng="Hello!&#10;" textRus="Здорова!&#10;" speakerId="" speakerNameEng="???" speakerNameRus="???">
+    <sprite name="normal_speaking"/>
+    <link priority="0" textEng="" textRus="" goto="2" condition=""/>
+  </speechBlock>
+  <speechBlock id="2" textEng="Who are you?&#10;" textRus="Ты хто такой?&#10;" speakerId="" speakerNameEng="???" speakerNameRus="???">
+    <sprite name="normal_listening"/>
+    <link priority="0" textEng="I am myself" textRus="Я - это я" goto="3" condition=""/>
+    <link priority="0" textEng="I am someone else" textRus="Я кто-то другой" goto="4" condition=""/>
+  </speechBlock>
+  <speechBlock id="3" textEng="Ok! My name's Jeremy.&#10;" textRus="Ок! А меня зовут Джереми.&#10;" speakerId="" speakerNameEng="???" speakerNameRus="???">
+    <sprite name="normal_speaking"/>
+    <link priority="0" textEng="" textRus="" goto="5" condition=""/>
+  </speechBlock>
+  <speechBlock id="4" textEng="Hmm...
+&#10;So why are you here?
+&#10;Get lost!&#10;" textRus="Хмм..
+&#10;Ну и зачем пришёл?
+&#10;Проваливай!&#10;" speakerId="" speakerNameEng="???" speakerNameRus="???">
+    <sprite name="normal_speaking"/>
+  </speechBlock>
+  <speechBlock id="5" textEng="See ya!&#10;" textRus="До скорого!&#10;" speakerId="" speakerNameEng="Jeremy" speakerNameRus="Джереми">
+    <sprite name="normal_speaking"/>
+  </speechBlock>
 </dialog>
+<!--<editor>[{"x":900,"y":200,"lines":[["Start"],["Начало"]],"spriteName":"","speakerId":"","w":69.66666666666667,"h":19,"text":["Start","Начало"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[1],"linksPriorities":[0],"linksConditions":[""],"speakerName":["",""],"linkRemove":-1,"isStart":true},{"x":899,"y":254,"lines":[["Hello!"],["Здорова!"]],"spriteName":"normal_speaking","speakerId":"","w":69.66666666666667,"h":19,"text":["Hello!","Здорова!"],"parent":0,"links":[["",""]],"linkedTextBlocks":[2],"linksPriorities":[0],"linksConditions":[""],"speakerName":["???","???"],"linkRemove":-1,"isStart":false},{"x":901,"y":298,"lines":[["Who are you?"],["Ты хто такой?"]],"spriteName":"normal_listening","speakerId":"","w":69.66666666666667,"h":19,"text":["Who are you?","Ты хто такой?"],"parent":1,"links":[["I am myself","Я - это я"],["I am someone else","Я кто-то другой"]],"linkedTextBlocks":[3,4],"linksPriorities":[0,0],"linksConditions":["",""],"speakerName":["???","???"],"linkRemove":-1,"isStart":false},{"x":807,"y":385,"lines":[["Ok! My name's Jeremy."],["Ок! А меня зовут Джереми."]],"spriteName":"normal_speaking","speakerId":"","w":113.11111450195312,"h":19,"text":["Ok! My name's Jeremy.","Ок! А меня зовут Джереми."],"parent":-1,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["???","???"],"linkRemove":-1,"isStart":false},{"x":960,"y":392,"lines":[["Hmm...\n","So why are you here?\n","Get lost!"],["Хмм..\n","Ну и зачем пришёл?\n","Проваливай!"]],"spriteName":"normal_speaking","speakerId":"","w":107.01666259765625,"h":49,"text":["Hmm...\nSo why are you here?\nGet lost!","Хмм..\nНу и зачем пришёл?\nПроваливай!"],"parent":-1,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["???","???"],"linkRemove":-1,"isStart":false},{"x":805,"y":435,"lines":[["See ya!"],["До скорого!"]],"spriteName":"normal_speaking","speakerId":"","w":69.66666666666667,"h":19,"text":["See ya!","До скорого!"],"parent":3,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["Jeremy","Джереми"],"linkRemove":-1,"isStart":false}]</editor>-->

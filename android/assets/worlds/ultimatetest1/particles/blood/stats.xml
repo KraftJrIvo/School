@@ -20,6 +20,7 @@
         tex="2"
         frames="1"
         fps="0"
+		floor="true"
         looping="false"
         movePattern="NONE"
         alphaStep="0.01"

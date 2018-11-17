@@ -100,9 +100,9 @@ public class Skill {
         }
     }
 
-    public void draw(World w, SpriteBatch batch, boolean attacker, float curUnitX, float curUnitY, Unit unit, float scale) {
+    public void draw(World w, SpriteBatch batch, Unit attacker, Unit target, boolean attacking, float curUnitX, float curUnitY, float scale) {
         if (skillAnimationType == SkillAnimationType.MELEE_FIST) {
-            if (!attacker)
+            if (!attacking)
             {
                 if (appearAlpha < 1.0 && hitSpeed >= 0) {
                     appearAlpha += 0.02f;
@@ -113,8 +113,12 @@ public class Skill {
                         hitOffset = 1.0f;
                         hitSpeed = -0.02f;
                         if (hitSound != null) hitSound.play(w.menu.soundVolume / 100.0f);
-                        unit.playHitSound(w);
-                        unit.wasHit = true;
+                        target.playHitSound(w);
+                        ArrayList<Integer> actualDamages = new ArrayList<Integer>();
+                        for (int i = 0; i < baseDamages.size(); ++i) {
+                            actualDamages.add(baseDamages.get(i) + attacker.stats.str);
+                        }
+                        target.hit(damageTypes, actualDamages);
                     }
                 } else {
                     hitOffset += hitSpeed;
@@ -125,7 +129,7 @@ public class Skill {
                 }
             }
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, appearAlpha));
-            if (attacker) {
+            if (attacking) {
                 batch.draw(texFront.getCurrentFrame(false), curUnitX - texFront.getFirstFrame().getRegionWidth(), curUnitY - hitOffset * 32 * scale - texFront.getFirstFrame().getRegionHeight()/2.0f, texFront.getFirstFrame().getRegionWidth() * 2.0f, texFront.getFirstFrame().getRegionHeight() * 2.0f);
             } else {
                 batch.draw(texBack.getCurrentFrame(false), curUnitX - texBack.getFirstFrame().getRegionWidth(), curUnitY + hitOffset * 32 * scale - texFront.getFirstFrame().getRegionHeight()/2.0f, texBack.getFirstFrame().getRegionWidth() * 2.0f, texBack.getFirstFrame().getRegionHeight() * 2.0f);
