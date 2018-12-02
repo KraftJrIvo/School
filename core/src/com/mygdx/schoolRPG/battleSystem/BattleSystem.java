@@ -24,7 +24,7 @@ public class BattleSystem {
     ArrayList<StatusEffect> statusEffects;
     ArrayList<Skill> skills;
 
-    public static Color hex2Rgb(String colorStr) {
+    public Color hex2Rgb(String colorStr) {
         return new Color(
                 (float)Integer.valueOf( colorStr.substring( 1, 3 ), 16 ) / 255.0f,
                 (float)Integer.valueOf( colorStr.substring( 3, 5 ), 16 ) / 255.0f,
@@ -98,6 +98,7 @@ public class BattleSystem {
         doc.getDocumentElement().normalize();
         NodeList skList = doc.getElementsByTagName("skill");
         ObjectLoader loader = new ObjectLoader();
+        w.assets.load(Gdx.files.internal("aura.png").path(), Texture.class);
         for (int i = 0; i < skList.getLength(); ++i) {
             Node nNode = skList.item(i);
             Element eElement = (Element) nNode;
@@ -105,8 +106,11 @@ public class BattleSystem {
             if (eElement2.getAttribute("type").equals("melee-fist")) {
                 if (!eElement2.getAttribute("name").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("name") + "_front.png", Texture.class);
                 if (!eElement2.getAttribute("name").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("name") + "_back.png", Texture.class);
+            } else if (eElement2.getAttribute("type").equals("magic-aura")) {
+                //loader.loadParticle(w, eElement2.getAttribute("prt"));
+                w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("name") + ".png", Texture.class);
             } else {
-                loader.loadParticle(w, eElement2.getAttribute("name"));
+                loader.loadParticle(w, eElement2.getAttribute("prt"));
             }
             if (!eElement2.getAttribute("sound").equals("")) w.assets.load(w.worldDir.path() + "/skills/" + eElement2.getAttribute("sound"), Sound.class);
         }
@@ -158,12 +162,16 @@ public class BattleSystem {
             title.add(nameElem.getAttribute("rus"));
             Skill.SkillAnimationType sat = Skill.getSkillAnimationTypeFromString(((Element)eElement.getElementsByTagName("animation").item(0)).getAttribute("type"));
             Element anim = ((Element)eElement.getElementsByTagName("animation").item(0));
-            skills.add(new Skill(w, eElement.getAttribute("name"), title, Integer.parseInt(eElement.getAttribute("APcost")), Integer.parseInt(eElement.getAttribute("cooldown")), Boolean.parseBoolean(eElement.getAttribute("positive")), damageTypes, baseDamages, sat, statusEffects,
-                    anim.getAttribute("name"), Integer.parseInt(anim.getAttribute("fps")), Boolean.parseBoolean(anim.getAttribute("looping")), Integer.parseInt(anim.getAttribute("frames")), anim.getAttribute("sound")));
+            Element heal = ((Element)eElement.getElementsByTagName("heal").item(0));
+            String healStr = "0";
+            if (heal != null) healStr = heal.getAttribute("baseHeal");
+            skills.add(new Skill(w, eElement.getAttribute("name"), title, Integer.parseInt(eElement.getAttribute("APcost")), Integer.parseInt(eElement.getAttribute("cooldown")), Boolean.parseBoolean(eElement.getAttribute("positive")),
+                    damageTypes, baseDamages, healStr, sat, statusEffects,
+                    anim));
         }
     }
 
-    Skill getSkillByName(String name) {
+    public Skill getSkillByName(String name) {
         for (int i = 0; i < skills.size(); ++i) {
             if (skills.get(i).name.equals(name)) {
                 return skills.get(i);
@@ -172,7 +180,7 @@ public class BattleSystem {
         return null;
     }
 
-    DamageType getDamageTypeByName(String name) {
+    public DamageType getDamageTypeByName(String name) {
         for (int i = 0; i < damageTypes.size(); ++i) {
             if (damageTypes.get(i).name.equals(name)) {
                 return damageTypes.get(i);
@@ -181,7 +189,7 @@ public class BattleSystem {
         return null;
     }
 
-    StatusEffect getStatusEffectByName(String name) {
+    public StatusEffect getStatusEffectByName(String name) {
         for (int i = 0; i < statusEffects.size(); ++i) {
             if (statusEffects.get(i).name.equals(name)) {
                 return statusEffects.get(i);

@@ -78,7 +78,7 @@ public class Speech {
         }
         World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
         for (int i = 0; i < itemsToGiveCount; ++i) {
-            target.takeItem(new Item(world.assets, world.folderPath, itemToGive));
+            target.takeItem(new Item(world, world.folderPath, itemToGive));
         }
         if (itemsToGiveTo == 0) {
             player.removeItems(itemToGive, itemsToGiveCount);
@@ -122,9 +122,9 @@ public class Speech {
         World world = ((GameMenu)dialog.parent).worlds.get(((GameMenu)dialog.parent).curWorld);
         for (int i = 0; i < itemsToGiveCount; ++i) {
             if (itemsToGiveTo == 0) {
-                player.takeItem(new Item(world.assets, world.folderPath, itemToGive));
+                player.takeItem(new Item(world, world.folderPath, itemToGive));
             } else {
-                npcs.get(itemsToGiveTo-1).takeItem(new Item(world.assets, world.folderPath, itemToGive));
+                npcs.get(itemsToGiveTo-1).takeItem(new Item(world, world.folderPath, itemToGive));
             }
         }
         /*if (target.inventory.size() > 0) {

@@ -55,7 +55,7 @@ public class World{
     ArrayList<Integer> tileIndices;
     ArrayList<String> stepSounds;
     ArrayList<String> areasAmbients;
-    ArrayList<NPC> npcs;
+    public ArrayList<NPC> npcs;
     ArrayList<Integer> npcsAreas;
     ArrayList<ObjectCell> objects;
     ArrayList<HittableEntity> movables;
@@ -224,7 +224,7 @@ public class World{
                 if (receiver != null) {
                     receiver.inventory.clear();
                     for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
-                        Item item = new Item(assets, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
+                        Item item = new Item(this, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
                         receiver.takeItem(item);
                         if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
                             receiver.headWear = item.sides;
@@ -503,7 +503,7 @@ public class World{
                 byte[] bitfield = new byte[bytesCount];
                 saveFile.read(bitfield);
                 String str = new String(bitfield, StandardCharsets.UTF_8);
-                Item item = new Item(assets, worldDir.path(), str);
+                Item item = new Item(this, worldDir.path(), str);
                 item.stack = saveFile.read();
                 player.inventory.add(item);
             }
@@ -549,7 +549,7 @@ public class World{
                     byte[] bitfield = new byte[bytesCount];
                     saveFile.read(bitfield);
                     String str = new String(bitfield, StandardCharsets.UTF_8);
-                    Item item = new Item(assets, worldDir.path(), str);
+                    Item item = new Item(this, worldDir.path(), str);
                     item.stack = saveFile.read();
                     npcs.get(i).inventory.add(item);
                 }
@@ -611,7 +611,7 @@ public class World{
                         byte[] bitfield = new byte[bytesCount];
                         saveFile.read(bitfield);
                         String str = new String(bitfield, StandardCharsets.UTF_8);
-                        Item item = new Item(assets, worldDir.path(), str);
+                        Item item = new Item(this, worldDir.path(), str);
                         item.stack = saveFile.read();
                         objects.get(i).items.add(item);
                     }
@@ -648,7 +648,7 @@ public class World{
                 byte[] bitfield = new byte[bytesCount];
                 saveFile.read(bitfield);
                 String str = new String(bitfield, StandardCharsets.UTF_8);
-                Item item = new Item(assets, worldDir.path(), str);
+                Item item = new Item(this, worldDir.path(), str);
                 item.stack = saveFile.read();
                 saveFile.read(flo);
                 float x = toFloat(flo);
@@ -722,9 +722,7 @@ public class World{
         assets.load("blank2.png", Texture.class);
         assets.load("shadow.png", Texture.class);
         assets.load("stats_bar_edge.png", Texture.class);
-        assets.load("stats_bar_hp.png", Texture.class);
-        assets.load("stats_bar_ap.png", Texture.class);
-        assets.load("stats_bar_xp.png", Texture.class);
+        assets.load("stats_bar.png", Texture.class);
         assets.load("battle-select-top-marker.png", Texture.class);
         assets.load("battle-select-marker.png", Texture.class);
         assets.load("prt_shadow.png", Texture.class);
@@ -1674,10 +1672,15 @@ public class World{
             if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
                 ArrayList<Unit> yourUnits = new ArrayList<Unit>();
                 yourUnits.add(new Unit(this, "you", 1));
+                yourUnits.get(0).inventory = curArea.player.inventory;
                 yourUnits.add(new Unit(this, "jeremy", 1));
                 yourUnits.add(new Unit(this, "slime", 1));
                 ArrayList<Unit> enemyUnits;
                 enemyUnits = new ArrayList<Unit>();
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
+                enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));

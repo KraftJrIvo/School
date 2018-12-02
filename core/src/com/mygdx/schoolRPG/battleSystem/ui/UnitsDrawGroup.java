@@ -9,10 +9,12 @@ import com.badlogic.gdx.math.Matrix4;
 import com.mygdx.schoolRPG.Particle;
 import com.mygdx.schoolRPG.ParticleProperties;
 import com.mygdx.schoolRPG.World;
+import com.mygdx.schoolRPG.battleSystem.Battle;
 import com.mygdx.schoolRPG.battleSystem.Skill;
 import com.mygdx.schoolRPG.battleSystem.Unit;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.GlobalSequence;
+import org.omg.CORBA.BAD_CONTEXT;
 
 import java.security.Key;
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ public class UnitsDrawGroup {
 
     ArrayList<Unit> units;
     ArrayList<ArrayList<Unit>> layers;
-    float layerDist;
+    public float layerDist;
     float layerCoeff;
     AnimationSequence markerAnimTop, markerAnimBottom;
     public boolean showSelector;
@@ -33,8 +35,13 @@ public class UnitsDrawGroup {
 
     ArrayList<Particle> particles;
 
-    public UnitsDrawGroup(World w, ArrayList<Unit> units, float layerDist, float layerCoeff) {
+    public Battle battle;
+
+    public boolean skillPositive = false;
+
+    public UnitsDrawGroup(Battle battle, World w, ArrayList<Unit> units, float layerDist, float layerCoeff) {
         this.units = units;
+        this.battle = battle;
         layers = new ArrayList<ArrayList<Unit>>();
         this.layerCoeff = layerCoeff;
         this.layerDist = layerDist;
@@ -136,27 +143,93 @@ public class UnitsDrawGroup {
 
     public void draw(World w, SpriteBatch batch, float centerX, float centerY, Unit curUnit) {
         drawParticleShadows(w, batch);
+        if (layers.get(selectedRow).get(selectedRowUnit).stats.dead) {
+            boolean foundNotDead = false;
+            for (int i = 0; i < layers.size(); ++i) {
+                for (int j = 0; j < layers.get(i).size(); ++j) {
+                    if (!layers.get(i).get(j).stats.dead) {
+                        foundNotDead = true;
+                        selectedRow = i;
+                        selectedRowUnit = j;
+                        break;
+                    }
+                }
+                if (foundNotDead) break;
+            }
+            if (!foundNotDead) showSelector = false;
+        }
         if (showSelector) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-                if (selectedRowUnit > 0) selectedRowUnit--;
-                else if (selectedRow >= 0) {
+                if (selectedRowUnit > 0) {
+                    int curRowUnit = selectedRowUnit;
+                    int firstNotDead = selectedRowUnit;
+                    //curRowUnit--;
+                    while (curRowUnit > 0) {
+                        if (!layers.get(selectedRow).get(curRowUnit-1).stats.dead) {
+                            firstNotDead = curRowUnit-1;
+                            break;
+                        }
+                        curRowUnit--;
+                    }
+                    selectedRowUnit = firstNotDead;
+                }
+                else if (selectedRow < layers.size() - 1 && !layers.get(selectedRow+1).get(0).stats.dead) {
                     selectedRow++;
                     selectedRowUnit = 0;
                 }
             }
             else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-                if (selectedRowUnit < layers.get(selectedRow).size() - 1) selectedRowUnit++;
-                else if (selectedRow < layers.size() - 1) {
+                if (selectedRowUnit < layers.get(selectedRow).size() - 1) {
+                    int curRowUnit = selectedRowUnit;
+                    int firstNotDead = selectedRowUnit;
+                    //curRowUnit++;
+                    while (curRowUnit < layers.get(selectedRow).size()-1) {
+                        if (!layers.get(selectedRow).get(curRowUnit+1).stats.dead) {
+                            firstNotDead = curRowUnit+1;
+                            break;
+                        }
+                        curRowUnit++;
+                    }
+                    selectedRowUnit = firstNotDead;
+                }
+                else if (selectedRow < layers.size() - 1 && !layers.get(selectedRow+1).get(layers.get(selectedRow+1).size() - 1).stats.dead) {
                     selectedRow++;
                     selectedRowUnit = layers.get(selectedRow).size() - 1;
                 }
             }
             else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-                if (selectedRow > 0) selectedRow--;
-                if (selectedRowUnit >= layers.get(selectedRow).size()) selectedRowUnit = layers.get(selectedRow).size() - 1;
+                if (selectedRow > 0) {
+                    int curRow = selectedRow;
+                    int firstNotDead = selectedRow;
+                    //curRow--;
+                    //if (selectedRowUnit >= layers.get(curRow).size()) selectedRowUnit = layers.get(curRow).size() - 1;
+                    while (curRow > 0) {
+                        if (!layers.get(curRow-1).get(Math.min(selectedRowUnit, layers.get(curRow-1).size()-1)).stats.dead) {
+                            firstNotDead = curRow-1;
+                            break;
+                        }
+                        curRow--;
+                        if (selectedRowUnit >= layers.get(curRow).size()) selectedRowUnit = layers.get(curRow).size() - 1;
+                    }
+                    selectedRow = firstNotDead;
+                }
             }
             else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
-                if (selectedRow < layers.size() - 1) selectedRow++;
+                if (selectedRow < layers.size()) {
+                    int curRow = selectedRow;
+                    int firstNotDead = selectedRow;
+                    //curRow++;
+                    //if (selectedRowUnit >= layers.get(curRow).size()) selectedRowUnit = layers.get(curRow).size() - 1;
+                    while (curRow < layers.size() - 1) {
+                        if (!layers.get(curRow+1).get(selectedRowUnit).stats.dead) {
+                            firstNotDead = curRow+1;
+                            break;
+                        }
+                        curRow++;
+                        if (selectedRowUnit >= layers.get(curRow).size()) selectedRowUnit = layers.get(curRow).size() - 1;
+                    }
+                    selectedRow = firstNotDead;
+                }
                 selectedRowUnit %= layers.get(selectedRow).size();
                 if (selectedRowUnit >= layers.get(selectedRow).size()) selectedRowUnit = layers.get(selectedRow).size() - 1;
             }
@@ -178,9 +251,12 @@ public class UnitsDrawGroup {
             height = maxHigh + layerDist * layers.size() - 1;
         }
         float globalY = centerY - height / 2.0f;
-        float rememberX = 0;
-        float rememberScale = 0;
-        float rememberI = 0;
+        float rememberXAttacker = 0;
+        float rememberScaleAttacker = 0;
+        float rememberIAttacker = 0;
+        float rememberXTarget = 0;
+        float rememberScaleTarget = 0;
+        float rememberITarget = 0;
         for (int i = layers.size() - 1; i >= 0; --i) {
             if (i == layers.size() - 1) {
                 drawParticlesUpTo(batch,globalY + layerDist * (layers.size() - 1) - layerDist, 999);
@@ -198,14 +274,20 @@ public class UnitsDrawGroup {
             curW = 0;
             for (int j = 0; j < layers.get(i).size(); ++j) {
                 Unit unit = layers.get(i).get(j);
-                if (unit == skillTarget || unit == skillAttacker) {
-                    rememberX = globalX + curW;
-                    rememberScale = scale;
-                    rememberI = i;
+                if (unit == skillTarget) {
+                    rememberXTarget = globalX + curW;
+                    rememberScaleTarget = scale;
+                    rememberITarget = i;
+                }
+                if (unit == skillAttacker) {
+                    rememberXAttacker = globalX + curW;
+                    rememberScaleAttacker = scale;
+                    rememberIAttacker = i;
                 }
                 float from;
                 if (showSelector && i == selectedRow && j == selectedRowUnit) {
-                    batch.setColor(new Color(1.0f, 105.0f/255.0f, 82.0f/255.0f, 0.5f));
+                    if (skillPositive) batch.setColor(new Color(0f, 1f, 0.443f, 0.5f));
+                    else batch.setColor(new Color(1.0f, 105.0f/255.0f, 82.0f/255.0f, 0.5f));
                     batch.draw(markerAnimBottom.getCurrentFrame(false), globalX + curW + scale * unit.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f - 2.0f * markerAnimBottom.getFirstFrame().getRegionWidth() - 18 - 7.5f * (float)Math.sin((double) System.currentTimeMillis()/100), globalY + maxHigh + i * layerDist - unit.statesIdleTexes.get(0).getFirstFrame().getRegionHeight() - 2.0f * markerAnimBottom.getFirstFrame().getRegionHeight() - 3.25f * (float)Math.sin((double) System.currentTimeMillis()/100), 72 + 15 * (float)Math.sin((double) System.currentTimeMillis()/100), 36 + 7.5f * (float)Math.sin((double) System.currentTimeMillis()/100));
                     batch.draw(markerAnimTop.getCurrentFrame(false), globalX + curW + scale * unit.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f - 2.0f * markerAnimTop.getFirstFrame().getRegionWidth(), globalY + maxHigh + i * layerDist + 50 - 2.0f * markerAnimTop.getFirstFrame().getRegionHeight() + 10 * (float)Math.sin((double) System.currentTimeMillis()/100), 36, 36);
                     batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
@@ -215,17 +297,31 @@ public class UnitsDrawGroup {
                     batch.draw(markerAnimTop.getCurrentFrame(false), globalX + curW + scale * unit.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f - 2.0f * markerAnimTop.getFirstFrame().getRegionWidth(), globalY + maxHigh + i * layerDist + 50 - 2.0f * markerAnimTop.getFirstFrame().getRegionHeight() + 10 * (float)Math.sin((double) System.currentTimeMillis()/100), 36, 36);
                     batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
                 }
+                if (curSkill != null) {
+                    if (skillTarget == unit) {
+                        curSkill.predraw(w, this, batch, skillAttacker, skillTarget, false, globalX + curW + scale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth() / 2.0f, globalY + maxHigh + i * layerDist - scale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight() / 2.0f, scale);
+                    } else if (skillAttacker == unit) {
+                        curSkill.predraw(w, this, batch, skillAttacker, skillAttacker, true, globalX + curW + scale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth() / 2.0f, globalY + maxHigh + i * layerDist - scale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight() / 2.0f, scale);
+                    }
+                }
                 unit.draw(w, this, batch, globalX + curW, globalY + maxHigh + i * layerDist, scale);
-
+                if (curSkill != null) {
+                    if (skillTarget == unit) {
+                        curSkill.afterdraw(w, this, batch, skillAttacker, skillTarget, false, globalX + curW + scale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth() / 2.0f, globalY + maxHigh + i * layerDist - scale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight() / 2.0f, scale);
+                    } else if (skillAttacker == unit) {
+                        curSkill.afterdraw(w, this, batch, skillAttacker, skillAttacker, true, globalX + curW + scale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth() / 2.0f, globalY + maxHigh + i * layerDist - scale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight() / 2.0f, scale);
+                    }
+                }
                 curW += unit.statesIdleTexes.get(0).getFirstFrame().getRegionWidth() * scale;
                 if (j < layers.get(i).size() - 1) curW += 8 * scale;
             }
         }
         if (curSkill != null) {
             if (skillTarget != null) {
-                curSkill.draw(w, batch, skillAttacker, skillTarget, false, rememberX + rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight(), rememberScale);
-            } else if (skillAttacker != null) {
-                curSkill.draw(w, batch, skillAttacker, skillAttacker, true, rememberX + rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberI * layerDist - rememberScale * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight()/2.0f, rememberScale);
+                curSkill.draw(w, this, batch, skillAttacker, skillTarget, false, rememberXTarget + rememberScaleTarget * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberITarget * layerDist - rememberScaleTarget * skillTarget.statesIdleTexes.get(0).getFirstFrame().getRegionHeight(), rememberScaleTarget);
+            }
+            if (skillAttacker != null) {
+                curSkill.draw(w, this, batch, skillAttacker, skillAttacker, true, rememberXAttacker + rememberScaleAttacker * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionWidth()/2.0f, globalY + maxHigh + rememberIAttacker * layerDist - rememberScaleAttacker * skillAttacker.statesIdleTexes.get(0).getFirstFrame().getRegionHeight()/2.0f, rememberScaleAttacker);
             }
             if (curSkill.finished) {
                 curSkill.turnUpdate();

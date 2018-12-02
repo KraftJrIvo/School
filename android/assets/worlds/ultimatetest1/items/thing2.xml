@@ -1,4 +1,4 @@
-<item id = "1" mass="1" equip_slot="NONE" stackable="true" maxStack="99" var="TVisOn" replaces="">
+<item id = "1" mass="1" equip_slot="NONE" stackable="true" maxStack="99" var="TVisOn" replaces="" consumable="true">
     <eng 
         name = "Squiggle 2" 
         description = "Some random squiggle 2. Why are you even carrying it around?"
@@ -7,4 +7,5 @@
         name = "Коряга 2" 
         description = "Какая-то рандомная коряга 2. Зачем ты вообще ее с собой таскаешь?"
     />    
+	<effect name="mediumHeal"/>
 </item>

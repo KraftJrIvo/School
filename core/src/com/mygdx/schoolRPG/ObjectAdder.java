@@ -635,7 +635,7 @@ public class ObjectAdder {
                                 int id = Integer.parseInt(xml.getDocumentElement().getAttribute("id"));
                                 if (id == type + 56) {
                                     Entity itemGlow = new Entity(assets, "item.png", t*area.TILE_WIDTH + area.TILE_WIDTH/2 - 7 + blocks.get(6).get(t).get(i), i * area.TILE_HEIGHT + blocks.get(7).get(t).get(i), 0 ,0 ,0);
-                                    itemGlow.containingItem = new Item(assets, world.folderPath, entry.nameWithoutExtension());
+                                    itemGlow.containingItem = new Item(world, world.folderPath, entry.nameWithoutExtension());
                                     area.worldObjectsHandler.addNonSolid(itemGlow, -1, objectCheckId);
                                     world.itemsOnFloor.add(itemGlow);
                                     world.itemsOnFloorAreas.add(world.areas.indexOf(area));

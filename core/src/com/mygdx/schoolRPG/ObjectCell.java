@@ -215,7 +215,7 @@ public class ObjectCell {
     }
 
     public void updateEntityState(AssetManager assets, String worldDir) {
-        if (statesTexTypes.get(currentState).equals("")) {
+        if (currentState > statesTexTypes.size() || statesTexTypes.get(currentState).equals("")) {
             entity.anim = null;
             entity.tex = null;
         } else if (statesTexTypes.get(currentState).equals("sprite")) {
@@ -843,7 +843,7 @@ public class ObjectCell {
                         eElement = (Element) nNode;
                         String name = eElement.getAttribute("name");
                         int stack = Integer.parseInt(eElement.getAttribute("stack"));
-                        Item item = new Item(assets, world.folderPath, name);
+                        Item item = new Item(world, world.folderPath, name);
                         item.stack = stack;
                         items.add(item);
                     }

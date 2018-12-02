@@ -1,7 +1,7 @@
 <unit baseHeight="0">
 	<name rus="Ты" eng="You"/>
 	<stats
-		baseHp="20"
+		baseHp="40"
 		baseAp="0"
 		baseStr="1"
 		baseVit="1"
@@ -17,13 +17,21 @@
 	<drops>		
 	</drops>
 	<states>
-		<state condition="">
+		<state condition="hp &gt; maxHp/2">
 			<idle tex="idle" anim="false" animFps="0" animFrames="1" animLoop="false" soundLoop=""/>
-			<hit tex="idle" anim="false" animFps="0" animFrames="1" animLoop="false" sound="hit.mp3">
+			<hit tex="hit" anim="false" animFps="0" animFrames="1" animLoop="false" sound="hit.mp3">
 				<particle name="blood" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="1" maxNum="3"/>
 			</hit>
 		</state>
-		<death-state tex="idle" anim="false" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3"/>
+		<state condition="">
+			<idle tex="damaged_idle" anim="false" animFps="0" animFrames="1" animLoop="false" soundLoop=""/>
+			<hit tex="hit" anim="false" animFps="0" animFrames="1" animLoop="false" sound="hit.mp3">
+				<particle name="blood" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="1" maxNum="3"/>
+			</hit>
+		</state>
+		<death-state tex="dead" anim="false" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
+			<particle name="blood" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="1" spawnImpulse="0" dirSpread="6.28" speedSpread="1" impulseSpread="5" spawnSound="" minNum="5" maxNum="10"/>
+		</death-state>
 	</states>
 	<fighter tex="fight" anim="false" animFps="0" animLoop="false" animFrames="1"/>
 	<start-speech>

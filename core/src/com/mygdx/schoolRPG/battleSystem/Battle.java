@@ -35,16 +35,23 @@ public class Battle {
     Texture divider;
     Transition trans;
     Texture shade;
-    Texture statsBarEdge, statsBarHp, statsBarAp, statsBarXp;
+    Texture statsBarEdge, statsBar;
     Unit curUnit;
     ArrayList<Float> unitsStatsDrawOffsets;
     public boolean finished = false;
+    public boolean finishedBattle = false;
+    public boolean playerWon = false;
     public boolean loaded = false;
     public boolean initialized = false;
     MenuListSelector turnOptionsList, unitMovesList;
     ArrayList<Unit> turnOrder;
     boolean showTurnOptions = false, showMovesList = false;
     float turnOptionsY = 0, movesListY = -1000.0f;
+    public ArrayList<Item> drops;
+
+    ArrayList<Float> HUDshakes;
+    ArrayList<Float> tempHps, tempAps, tempXps;
+    ArrayList<Integer> tempLvls, tempNextLvlXps;
 
     public Battle(World w, ArrayList<Unit> units, ArrayList<Unit> playersUnits, String ambientPath) {
         this.units = units;
@@ -52,6 +59,22 @@ public class Battle {
         this.ambientPath = ambientPath;
         trans = new Transition(w.assets.get(w.worldDir.path() + "/bg/battle_trans_top.png", Texture.class), w.assets.get(w.worldDir.path() + "/bg/battle_trans_bottom.png", Texture.class));
         palatino24 = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
+        HUDshakes = new ArrayList<Float>();
+        tempHps = new ArrayList<Float>();
+        tempAps = new ArrayList<Float>();
+        tempXps = new ArrayList<Float>();
+        tempLvls = new ArrayList<Integer>();
+        tempNextLvlXps = new ArrayList<Integer>();
+        for (int i = 0; i < playersUnits.size(); ++i)
+        {
+            HUDshakes.add(0f);
+            tempHps.add((float)playersUnits.get(i).stats.hp);
+            tempAps.add((float)playersUnits.get(i).stats.ap);
+            tempXps.add((float)playersUnits.get(i).stats.exp);
+            tempLvls.add(playersUnits.get(i).stats.level);
+            tempNextLvlXps.add(playersUnits.get(i).stats.nextLvlExp);
+        }
+
     }
 
     public void load(World w) {
@@ -93,14 +116,12 @@ public class Battle {
             ambient = w.assets.get(w.worldDir.path() + "/sounds/" + ambientPath, Sound.class);
             ambient.loop(w.menu.musicVolume / 100.0f);
             initialized = true;
-            enemyGroup = new UnitsDrawGroup(w, units, 32, 0.9f);
-            friendlyGroup = new UnitsDrawGroup(w, playersUnits, 32, 0.9f);
+            enemyGroup = new UnitsDrawGroup(this, w, units, 32, 0.9f);
+            friendlyGroup = new UnitsDrawGroup(this, w, playersUnits, 32, 0.9f);
             trans.changeDirection(true);
             shade = w.assets.get("p.png", Texture.class);
             statsBarEdge = w.assets.get("stats_bar_edge.png", Texture.class);
-            statsBarHp = w.assets.get("stats_bar_hp.png", Texture.class);
-            statsBarAp = w.assets.get("stats_bar_ap.png", Texture.class);
-            statsBarXp = w.assets.get("stats_bar_xp.png", Texture.class);
+            statsBar = w.assets.get("stats_bar.png", Texture.class);
             ArrayList<ArrayList<String>> turnOptions = new ArrayList<ArrayList<String>>();
             turnOptions.add(new ArrayList<String>());
             turnOptions.add(new ArrayList<String>());
@@ -112,17 +133,105 @@ public class Battle {
         }
     }
 
-    public void drawHUD(SpriteBatch batch) {
+    public void drawHUD(SpriteBatch batch, World w) {
+        float screenRatioY = Gdx.graphics.getHeight()/720.0f;
+        float h =  Gdx.graphics.getHeight()/screenRatioY;
+        for (int i = 0; i < playersUnits.size(); ++i) {
+            Unit unit = playersUnits.get(i);
+            float shakeX = (float)Math.random() * HUDshakes.get(i);
+            float shakeY = (float)Math.random() * HUDshakes.get(i);
+            batch.setColor(new Color(0, 0, 0, 0.4f));
+            batch.draw(shade, shakeX + unitsStatsDrawOffsets.get(i) + 32, shakeY + h - (32 + 64 * i), 200, -50);
+            palatino24.setColor(new Color(0, 0, 0, 1.0f));
+            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + unitsStatsDrawOffsets.get(i) + 40 + 2, shakeY + h - (40 + 64 * i + 2));
+            palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + unitsStatsDrawOffsets.get(i) + 40, shakeY + h - (40 + 64 * i));
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            batch.draw(statsBarEdge, shakeX + unitsStatsDrawOffsets.get(i) + 34, shakeY + h - (80 + 64 * i), 18, 18);
+            batch.setColor(new Color(0.6f, 0.1f, 0.6f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14, shakeY + h - (71 - 3 + 64 * i), 188 * ((float)tempXps.get(i)/(float)unit.stats.nextLvlExp), 6);
+            batch.setColor(new Color(0.9f, 0.7f, 0.8f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14 + 188 * ((float)Math.min(unit.stats.exp, tempXps.get(i)) /(float)unit.stats.nextLvlExp), shakeY + h - (71 - 3 + 64 * i), 188 * ((float)Math.abs(unit.stats.exp - tempXps.get(i))/(float)unit.stats.nextLvlExp), 6);
+            batch.setColor(new Color(1.0f, 1.0f, 0.1f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14, shakeY + h - (71 + 9 + 64 * i), 188 * ((float)tempAps.get(i)/(float)unit.stats.maxAp), 6);
+            batch.setColor(new Color(1.0f, 1.0f, 0.7f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14 + 188 * ((float)Math.min(unit.stats.ap, tempAps.get(i))/(float)unit.stats.maxAp), shakeY + h - (71 + 9 + 64 * i), 188 * ((float)Math.abs(unit.stats.ap - tempAps.get(i))/(float)unit.stats.maxAp), 6);
+            batch.setColor(new Color(1.0f, 0.1f, 0.1f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 8, shakeY + h - (71 + 3 + 64 * i), 200 * ((float)tempHps.get(i)/(float)unit.stats.maxHp), 6);
+            batch.setColor(new Color(1.0f, 0.7f, 0.7f, 1.0f));
+            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 8 + 200 * ((float)Math.min(unit.stats.hp, tempHps.get(i))/(float)unit.stats.maxHp), shakeY + h - (71 + 3 + 64 * i), 200 * ((float)Math.abs(unit.stats.hp - tempHps.get(i))/(float)unit.stats.maxHp), 6);
+            batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            batch.draw(statsBarEdge, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 188 + 27, shakeY + h - (80 + 64 * i), -18, 18);
+            if (unit == curUnit) {
+                unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i) + (20.0f - unitsStatsDrawOffsets.get(i))/2.0f);
+            } else {
+                unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i)/2.0f);
+            }
+            HUDshakes.set(i, HUDshakes.get(i) - 0.5f);
+            if (HUDshakes.get(i) < 0) HUDshakes.set(i, 0f);
+            if (tempHps.get(i) > unit.stats.hp) tempHps.set(i, tempHps.get(i) - 0.2f);
+            if (tempHps.get(i) < unit.stats.hp) tempHps.set(i, tempHps.get(i) + 0.2f);
+            if (Math.abs(tempHps.get(i) - unit.stats.hp) < 0.2f) tempHps.set(i, (float)unit.stats.hp);
+            if (tempAps.get(i) > unit.stats.ap) tempAps.set(i, tempAps.get(i) - 0.2f);
+            if (tempAps.get(i) < unit.stats.ap) tempAps.set(i, tempAps.get(i) + 0.2f);
+            if (Math.abs(tempAps.get(i) - unit.stats.ap) < 0.2f) tempAps.set(i, (float)unit.stats.ap);
+            if (tempXps.get(i) > unit.stats.exp) tempXps.set(i, tempXps.get(i) - 0.2f);
+            if (tempXps.get(i) < unit.stats.exp) tempXps.set(i, tempXps.get(i) + 0.2f);
+            if (Math.abs(tempXps.get(i) - unit.stats.exp) < 0.2f) tempXps.set(i, (float)unit.stats.exp);
+        }
+    }
 
+    //0-hp, 1-ap, 2-exp
+    public void notifyStatChange(Unit unit, int stat, int amount) {
+        if (!playersUnits.contains(unit))
+            return;
+        HUDshakes.set(playersUnits.indexOf(unit), 3.0f);
+    }
+
+    public void useSkill(UnitsDrawGroup group, Skill skill) {
+        if (!group.showSelector) {
+            group.showSelector = true;
+            group.skillPositive = skill.positive;
+        } else {
+            group.showSelector = false;
+            showTurnOptions = false;
+            showMovesList = false;
+            group.setCurSkill(skill, curUnit, group.getSelectedUnit());
+            if (group.equals(enemyGroup)) {
+                friendlyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, null);
+            }
+        }
+    }
+
+    private void checkFinished() {
+        playerWon = true;
+        for (int i = 0; i < units.size(); ++i) {
+            if (!units.get(i).stats.dead) {
+                playerWon = false;
+                break;
+            }
+        }
+        boolean someoneAliveInFriendlyGroup = false;
+        if (!playerWon) {
+            for (int i = 0; i < playersUnits.size(); ++i) {
+                if (!playersUnits.get(i).stats.dead) {
+                    someoneAliveInFriendlyGroup = true;
+                    break;
+                }
+            }
+        }
+        finishedBattle = playerWon || !someoneAliveInFriendlyGroup;
     }
 
     public void draw(World w, SpriteBatch batch) {
-        if (initialized && trans.closed) {
+        if (initialized && (trans.closed || finishedBattle)) {
 
             if (curUnit == null) {
-                curUnit = turnOrder.get(0);
-                turnOrder.remove(0);
-                turnOrder.add(curUnit);
+                while (curUnit == null || curUnit.stats.dead) {
+                    curUnit = turnOrder.get(0);
+                    turnOrder.remove(0);
+                    if (!curUnit.stats.dead) turnOrder.add(curUnit);
+                }
                 if (playersUnits.contains(curUnit)) {
                     showTurnOptions = true;
                     turnOptionsList.setSelectedIndex(0);
@@ -157,7 +266,9 @@ public class Battle {
                             }
                         }
                         int r3 = (int)Math.floor(Math.random() * possibleToHitUnits.size());
-                        friendlyGroup.setCurSkill(possibleToUseSkills.get(r2), curUnit, possibleToHitUnits.get(r3));
+                        if (possibleToHitUnits.size() > 0 && possibleToUseSkills.size() > 0) {
+                            friendlyGroup.setCurSkill(possibleToUseSkills.get(r2), curUnit, possibleToHitUnits.get(r3));
+                        }
                     }
                 }
             }
@@ -196,14 +307,25 @@ public class Battle {
                         enemyGroup.showSelector = false;
                         friendlyGroup.showSelector = false;
                     } else if (turnOptionsList.getSelectedIndex() == 0) {
-                        if (!enemyGroup.showSelector) {
-                            enemyGroup.showSelector = true;
-                        } else {
-                            enemyGroup.showSelector = false;
-                            showTurnOptions = false;
-                            showMovesList = false;
-                            enemyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, enemyGroup.getSelectedUnit());
-                            friendlyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, null);
+                        useSkill(enemyGroup, curUnit.skills.get(unitMovesList.getSelectedIndex()));
+                    } else if (turnOptionsList.getSelectedIndex() == 1) {
+                        int id = turnOptionsList.getSelectedIndex() - 1;
+                        int curId = 0;
+                        Item item = null;
+                        for (int i = 0; i < curUnit.inventory.size(); ++i) {
+                            if (curUnit.inventory.get(i).consumable) {
+                                if (curId == id) {
+                                    item = curUnit.inventory.get(i);
+                                }
+                                curId++;
+                            }
+                        }
+                        if (item != null) {
+                            if (item.effect.positive) {
+                                useSkill(friendlyGroup, item.effect);
+                            } else {
+                                useSkill(enemyGroup, item.effect);
+                            }
                         }
                     }
                 }
@@ -217,30 +339,7 @@ public class Battle {
             float screenRatioY = Gdx.graphics.getHeight()/720.0f;
             batch.draw(divider, 0, 0, Gdx.graphics.getWidth()/screenRatioX, Gdx.graphics.getHeight()/screenRatioY);
 
-            float h =  Gdx.graphics.getHeight()/screenRatioY;
-
-            for (int i = 0; i < playersUnits.size(); ++i) {
-                Unit unit = playersUnits.get(i);
-                batch.setColor(new Color(0, 0, 0, 0.4f));
-                batch.draw(shade, unitsStatsDrawOffsets.get(i) + 32, h - (32 + 64 * i), 200, -50);
-                palatino24.setColor(new Color(0, 0, 0, 1.0f));
-                palatino24.draw(batch, unit.nickname.get(w.menu.currentLanguage), unitsStatsDrawOffsets.get(i) + 40 + 2, h - (40 + 64 * i + 2));
-                palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-                palatino24.draw(batch, unit.nickname.get(w.menu.currentLanguage), unitsStatsDrawOffsets.get(i) + 40, h - (40 + 64 * i));
-                batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-                batch.draw(statsBarEdge, unitsStatsDrawOffsets.get(i) + 34, h - (80 + 64 * i), 18, 18);
-                batch.draw(statsBarXp, unitsStatsDrawOffsets.get(i) + 34 + 14, h - (71 - 3 + 64 * i), 188 * (unit.stats.exp/unit.stats.nextLvlExp), 6);
-                batch.draw(statsBarAp, unitsStatsDrawOffsets.get(i) + 34 + 14, h - (71 + 9 + 64 * i), 188 * (unit.stats.ap/unit.stats.maxAp), 6);
-                batch.draw(statsBarHp, unitsStatsDrawOffsets.get(i) + 34 + 8, h - (71 + 3 + 64 * i), 200 * (unit.stats.ap/unit.stats.maxAp), 6);
-                //Sprite sprite = new Sprite(statsBarEdge);
-                //sprite.flip(true, false);
-                batch.draw(statsBarEdge, unitsStatsDrawOffsets.get(i) + 34 + 188 + 27, h - (80 + 64 * i), -18, 18);
-                if (unit == curUnit) {
-                    unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i) + (20.0f - unitsStatsDrawOffsets.get(i))/2.0f);
-                } else {
-                    unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i)/2.0f);
-                }
-            }
+            if (!finishedBattle) drawHUD(batch, w);
 
             batch.setColor(new Color(0, 0, 0, 0.4f));
             batch.draw(shade, 100, turnOptionsY, 300, turnOptionsList.height + 20);
@@ -269,7 +368,17 @@ public class Battle {
             if (enemyGroup.curSkill == null && friendlyGroup.curSkill == null && !showTurnOptions && !showMovesList) {
                 curUnit = null;
             }
+
+            checkFinished();
+            if (finishedBattle && trans.outwards) {
+                trans.reset();
+
+            }
         }
         trans.draw(batch);
+        if (finishedBattle) drawHUD(batch, w);
+        if (finishedBattle && trans.closed) {
+
+        }
     }
 }

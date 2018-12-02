@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.mygdx.schoolRPG.battleSystem.Skill;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 import com.mygdx.schoolRPG.tools.GlobalSequence;
 import org.w3c.dom.Document;
@@ -44,7 +45,8 @@ public class Item {
     Texture icon;
     Texture bigIcon;
     GlobalSequence sides;
-    public boolean consumable;
+    public boolean consumable = false;
+    public Skill effect;
 
     public String getName(int language) {
         return namesInLanguages.get(language);
@@ -68,15 +70,17 @@ public class Item {
         replaces = item.replaces;
         namesInLanguages = item.namesInLanguages;
         descriptionsInLanguages = item.descriptionsInLanguages;
+        consumable = item.consumable;
+        effect = item.effect;
     }
 
-    public Item(AssetManager assets, String worldPath, String name) {
+    public Item(World w, String worldPath, String name) {
         fileName = name;
-        icon = assets.get(worldPath + "/items/icons/" + fileName + ".png");
-        if (assets.isLoaded(worldPath + "/items/big_icons/" + fileName + ".png")) {
-            bigIcon = assets.get(worldPath + "/items/big_icons/" + fileName + ".png");
+        icon = w.assets.get(worldPath + "/items/icons/" + fileName + ".png");
+        if (w.assets.isLoaded(worldPath + "/items/big_icons/" + fileName + ".png")) {
+            bigIcon = w.assets.get(worldPath + "/items/big_icons/" + fileName + ".png");
         }
-        sides = new GlobalSequence(assets,worldPath + "/items/sides/" + fileName + ".png", 3);
+        sides = new GlobalSequence(w.assets,worldPath + "/items/sides/" + fileName + ".png", 3);
         FileHandle itemDir =  Gdx.files.internal(worldPath + "/items");
         FileHandle itemXML = null;
         for (FileHandle entry: itemDir.list()) {
@@ -111,6 +115,9 @@ public class Item {
         } else {
             equipSlot = EquipSlot.NONE;
         }
+        if (!xml.getDocumentElement().getAttribute("consumable").equals("")) {
+            consumable = Boolean.parseBoolean(xml.getDocumentElement().getAttribute("consumable"));
+        }
         stackable = Boolean.parseBoolean(xml.getDocumentElement().getAttribute("stackable"));
         maxStack = Integer.parseInt(xml.getDocumentElement().getAttribute("maxStack"));
         varName = xml.getDocumentElement().getAttribute("var");
@@ -127,5 +134,11 @@ public class Item {
         eElement = (Element) nNode;
         namesInLanguages.add(eElement.getAttribute("name"));
         descriptionsInLanguages.add(eElement.getAttribute("description"));
+        nList = xml.getElementsByTagName("effect");
+        nNode = nList.item(0);
+        eElement = (Element) nNode;
+        if (eElement != null) {
+            effect = w.battleSystem.getSkillByName(eElement.getAttribute("name"));
+        }
     }
 }

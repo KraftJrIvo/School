@@ -25,9 +25,14 @@
 		</skill>
 		<skill name="slimePoisonSpit" APcost="1" cooldown="3" positive="false">
 			<name rus="Ядовитый плевок" eng="Poison spit"/>
-			<animation type="ranged-spit" name="slimeBall"  fps="0" frames="1" looping="false"/>
+			<animation type="ranged-spit" prt="slimeBall"/>
 			<damage damageType="poison" baseDamage="10"/>
 			<status-effect name="poisoned"  rounds="3"/>
+		</skill>
+		<skill name="mediumHeal" APcost="1" cooldown="3" positive="true">
+			<name rus="Среднее лечение" eng="Medium heal"/>
+			<animation type="magic-aura" name="heal" prt="heal" color="#00ff71" fps="0" frames="1" looping="false" sound="bell.wav"/>
+			<heal baseHeal="50%"/>
 		</skill>
 	</skills>
 </battle-system>

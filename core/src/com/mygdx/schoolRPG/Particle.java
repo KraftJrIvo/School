@@ -12,6 +12,7 @@ import com.mygdx.schoolRPG.Entity;
 import com.mygdx.schoolRPG.menus.MainMenu;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
 
+import javax.xml.soap.Text;
 import java.util.ArrayList;
 
 /**
@@ -37,6 +38,7 @@ public class Particle extends Entity {
     BitmapFont font;
     Color fontColor;
     float textW;
+    Texture simpleTexture;
 
     public Particle(AssetManager assets, ParticleProperties pp, ParticleProperties.ParticleSpawnProperties spawnProperties, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
         super(assets, (Texture)null, spawnX + spawnProperties.spawnX, spawnY + spawnProperties.spawnY, pp.h, pp.floorHeight, 0);
@@ -148,6 +150,103 @@ public class Particle extends Entity {
         this.fontColor = fontColor;
         textW = font.getBounds(text).width + 2;
     }
+
+    public Particle(AssetManager assets, Texture tex, Color fontColor, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
+        super(assets, (Texture)null, spawnX, spawnY, 0, 0, 0);
+        ParticleProperties pp = new ParticleProperties();
+        h=0;
+        floorHeight=0;
+        pp.r = 2.0f;
+        pp.statesTexes = new ArrayList<Texture>();
+        pp.statesTexes.add(null);
+        pp.statesTexes.add(null);
+        pp.statesAnims = new ArrayList<AnimationSequence>();
+        pp.statesAnims.add(null);
+        pp.statesAnims.add(null);
+        pp.statesIds = new ArrayList<Integer>();
+        pp.statesIds.add(0);
+        pp.statesIds.add(0);
+        pp.statesTexNames = new ArrayList<String>();
+        pp.statesTexNames.add(null);
+        pp.statesTexNames.add(null);
+        pp.statesFramesNumbers = new ArrayList<Integer>();
+        pp.statesFramesNumbers.add(1);
+        pp.statesFramesNumbers.add(1);
+        pp.statesWeights = new ArrayList<Float>();
+        pp.statesWeights.add(0.1f);
+        pp.statesWeights.add(0.1f);
+        pp.statesBounciness = new ArrayList<Float>();
+        pp.statesBounciness.add(0.9f);
+        pp.statesBounciness.add(0.9f);
+        pp.statesInertia = new ArrayList<Float>();
+        pp.statesInertia.add(0.69f);
+        pp.statesInertia.add(0.69f);
+        pp.statesAlphaSteps = new ArrayList<Float>();
+        pp.statesAlphaSteps.add(0f);
+        pp.statesAlphaSteps.add(0.01f);
+        pp.statesMovePatterns = new ArrayList<ParticleProperties.MovePattern>();
+        pp.statesMovePatterns.add(ParticleProperties.MovePattern.NORMAL);
+        pp.statesMovePatterns.add(ParticleProperties.MovePattern.NONE);
+        pp.statesFloors = new ArrayList<Boolean>();
+        pp.statesFloors.add(false);
+        pp.statesFloors.add(false);
+        pp.statesCollisionGroups = new ArrayList<Integer>();
+        pp.statesCollisionGroups.add(0);
+        pp.statesCollisionGroups.add(0);
+        pp.statesSpawnIntervals = new ArrayList<Integer>();
+        pp.statesSpawnIntervals.add(0);
+        pp.statesSpawnsCounts = new ArrayList<Integer>();
+        pp.statesSpawnsCounts.add(0);
+        pp.statesSpawnsCounts.add(0);
+        pp.statesFlySoundLoops = new ArrayList<Sound>();
+        pp.statesFlySoundLoops.add(null);
+        pp.statesFlySoundLoops.add(null);
+        pp.statesBounceSounds = new ArrayList<Sound>();
+        pp.statesBounceSounds.add(null);
+        pp.statesBounceSounds.add(null);
+        pp.statesFlySoundLoopsNames = new ArrayList<String>();
+        pp.statesFlySoundLoopsNames.add(null);
+        pp.statesFlySoundLoopsNames.add(null);
+        pp.statesBounceSoundsNames = new ArrayList<String>();
+        pp.statesBounceSoundsNames.add(null);
+        pp.statesBounceSoundsNames.add(null);
+        pp.statesChangeConditions = new ArrayList<ArrayList<ParticleProperties.StateChangeCondition>>();
+        pp.statesChangeConditions.add(new ArrayList<ParticleProperties.StateChangeCondition>());
+        pp.statesChangeConditions.add(new ArrayList<ParticleProperties.StateChangeCondition>());
+        pp.statesChangeConditions.get(0).add(new ParticleProperties().new StateChangeCondition("BOUNCE-3-1"));
+        pp.statesparticleSpawns = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
+        pp.statesparticleSpawns.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
+        pp.statesparticleSpawns.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
+        pp.statesparticleSpawns.get(0).add(null);
+        ParticleProperties.ParticleSpawnProperties spawnProperties = new ParticleProperties().new ParticleSpawnProperties("", 0,0,0);
+        spawnProperties.spawnDir = 3.14159f * 1.5f;
+        spawnProperties.dirSpread = 3.14159f / 2.0f;
+        z = spawnZ + spawnProperties.spawnZ;
+        this.pp = pp;
+        curStateId = 0;
+        if (this.pp.statesTexes.get(curStateId) != null) tex = this.pp.statesTexes.get(curStateId);
+        else if (this.pp.statesAnims.get(curStateId) != null) anim = this.pp.statesAnims.get(curStateId);
+        direction = spawnProperties.spawnDir + (float)Math.random() * spawnProperties.dirSpread - spawnProperties.dirSpread/2.0f;
+        speed = spawnProperties.spawnSpeed + (float)Math.random() * spawnProperties.speedSpread;
+        impulse = spawnProperties.spawnImpulse + (float)Math.random() * spawnProperties.impulseSpread;
+        curStateBounces = 0;
+        centered = true;
+        r = pp.r;
+        this.platformMode = platformMode;
+        if (platformMode) z = 0;
+        this.h = y;
+        changeState(0);
+        this.text = text;
+        font = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
+        this.fontColor = fontColor;
+        textW = font.getBounds(text).width + 2;
+        this.simpleTexture = tex;
+    }
+
+    public void setAlphaStep(int stateId, float alphaStep) {
+        pp.statesAlphaSteps.set(stateId, alphaStep);
+    }
+
 
     public void bounce(boolean floor, boolean side) {
         if (floor) {
@@ -369,6 +468,9 @@ public class Particle extends Entity {
 
     public void drawBattle(SpriteBatch batch) {
         float yy = y + z;
+        if (tex == null && simpleTexture != null) {
+            tex = simpleTexture;
+        }
         if (text.length() == 0) {
             if (anim != null) {
                 yy += anim.getFirstFrame().getRegionHeight();

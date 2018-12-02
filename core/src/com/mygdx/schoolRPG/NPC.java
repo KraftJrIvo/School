@@ -128,7 +128,7 @@ public class NPC extends HittableEntity {
                     itemsNames.add(line);
                     line = in.readLine();
                     itemsCounts.add(Integer.parseInt(line));
-                    Item item = new Item(assets, world.worldDir.path(), itemsNames.get(j));
+                    Item item = new Item(world, world.worldDir.path(), itemsNames.get(j));
                     item.stack = itemsCounts.get(j);
                     inventory.add(item);
                 }

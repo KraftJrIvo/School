@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.schoolRPG.*;
 import com.mygdx.schoolRPG.battleSystem.ui.UnitsDrawGroup;
 import com.mygdx.schoolRPG.tools.AnimationSequence;
+import com.mygdx.schoolRPG.tools.ConditionParser;
+import javafx.util.Pair;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -22,9 +24,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Unit {
-    UnitStats stats;
+    public UnitStats stats;
     ArrayList<Skill> skills;
-    ArrayList<Item> inventory;
+    public ArrayList<Item> inventory;
     ArrayList<ArrayList<Item>> dropGroups;
     ArrayList<Float> dropGroupsProbs;
     ArrayList<ArrayList<Float>> dropProbs;
@@ -43,8 +45,8 @@ public class Unit {
     ArrayList<Sound> statesHitSounds;
     ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesIdlePrt;
     public ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>> statesHitPrt;
-    ArrayList<ArrayList<Integer>> statesIdlePrtMinMax;
-    ArrayList<ArrayList<Integer>> statesHitPrtMinMax;
+    ArrayList<ArrayList<Pair<Integer, Integer>>> statesIdlePrtMinMax;
+    ArrayList<ArrayList<Pair<Integer, Integer>>> statesHitPrtMinMax;
 
     AnimationSequence fighterTex;
 
@@ -56,8 +58,11 @@ public class Unit {
 
     ArrayList<Integer> hitDamages;
     ArrayList<DamageType> hitDTs;
+    public ArrayList<Item> drops;
     boolean wasHit = false;
-    float hitAlpha = 0;
+    boolean wasHealed = false;
+    float hitAlphaHit = 0;
+    float hitAlphaHeal = 0;
     float hitOffset = 0;
     float hitOffsetSpeed = 0;
     float hitShake = 0f;
@@ -67,10 +72,14 @@ public class Unit {
     String name;
     ArrayList<String> nickname;
 
+    ConditionParser parser;
+
     public Unit(World w, String name, int level) {
         this.name = name;
         loader = new ObjectLoader();
         stats = new UnitStats(w, name, level);
+
+        parser = new ConditionParser(w.npcs, null, 0);
         FileHandle statsXML = Gdx.files.internal(w.worldDir + "/units/" + name + "/stats.xml");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = null;
@@ -88,6 +97,7 @@ public class Unit {
             e.printStackTrace();
         }
         doc.getDocumentElement().normalize();
+
 
         Element unitElem = (Element) doc.getElementsByTagName("unit").item(0);
         baseHeight = Integer.parseInt(unitElem.getAttribute("baseHeight"));
@@ -115,18 +125,19 @@ public class Unit {
             Element eElement = (Element) nNode;
             float probability = Float.parseFloat(eElement.getAttribute("prob"));
             if (Math.random() < probability) {
-                inventory.add(new Item(w.assets, w.worldDir.path(), eElement.getAttribute("name")));
+                inventory.add(new Item(w, w.worldDir.path(), eElement.getAttribute("name")));
             }
         }
 
         String heldItemName = ((Element)doc.getElementsByTagName("held-item").item(0)).getAttribute("name");
-        if (!heldItemName.equals("")) heldItem = new Item(w.assets, w.worldDir.path(), heldItemName);
+        if (!heldItemName.equals("")) heldItem = new Item(w, w.worldDir.path(), heldItemName);
 
         dropGroups = new ArrayList<ArrayList<Item>>();
         dropGroupsProbs = new ArrayList<Float>();
         dropProbs = new ArrayList<ArrayList<Float>>();
         dropMins = new ArrayList<ArrayList<Integer>>();
         dropMaxs = new ArrayList<ArrayList<Integer>>();
+        drops = new ArrayList<Item>();
         NodeList dgList = doc.getElementsByTagName("dropGroup");
         for (int i = 0; i < dgList.getLength(); ++i) {
             Node nNode = dgList.item(i);
@@ -154,8 +165,8 @@ public class Unit {
         statesHitSounds = new ArrayList<Sound>();
         statesIdlePrt = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
         statesHitPrt = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
-        statesIdlePrtMinMax = new ArrayList<ArrayList<Integer>>();
-        statesHitPrtMinMax = new ArrayList<ArrayList<Integer>>();
+        statesIdlePrtMinMax = new ArrayList<ArrayList<Pair<Integer, Integer>>>();
+        statesHitPrtMinMax = new ArrayList<ArrayList<Pair<Integer, Integer>>>();
         NodeList statesList = doc.getElementsByTagName("state");
         for (int i = 0; i < statesList.getLength() + 1; ++i) {
             Node nNode;
@@ -172,8 +183,8 @@ public class Unit {
             statesHitSounds.add(null);
             statesIdlePrt.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
             statesHitPrt.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
-            statesIdlePrtMinMax.add(new ArrayList<Integer>());
-            statesHitPrtMinMax.add(new ArrayList<Integer>());
+            statesIdlePrtMinMax.add(new ArrayList<Pair<Integer, Integer>>());
+            statesHitPrtMinMax.add(new ArrayList<Pair<Integer, Integer>>());
             Element idle = (Element) eElement.getElementsByTagName("idle").item(0);
             Element hit = (Element) eElement.getElementsByTagName("hit").item(0);
             /*statesIdleTexes.set(i, new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + idle.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(idle.getAttribute("animFps")), Boolean.parseBoolean(idle.getAttribute("animLoop")), Integer.parseInt(idle.getAttribute("animFps"))));
@@ -184,11 +195,11 @@ public class Unit {
             if (!hit.getAttribute("sound").equals("")) {
                 statesHitSounds.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + hit.getAttribute("sound"), Sound.class));
             }*/
-
+            NodeList particlesSpawns = null;
             if (idle != null) {
-                NodeList particlesSpawns = idle.getElementsByTagName("particle");
+                particlesSpawns = idle.getElementsByTagName("particle");
                 for (int j = 0; j < particlesSpawns.getLength(); ++j) {
-                    Element spawnParams = (Element)particlesSpawns.item(j);
+                    Element spawnParams = (Element) particlesSpawns.item(j);
                     statesIdlePrt.get(i).add(new ParticleProperties().new ParticleSpawnProperties(
                             w.assets,
                             w.worldDir + "/units/" + name + "/" + spawnParams.getAttribute("spawnSound"),
@@ -203,13 +214,12 @@ public class Unit {
                             Float.parseFloat(spawnParams.getAttribute("speedSpread")),
                             Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
                     ));
-                    statesIdlePrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("minNum")));
-                    statesIdlePrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("maxNum")));
+                    statesIdlePrtMinMax.get(i).add(new Pair<Integer, Integer>(Integer.parseInt(spawnParams.getAttribute("minNum")), Integer.parseInt(spawnParams.getAttribute("maxNum"))));
                     loader.loadParticle(w, spawnParams.getAttribute("name"));
                 }
             }
             if (hit != null) {
-                NodeList particlesSpawns = hit.getElementsByTagName("particle");
+                particlesSpawns = hit.getElementsByTagName("particle");
                 for (int j = 0; j < particlesSpawns.getLength(); ++j) {
                     Element spawnParams = (Element) particlesSpawns.item(j);
                     statesHitPrt.get(i).add(new ParticleProperties().new ParticleSpawnProperties(
@@ -226,8 +236,29 @@ public class Unit {
                             Float.parseFloat(spawnParams.getAttribute("speedSpread")),
                             Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
                     ));
-                    statesHitPrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("minNum")));
-                    statesHitPrtMinMax.get(i).add(Integer.parseInt(spawnParams.getAttribute("maxNum")));
+                    statesHitPrtMinMax.get(i).add(new Pair<Integer, Integer>(Integer.parseInt(spawnParams.getAttribute("minNum")), Integer.parseInt(spawnParams.getAttribute("maxNum"))));
+                    loader.loadParticle(w, spawnParams.getAttribute("name"));
+                }
+            }
+            if (hit == null && idle == null) {
+                particlesSpawns = eElement.getElementsByTagName("particle");
+                for (int j = 0; j < particlesSpawns.getLength(); ++j) {
+                    Element spawnParams = (Element) particlesSpawns.item(j);
+                    statesHitPrt.get(i).add(new ParticleProperties().new ParticleSpawnProperties(
+                            w.assets,
+                            w.worldDir + "/units/" + name + "/" + spawnParams.getAttribute("spawnSound"),
+                            spawnParams.getAttribute("name"),
+                            Integer.parseInt(spawnParams.getAttribute("spawnX")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnY")),
+                            Integer.parseInt(spawnParams.getAttribute("spawnZ")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnDir")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnSpeed")),
+                            Float.parseFloat(spawnParams.getAttribute("spawnImpulse")),
+                            Float.parseFloat(spawnParams.getAttribute("dirSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("speedSpread")),
+                            Float.parseFloat(spawnParams.getAttribute("impulseSpread"))
+                    ));
+                    statesHitPrtMinMax.get(i).add(new Pair<Integer, Integer>(Integer.parseInt(spawnParams.getAttribute("minNum")), Integer.parseInt(spawnParams.getAttribute("maxNum"))));
                     loader.loadParticle(w, spawnParams.getAttribute("name"));
                 }
             }
@@ -312,11 +343,15 @@ public class Unit {
             Element hit = (Element) eElement.getElementsByTagName("hit").item(0);
             if (idle != null) w.assets.load(w.worldDir + "/units/" + name + "/" + idle.getAttribute("tex") + ".png", Texture.class);
             if (hit != null) w.assets.load(w.worldDir + "/units/" + name + "/" + hit.getAttribute("tex") + ".png", Texture.class);
+            if (idle == null && hit == null) w.assets.load(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("tex") + ".png", Texture.class);
             if (idle != null && !idle.getAttribute("soundLoop").equals("")) {
                 w.assets.load(w.worldDir + "/units/" + name + "/" + idle.getAttribute("soundLoop"), Sound.class);
             }
             if (hit != null && !hit.getAttribute("sound").equals("")) {
                 w.assets.load(w.worldDir + "/units/" + name + "/" + hit.getAttribute("sound"), Sound.class);
+            }
+            if (hit == null && idle == null) {
+                w.assets.load(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("sound"), Sound.class);
             }
         }
         Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
@@ -366,11 +401,19 @@ public class Unit {
             Element hit = (Element) eElement.getElementsByTagName("hit").item(0);
             if (idle != null) statesIdleTexes.set(i, new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + idle.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(idle.getAttribute("animFps")), Boolean.parseBoolean(idle.getAttribute("animLoop")), Integer.parseInt(idle.getAttribute("animFrames"))));
             if (hit != null) statesHitTexes.set(i, new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + hit.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(hit.getAttribute("animFps")), Boolean.parseBoolean(hit.getAttribute("animLoop")), Integer.parseInt(hit.getAttribute("animFrames"))));
+            if (idle == null && hit == null) {
+                AnimationSequence deadAnim = new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(eElement.getAttribute("animFps")), Boolean.parseBoolean(eElement.getAttribute("animLoop")), Integer.parseInt(eElement.getAttribute("animFrames")));
+                statesIdleTexes.set(i, deadAnim);
+                statesHitTexes.set(i, deadAnim);
+            }
             if (idle != null && !idle.getAttribute("soundLoop").equals("")) {
                 statesIdleLoops.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + idle.getAttribute("soundLoop"), Sound.class));
             }
             if (hit != null && !hit.getAttribute("sound").equals("")) {
                 statesHitSounds.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + hit.getAttribute("sound"), Sound.class));
+            }
+            if (idle == null && hit == null) {
+                statesHitSounds.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("sound"), Sound.class));
             }
         }
         Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
@@ -384,46 +427,129 @@ public class Unit {
             for (int j = 0; j < dropList.getLength(); ++j) {
                 Node nNode2 = dropList.item(j);
                 Element eElement2 = (Element) nNode2;
-                dropGroups.get(i).add(new Item(w.assets, w.worldDir.path(), eElement2.getAttribute("name")));
+                dropGroups.get(i).add(new Item(w, w.worldDir.path(), eElement2.getAttribute("name")));
             }
         }
 
         loader.initializeObjects(w.assets, w);
     }
 
-    public void hit(ArrayList<DamageType> dts, ArrayList<Integer> damages) {
+    void drop() {
+        for (int i = 0; i < dropGroups.size(); ++i) {
+            float groupProb = dropGroupsProbs.get(i);
+
+            if (Math.random() < groupProb) {
+                for (int j = 0; j < dropGroups.get(i).size(); ++j) {
+                    float dropProb = dropProbs.get(i).get(j);
+                    if (Math.random() < dropProb) {
+                        Item item = new Item(dropGroups.get(i).get(j));
+                        item.stack = dropMins.get(i).get(j) + (int)Math.floor(dropMaxs.get(i).get(j) - dropMins.get(i).get(j) + 1);
+                        drops.add(item);
+                    }
+                }
+            }
+        }
+    }
+
+    public void hit(UnitsDrawGroup udg, ArrayList<DamageType> dts, ArrayList<Integer> damages) {
         hitDTs = (ArrayList<DamageType>)dts.clone();
+        int amount = 0;
         for (int i = 0; i < dts.size(); ++i) {
             boolean found = false;
             for (int j = 0; j < susceptibilities.size(); ++j) {
                 if (susceptibilities.get(j).damageType.equals(dts.get(i))) {
                     hitDamages.add((int)(damages.get(i) * susceptibilities.get(j).percent));
+                    amount += damages.get(i) * susceptibilities.get(j).percent;
                     found = true;
                 }
             }
-            if (!found) hitDamages.add(damages.get(i));
+            if (!found) {
+                hitDamages.add(damages.get(i));
+                amount += damages.get(i);
+            }
         }
+        udg.battle.notifyStatChange(this, 0, amount);
         wasHit = true;
+    }
+
+    public void heal(World w, int baseHeal, boolean percent, UnitsDrawGroup udg, float x, float y) {
+        String healStr;
+        int amount;
+        if (percent) {
+            amount = (int)((float)stats.maxHp * (float)baseHeal / 100.0f);
+        }
+        else {
+            amount = baseHeal;
+        }
+        stats.hp += amount;
+        healStr = "+" + amount;
+        udg.addParticle(new Particle(w.assets, healStr, new Color(0.2f, 1.0f, 0.2f, 1.0f), false, x, y, 1.0f));
+        if (stats.hp > stats.maxHp) stats.hp = stats.maxHp;
+        checkStates();
+        udg.battle.notifyStatChange(this, 0, amount);
+        wasHealed = true;
+    }
+
+    public ArrayList<Pair<String, Integer>> prepareSpecialVars() {
+        ArrayList<Pair<String, Integer>> vars = new ArrayList<Pair<String, Integer>>();
+        vars.add(new Pair<String, Integer>("hp", stats.hp));
+        vars.add(new Pair<String, Integer>("maxHp", stats.maxHp));
+        vars.add(new Pair<String, Integer>("ap", stats.ap));
+        vars.add(new Pair<String, Integer>("maxAp", stats.maxAp));
+        return vars;
+    }
+
+    public void checkStates() {
+        if (stats.hp <= 0) {
+            currentState = statesIdleTexes.size() - 1;
+            stats.dead = true;
+            drop();
+        } else {
+            for (int i = 0; i < statesConditions.size(); ++i) {
+                if (statesConditions.get(i) != null && parser.parseCondition(statesConditions.get(i), prepareSpecialVars())) {
+                    currentState = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    public void getDamage(int dmg) {
+        stats.hp -= dmg;
+        if (stats.hp < 0) stats.hp = 0;
+        checkStates();
+    }
+
+    float getHeight() {
+        return statesHitTexes.get(0).getFirstFrame().getRegionHeight();
+    }
+
+    float getWidth() {
+        return statesHitTexes.get(0).getFirstFrame().getRegionWidth();
     }
 
     public void draw(World w, UnitsDrawGroup udg, SpriteBatch batch, float x, float y, float scale) {
         TextureRegion tex;
         float shakeX = 0, shakeY = 0;
-        if (wasHit || (!statesHitTexes.get(currentState).hasEnded() && !statesHitTexes.get(currentState).looping) || (hitAlpha != 0 && hitShake != 0)) {
+        if ((wasHit || wasHealed) || (!statesHitTexes.get(currentState).hasEnded() && !statesHitTexes.get(currentState).looping) || ((hitAlphaHeal != 0 || hitAlphaHit != 0) && hitShake != 0)) {
             shakeX = hitShake * (int)Math.floor(Math.random() * 2.0f) - 1.0f;
             shakeY = hitShake * (int)Math.floor(Math.random() * 2.0f) - 1.0f;
-            batch.setColor(new Color(1.0f, 1.0f - hitAlpha, 1.0f - hitAlpha, 1.0f));
-            tex = statesHitTexes.get(currentState).getCurrentFrame(false);
+            batch.setColor(new Color(1.0f - hitAlphaHeal, 1.0f - hitAlphaHit, 1.0f - hitAlphaHit - hitAlphaHeal, 1.0f));
+            if (!stats.dead && hitAlphaHeal == 0) tex = statesHitTexes.get(currentState).getCurrentFrame(false);
+            else tex = statesIdleTexes.get(currentState).getCurrentFrame(false);
         } else {
             tex = statesIdleTexes.get(currentState).getCurrentFrame(false);
         }
         if (wasHit) {
+            for (int i = 0; i < hitDamages.size(); ++i) {
+                getDamage(hitDamages.get(i));
+            }
             hitOffsetSpeed = 1.0f;
-            hitAlpha =  1.0f;
+            hitAlphaHit =  1.0f;
             hitShake = 5.0f;
             for (int i = 0; i < statesHitPrt.get(currentState).size(); ++i) {
                 ParticleProperties.ParticleSpawnProperties pp = statesHitPrt.get(currentState).get(i);
-                int r = (int)Math.floor(Math.random() * (statesHitPrtMinMax.get(i).get(1) - statesHitPrtMinMax.get(i).get(0)) + 1) + statesHitPrtMinMax.get(i).get(0);
+                int r = (int)Math.floor(Math.random() * (statesHitPrtMinMax.get(currentState).get(i).getValue() - statesHitPrtMinMax.get(currentState).get(i).getKey()) + 1) + statesHitPrtMinMax.get(currentState).get(i).getKey();
                 float xSpread = ((float)Math.random() * 2.0f - 1.0f) * tex.getRegionWidth()/2.0f;
                 float ySpread = ((float)Math.random()) * tex.getRegionHeight()/2.0f;
                 for (int j = 0; j < r; ++j) {
@@ -434,19 +560,26 @@ public class Unit {
                 udg.addParticle(new Particle(w.assets, "" + hitDamages.get(i), hitDTs.get(i).color, false, x + scale * tex.getRegionWidth()/2.0f, y - tex.getRegionHeight() - baseHeight - 20, 1.0f));
             }
         }
+        if (wasHealed) {
+            hitAlphaHeal =  1.0f;
+            hitShake = 5.0f;
+        }
         batch.draw(tex, x + shakeX, y - tex.getRegionHeight() - baseHeight + shakeY, 0, 0, tex.getRegionWidth(), tex.getRegionHeight(), scale, scale, 0);
         batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
         hitOffset += hitOffsetSpeed;
-        if (hitAlpha > 0) hitAlpha -= 0.05f;
-        else hitAlpha = 0;
+        if (hitAlphaHit > 0) hitAlphaHit -= 0.05f;
+        else hitAlphaHit = 0;
+        if (hitAlphaHeal > 0) hitAlphaHeal -= 0.05f;
+        else hitAlphaHeal = 0;
         if (hitShake > 0) hitShake -= 0.5f;
         else hitShake = 0;
         if (hitOffsetSpeed > 0) hitOffsetSpeed -= 0.1f;
         else hitOffset -= 0.1f;
-        if (wasHit) {
+        if ((wasHit || wasHealed)) {
             hitDamages.clear();
             hitDTs.clear();
             wasHit = false;
+            wasHealed = false;
         }
     }
 

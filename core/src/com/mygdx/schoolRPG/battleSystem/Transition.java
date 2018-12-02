@@ -42,4 +42,11 @@ public class Transition {
             }
         }
     }
+
+    public void reset() {
+        outwards = false;
+        speed = 0;
+        curY = 0;
+        closed = false;
+    }
 }
