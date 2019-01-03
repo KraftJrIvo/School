@@ -70,7 +70,7 @@ public class MenuListSelector {
         float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         //centerY = height/screenRatioY;
-        centerY = height/2;
+        centerY = height/2/screenRatioY;
         //System.out.println(centerY);
         centerX = Gdx.graphics.getWidth()/screenRatioX/2;
         if (!paused && enabled) {

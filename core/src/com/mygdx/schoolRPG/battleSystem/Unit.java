@@ -443,8 +443,8 @@ public class Unit {
                     float dropProb = dropProbs.get(i).get(j);
                     if (Math.random() < dropProb) {
                         Item item = new Item(dropGroups.get(i).get(j));
-                        item.stack = dropMins.get(i).get(j) + (int)Math.floor(dropMaxs.get(i).get(j) - dropMins.get(i).get(j) + 1);
-                        drops.add(item);
+                        item.stack = dropMins.get(i).get(j) + (int)Math.floor(Math.random() * (dropMaxs.get(i).get(j) - dropMins.get(i).get(j) + 1));
+                        if (item.stack > 0) drops.add(item);
                     }
                 }
             }
@@ -460,15 +460,17 @@ public class Unit {
                 if (susceptibilities.get(j).damageType.equals(dts.get(i))) {
                     hitDamages.add((int)(damages.get(i) * susceptibilities.get(j).percent));
                     amount += damages.get(i) * susceptibilities.get(j).percent;
+                    //getDamage((int)(damages.get(i) * susceptibilities.get(j).percent));
                     found = true;
                 }
             }
             if (!found) {
                 hitDamages.add(damages.get(i));
+                //getDamage(damages.get(i));
                 amount += damages.get(i);
             }
         }
-        udg.battle.notifyStatChange(this, 0, amount);
+        udg.battle.notifyStatChange(this, 0, -amount);
         wasHit = true;
     }
 
@@ -481,7 +483,7 @@ public class Unit {
         else {
             amount = baseHeal;
         }
-        stats.hp += amount;
+        //stats.hp += amount;
         healStr = "+" + amount;
         udg.addParticle(new Particle(w.assets, healStr, new Color(0.2f, 1.0f, 0.2f, 1.0f), false, x, y, 1.0f));
         if (stats.hp > stats.maxHp) stats.hp = stats.maxHp;
@@ -514,10 +516,24 @@ public class Unit {
         }
     }
 
-    public void getDamage(int dmg) {
-        stats.hp -= dmg;
+    public void changeHp(int change) {
+        stats.hp += change;
         if (stats.hp < 0) stats.hp = 0;
+        if (stats.hp > stats.maxHp) stats.hp = stats.maxHp;
         checkStates();
+    }
+
+    public void changeAp(int change) {
+        stats.ap += change;
+        if (stats.ap < 0) stats.ap = 0;
+        if (stats.ap > stats.maxHp) stats.ap = stats.maxAp;
+        checkStates();
+    }
+
+    public void changeXp(int change) {
+        stats.exp += change;
+        if (stats.exp < 0) stats.exp = 0;
+        stats.checkLevelUp();
     }
 
     float getHeight() {
@@ -541,9 +557,6 @@ public class Unit {
             tex = statesIdleTexes.get(currentState).getCurrentFrame(false);
         }
         if (wasHit) {
-            for (int i = 0; i < hitDamages.size(); ++i) {
-                getDamage(hitDamages.get(i));
-            }
             hitOffsetSpeed = 1.0f;
             hitAlphaHit =  1.0f;
             hitShake = 5.0f;
@@ -558,6 +571,13 @@ public class Unit {
             }
             for (int i = 0; i < hitDamages.size(); ++i) {
                 udg.addParticle(new Particle(w.assets, "" + hitDamages.get(i), hitDTs.get(i).color, false, x + scale * tex.getRegionWidth()/2.0f, y - tex.getRegionHeight() - baseHeight - 20, 1.0f));
+            }
+            int nonCashItemsCount = 0;
+            for (int i = 0; i < drops.size(); ++i)
+                if (!drops.get(i).fileName.contains("money"))
+                    nonCashItemsCount++;
+            if (nonCashItemsCount > 0) {
+                udg.addParticle(new Particle(w.assets, w.assets.get("item.png", Texture.class), false, x + scale * tex.getRegionWidth()/2.0f, y - tex.getRegionHeight() - baseHeight - 20, 1.0f));
             }
         }
         if (wasHealed) {

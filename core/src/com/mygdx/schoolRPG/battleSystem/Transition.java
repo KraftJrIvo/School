@@ -24,10 +24,11 @@ public class Transition {
 
     public void draw(SpriteBatch batch) {
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
         float h =  Gdx.graphics.getHeight()/screenRatioY;
         if (curY < 0) return;
-        batch.draw(top, 0, h - curY, Gdx.graphics.getWidth(), h);
-        batch.draw(bottom, 0, curY - h, Gdx.graphics.getWidth(), h);
+        batch.draw(top, 0, h - curY, Gdx.graphics.getWidth()/screenRatioX, h);
+        batch.draw(bottom, 0, curY - h, Gdx.graphics.getWidth()/screenRatioX, h);
         if (outwards && closed) {
             speed -= 0.5f;
         } else {

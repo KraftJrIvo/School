@@ -9,14 +9,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.mygdx.schoolRPG.Background;
-import com.mygdx.schoolRPG.Item;
-import com.mygdx.schoolRPG.Particle;
-import com.mygdx.schoolRPG.World;
+import com.mygdx.schoolRPG.*;
 import com.mygdx.schoolRPG.battleSystem.ui.FriendlyUnitsDrawGroup;
 import com.mygdx.schoolRPG.battleSystem.ui.UnitsDrawGroup;
+import com.mygdx.schoolRPG.tools.CircularSelector;
 import com.mygdx.schoolRPG.tools.MenuListSelector;
 
+import javax.xml.soap.Text;
 import java.security.Key;
 import java.util.ArrayList;
 
@@ -27,6 +26,7 @@ public class Battle {
 
     Background bg;
     Sound ambient;
+    long ambientId;
     String ambientPath;
     ArrayList<Unit> units;
     ArrayList<Unit> playersUnits;
@@ -37,7 +37,7 @@ public class Battle {
     Texture shade;
     Texture statsBarEdge, statsBar;
     Unit curUnit;
-    ArrayList<Float> unitsStatsDrawOffsets;
+    ArrayList<Float> HUDOffsetsX, HUDOffsetsY;
     public boolean finished = false;
     public boolean finishedBattle = false;
     public boolean playerWon = false;
@@ -48,10 +48,15 @@ public class Battle {
     boolean showTurnOptions = false, showMovesList = false;
     float turnOptionsY = 0, movesListY = -1000.0f;
     public ArrayList<Item> drops;
+    CircularSelector dropsView;
+    MenuListSelector endOptionsList;
 
-    ArrayList<Float> HUDshakes;
+    ArrayList<Float> HUDshakes, HUDspeedsX, HUDspeedsY;
     ArrayList<Float> tempHps, tempAps, tempXps;
-    ArrayList<Integer> tempLvls, tempNextLvlXps;
+    ArrayList<Integer> tempLvls, tempNextLvlXps, tempPrevLvlXps;
+    long finishedTime;
+
+    ArrayList<Integer> expPools;
 
     public Battle(World w, ArrayList<Unit> units, ArrayList<Unit> playersUnits, String ambientPath) {
         this.units = units;
@@ -60,19 +65,27 @@ public class Battle {
         trans = new Transition(w.assets.get(w.worldDir.path() + "/bg/battle_trans_top.png", Texture.class), w.assets.get(w.worldDir.path() + "/bg/battle_trans_bottom.png", Texture.class));
         palatino24 = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
         HUDshakes = new ArrayList<Float>();
+        HUDspeedsX = new ArrayList<Float>();
+        HUDspeedsY = new ArrayList<Float>();
         tempHps = new ArrayList<Float>();
         tempAps = new ArrayList<Float>();
         tempXps = new ArrayList<Float>();
+        expPools = new ArrayList<Integer>();
         tempLvls = new ArrayList<Integer>();
         tempNextLvlXps = new ArrayList<Integer>();
+        tempPrevLvlXps = new ArrayList<Integer>();
         for (int i = 0; i < playersUnits.size(); ++i)
         {
             HUDshakes.add(0f);
+            HUDspeedsX.add(0f);
+            HUDspeedsY.add(0f);
             tempHps.add((float)playersUnits.get(i).stats.hp);
             tempAps.add((float)playersUnits.get(i).stats.ap);
             tempXps.add((float)playersUnits.get(i).stats.exp);
             tempLvls.add(playersUnits.get(i).stats.level);
             tempNextLvlXps.add(playersUnits.get(i).stats.nextLvlExp);
+            tempPrevLvlXps.add(playersUnits.get(i).stats.prevLvlExp);
+            expPools.add(0);
         }
 
     }
@@ -82,7 +95,8 @@ public class Battle {
         w.assets.load(w.worldDir.path() + "/bg/battle_divider.png", Texture.class);
         w.assets.load(w.worldDir.path() + "/sounds/" + ambientPath, Sound.class);
         ArrayList<String> uniqueUnitNames = new ArrayList<String>();
-        unitsStatsDrawOffsets = new ArrayList<Float>();
+        HUDOffsetsX = new ArrayList<Float>();
+        HUDOffsetsY = new ArrayList<Float>();
         turnOrder = new ArrayList<Unit>();
         for (int i = 0; i < playersUnits.size(); ++i) {
             if (!uniqueUnitNames.contains(playersUnits.get(i).name)) {
@@ -90,7 +104,8 @@ public class Battle {
                 playersUnits.get(i).load(w);
             }
             turnOrder.add(playersUnits.get(i));
-            unitsStatsDrawOffsets.add(0.0f);
+            HUDOffsetsX.add(0.0f);
+            HUDOffsetsY.add(0.0f);
         }
         for (int i = 0; i < units.size(); ++i) {
             if (!uniqueUnitNames.contains(units.get(i).name)) {
@@ -114,7 +129,7 @@ public class Battle {
             this.bg.addLayer(w.assets.get(w.worldDir.path() + "/bg/battle_bg.png", Texture.class), 0, 0,0 ,0);
             divider = w.assets.get(w.worldDir.path() + "/bg/battle_divider.png", Texture.class);
             ambient = w.assets.get(w.worldDir.path() + "/sounds/" + ambientPath, Sound.class);
-            ambient.loop(w.menu.musicVolume / 100.0f);
+            ambientId = ambient.loop(w.menu.musicVolume / 100.0f);
             initialized = true;
             enemyGroup = new UnitsDrawGroup(this, w, units, 32, 0.9f);
             friendlyGroup = new UnitsDrawGroup(this, w, playersUnits, 32, 0.9f);
@@ -136,53 +151,137 @@ public class Battle {
     public void drawHUD(SpriteBatch batch, World w) {
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         float h =  Gdx.graphics.getHeight()/screenRatioY;
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
+        float ww = Gdx.graphics.getWidth()/screenRatioX;
         for (int i = 0; i < playersUnits.size(); ++i) {
             Unit unit = playersUnits.get(i);
             float shakeX = (float)Math.random() * HUDshakes.get(i);
             float shakeY = (float)Math.random() * HUDshakes.get(i);
+            if (finishedBattle && System.currentTimeMillis() > finishedTime + 500 * i) {
+                float coeff = ((System.currentTimeMillis() - finishedTime - 500 * i) / 50.0f);
+                float maxSpeedX = Math.max(0, 50.0f - coeff);
+                float centerX = ww/2.0f - 130;
+                if (HUDOffsetsX.get(i) < centerX) HUDspeedsX.set(i, HUDspeedsX.get(i) + 1.0f);
+                if (HUDOffsetsX.get(i) > centerX) HUDspeedsX.set(i, HUDspeedsX.get(i) - 1.0f);
+                if (Math.abs(HUDspeedsX.get(i)) > maxSpeedX) HUDspeedsX.set(i, maxSpeedX * (HUDspeedsX.get(i)/Math.abs(HUDspeedsX.get(i))));
+                HUDOffsetsX.set(i, HUDOffsetsX.get(i) + HUDspeedsX.get(i));
+                if (maxSpeedX == 0){
+                    if (HUDOffsetsX.get(i) < centerX) HUDOffsetsX.set(i, HUDOffsetsX.get(i) + Math.abs(HUDOffsetsX.get(i) - centerX)/10.0f);
+                    if (HUDOffsetsX.get(i) > centerX) HUDOffsetsX.set(i, HUDOffsetsX.get(i) - Math.abs(HUDOffsetsX.get(i) - centerX)/10.0f);
+                    if (HUDOffsetsX.get(i) - centerX < Math.abs(HUDOffsetsX.get(i) - centerX)/10.0f) HUDOffsetsX.set(i, centerX);
+                }
+                float maxSpeedY = Math.max(0, (50.0f - ((System.currentTimeMillis() - finishedTime - 500 * i) / 50.0f)));
+                float centerY = -80;
+                if (HUDOffsetsY.get(i) < centerY) HUDspeedsY.set(i, HUDspeedsY.get(i) + 1.0f);
+                if (HUDOffsetsY.get(i) > centerY) HUDspeedsY.set(i, HUDspeedsY.get(i) - 1.0f);
+                if (Math.abs(HUDspeedsY.get(i)) > maxSpeedY) HUDspeedsY.set(i, maxSpeedY * (HUDspeedsY.get(i)/Math.abs(HUDspeedsY.get(i))));
+                HUDOffsetsY.set(i, HUDOffsetsY.get(i) + HUDspeedsY.get(i));
+                if (maxSpeedY == 0){
+                    if (HUDOffsetsY.get(i) < centerY) HUDOffsetsY.set(i, HUDOffsetsY.get(i) + Math.abs(HUDOffsetsY.get(i) - centerY)/10.0f);
+                    if (HUDOffsetsY.get(i) > centerY) HUDOffsetsY.set(i, HUDOffsetsY.get(i) - Math.abs(HUDOffsetsY.get(i) - centerY)/10.0f);
+                    if (HUDOffsetsY.get(i) - centerY < Math.abs(HUDOffsetsY.get(i) - centerY)/10.0f) HUDOffsetsY.set(i, centerY);
+                }
+                if (expPools.get(i) > 0 && Math.abs(HUDOffsetsX.get(i) - centerX) < 1 && Math.abs(HUDOffsetsY.get(i) - centerY) < 1) {
+                    notifyStatChange(unit, 2, expPools.get(i));
+                    expPools.set(i, 0);
+                }
+                if (i == 0) {
+                    float alph = coeff / 50.0f;
+                    if (playerWon) {
+                        if (w.menu.currentLanguage == 0) {
+                            palatino24.setColor(new Color(0, 0, 0, alph));
+                            palatino24.draw(batch, "You won!", ww/2.0f - palatino24.getBounds("You won!").width/2.0f + 2, h + centerY + 30 + 2);
+                            palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, alph));
+                            palatino24.draw(batch, "You won!", ww/2.0f - palatino24.getBounds("You won!").width/2.0f, h + centerY + 30);
+                        } else {
+                            palatino24.setColor(new Color(0, 0, 0, alph));
+                            palatino24.draw(batch, "Победа!", ww/2.0f - palatino24.getBounds("Победа!").width/2.0f + 2, h + centerY + 30 + 2);
+                            palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, alph));
+                            palatino24.draw(batch, "Победа!", ww/2.0f - palatino24.getBounds("Победа!").width/2.0f, h + centerY + 30);
+                        }
+                    } else {
+                        if (w.menu.currentLanguage == 1) {
+                            palatino24.setColor(new Color(0, 0, 0, alph));
+                            palatino24.draw(batch, "You lost!", ww/2.0f - palatino24.getBounds("You lost!").width/2.0f + 2, h + centerY + 30 + 2);
+                            palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, alph));
+                            palatino24.draw(batch, "You lost!", ww/2.0f - palatino24.getBounds("You lost!").width/2.0f, h + centerY + 30);
+                        } else {
+                            palatino24.setColor(new Color(0, 0, 0, alph));
+                            palatino24.draw(batch, "Поражение!", ww/2.0f - palatino24.getBounds("Поражение!").width/2.0f + 2, h + centerY + 30 + 2);
+                            palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, alph));
+                            palatino24.draw(batch, "Поражение!", ww/2.0f - palatino24.getBounds("Поражение!").width/2.0f, h + centerY + 30);
+                        }
+                    }
+                }
+            }
             batch.setColor(new Color(0, 0, 0, 0.4f));
-            batch.draw(shade, shakeX + unitsStatsDrawOffsets.get(i) + 32, shakeY + h - (32 + 64 * i), 200, -50);
+            batch.draw(shade, shakeX + HUDOffsetsX.get(i) + 32, shakeY + HUDOffsetsY.get(i) + h - (32 + 64 * i), 200, -50);
             palatino24.setColor(new Color(0, 0, 0, 1.0f));
-            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + unitsStatsDrawOffsets.get(i) + 40 + 2, shakeY + h - (40 + 64 * i + 2));
+            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + HUDOffsetsX.get(i) + 40 + 2, shakeY + HUDOffsetsY.get(i) + h - (40 + 64 * i + 2));
             palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + unitsStatsDrawOffsets.get(i) + 40, shakeY + h - (40 + 64 * i));
+            palatino24.draw(batch, tempLvls.get(i) + " | " + unit.nickname.get(w.menu.currentLanguage), shakeX + HUDOffsetsX.get(i) + 40, shakeY + HUDOffsetsY.get(i) + h - (40 + 64 * i));
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            batch.draw(statsBarEdge, shakeX + unitsStatsDrawOffsets.get(i) + 34, shakeY + h - (80 + 64 * i), 18, 18);
+            batch.draw(statsBarEdge, shakeX + HUDOffsetsX.get(i) + 34, shakeY + HUDOffsetsY.get(i) + h - (80 + 64 * i), 18, 18);
             batch.setColor(new Color(0.6f, 0.1f, 0.6f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14, shakeY + h - (71 - 3 + 64 * i), 188 * ((float)tempXps.get(i)/(float)unit.stats.nextLvlExp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 14, shakeY + HUDOffsetsY.get(i) + h - (71 - 3 + 64 * i), 188 * ((tempXps.get(i) - tempPrevLvlXps.get(i))/(float)(tempNextLvlXps.get(i) - tempPrevLvlXps.get(i))), 6);
             batch.setColor(new Color(0.9f, 0.7f, 0.8f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14 + 188 * ((float)Math.min(unit.stats.exp, tempXps.get(i)) /(float)unit.stats.nextLvlExp), shakeY + h - (71 - 3 + 64 * i), 188 * ((float)Math.abs(unit.stats.exp - tempXps.get(i))/(float)unit.stats.nextLvlExp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 14 + 188 * (Math.min(unit.stats.exp - unit.stats.prevLvlExp, tempXps.get(i) - tempPrevLvlXps.get(i)) /(float)(tempNextLvlXps.get(i) - tempPrevLvlXps.get(i))), shakeY + HUDOffsetsY.get(i) + h - (71 - 3 + 64 * i), 188 * (Math.abs(Math.min(unit.stats.exp, tempNextLvlXps.get(i)) - tempXps.get(i))/((float)tempNextLvlXps.get(i) - tempPrevLvlXps.get(i))), 6);
             batch.setColor(new Color(1.0f, 1.0f, 0.1f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14, shakeY + h - (71 + 9 + 64 * i), 188 * ((float)tempAps.get(i)/(float)unit.stats.maxAp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 14, shakeY + HUDOffsetsY.get(i) + h - (71 + 9 + 64 * i), 188 * (tempAps.get(i)/(float)unit.stats.maxAp), 6);
             batch.setColor(new Color(1.0f, 1.0f, 0.7f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 14 + 188 * ((float)Math.min(unit.stats.ap, tempAps.get(i))/(float)unit.stats.maxAp), shakeY + h - (71 + 9 + 64 * i), 188 * ((float)Math.abs(unit.stats.ap - tempAps.get(i))/(float)unit.stats.maxAp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 14 + 188 * (Math.min(unit.stats.ap, tempAps.get(i))/(float)unit.stats.maxAp), shakeY + HUDOffsetsY.get(i) + h - (71 + 9 + 64 * i), 188 * (Math.abs(unit.stats.ap - tempAps.get(i))/(float)unit.stats.maxAp), 6);
             batch.setColor(new Color(1.0f, 0.1f, 0.1f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 8, shakeY + h - (71 + 3 + 64 * i), 200 * ((float)tempHps.get(i)/(float)unit.stats.maxHp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 8, shakeY + HUDOffsetsY.get(i) + h - (71 + 3 + 64 * i), 200 * (tempHps.get(i)/(float)unit.stats.maxHp), 6);
             batch.setColor(new Color(1.0f, 0.7f, 0.7f, 1.0f));
-            batch.draw(statsBar, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 8 + 200 * ((float)Math.min(unit.stats.hp, tempHps.get(i))/(float)unit.stats.maxHp), shakeY + h - (71 + 3 + 64 * i), 200 * ((float)Math.abs(unit.stats.hp - tempHps.get(i))/(float)unit.stats.maxHp), 6);
+            batch.draw(statsBar, shakeX + HUDOffsetsX.get(i) + 34 + 8 + 200 * (Math.min(unit.stats.hp, tempHps.get(i))/(float)unit.stats.maxHp), shakeY + HUDOffsetsY.get(i) + h - (71 + 3 + 64 * i), 200 * (Math.abs(unit.stats.hp - tempHps.get(i))/(float)unit.stats.maxHp), 6);
             batch.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            batch.draw(statsBarEdge, shakeX + unitsStatsDrawOffsets.get(i) + 34 + 188 + 27, shakeY + h - (80 + 64 * i), -18, 18);
-            if (unit == curUnit) {
-                unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i) + (20.0f - unitsStatsDrawOffsets.get(i))/2.0f);
-            } else {
-                unitsStatsDrawOffsets.set(i, unitsStatsDrawOffsets.get(i)/2.0f);
+            batch.draw(statsBarEdge, shakeX + HUDOffsetsX.get(i) + 34 + 188 + 27, shakeY + HUDOffsetsY.get(i) + h - (80 + 64 * i), -18, 18);
+            if (!finishedBattle) {
+                if (unit == curUnit) {
+                    HUDOffsetsX.set(i, HUDOffsetsX.get(i) + (20.0f - HUDOffsetsX.get(i))/2.0f);
+                } else {
+                    HUDOffsetsX.set(i, HUDOffsetsX.get(i)/2.0f);
+                }
             }
             HUDshakes.set(i, HUDshakes.get(i) - 0.5f);
             if (HUDshakes.get(i) < 0) HUDshakes.set(i, 0f);
-            if (tempHps.get(i) > unit.stats.hp) tempHps.set(i, tempHps.get(i) - 0.2f);
-            if (tempHps.get(i) < unit.stats.hp) tempHps.set(i, tempHps.get(i) + 0.2f);
-            if (Math.abs(tempHps.get(i) - unit.stats.hp) < 0.2f) tempHps.set(i, (float)unit.stats.hp);
-            if (tempAps.get(i) > unit.stats.ap) tempAps.set(i, tempAps.get(i) - 0.2f);
-            if (tempAps.get(i) < unit.stats.ap) tempAps.set(i, tempAps.get(i) + 0.2f);
-            if (Math.abs(tempAps.get(i) - unit.stats.ap) < 0.2f) tempAps.set(i, (float)unit.stats.ap);
-            if (tempXps.get(i) > unit.stats.exp) tempXps.set(i, tempXps.get(i) - 0.2f);
-            if (tempXps.get(i) < unit.stats.exp) tempXps.set(i, tempXps.get(i) + 0.2f);
-            if (Math.abs(tempXps.get(i) - unit.stats.exp) < 0.2f) tempXps.set(i, (float)unit.stats.exp);
+            float valHp = Math.max(Math.abs(tempHps.get(i) - unit.stats.hp)/15, 0.1f);
+            if (tempHps.get(i) > unit.stats.hp) tempHps.set(i, tempHps.get(i) - valHp);
+            if (tempHps.get(i) < unit.stats.hp) tempHps.set(i, tempHps.get(i) + valHp);
+            if (Math.abs(tempHps.get(i) - unit.stats.hp) < valHp) tempHps.set(i, (float)unit.stats.hp);
+            float valAp = Math.max(Math.abs(tempAps.get(i) - unit.stats.ap)/15, 0.1f);
+            if (tempAps.get(i) > unit.stats.ap) tempAps.set(i, tempAps.get(i) - valAp);
+            if (tempAps.get(i) < unit.stats.ap) tempAps.set(i, tempAps.get(i) + valAp);
+            if (Math.abs(tempAps.get(i) - unit.stats.ap) < valAp) tempAps.set(i, (float)unit.stats.ap);
+            float valXp = Math.max(Math.abs(tempXps.get(i) - unit.stats.exp)/30, 0.2f);
+            if (tempXps.get(i) > unit.stats.exp) tempXps.set(i, tempXps.get(i) - valXp);
+            if (tempXps.get(i) < unit.stats.exp) tempXps.set(i, tempXps.get(i) + valXp);
+            if (Math.abs(tempXps.get(i) - unit.stats.exp) < valXp) tempXps.set(i, (float)unit.stats.exp);
+            if (tempXps.get(i) > tempNextLvlXps.get(i)) {
+                tempPrevLvlXps.set(i, unit.stats.getLevelXp(tempLvls.get(i)));
+                tempNextLvlXps.set(i, unit.stats.getLevelXp(tempLvls.get(i) + 1));
+                tempLvls.set(i, tempLvls.get(i) + 1);
+            }
         }
+    }
+
+    public void addExpToPool(Unit unit, int amount) {
+        if (playersUnits.contains(unit))
+            return;
+
+        for (int i = 0; i < expPools.size(); ++i)
+            expPools.set(i, expPools.get(i) + amount);
     }
 
     //0-hp, 1-ap, 2-exp
     public void notifyStatChange(Unit unit, int stat, int amount) {
+        if (stat == 0) {
+            unit.changeHp(amount);
+        } else if (stat == 1) {
+            unit.changeAp(amount);
+        } else if (stat == 2) {
+            unit.changeXp(amount);
+        }
         if (!playersUnits.contains(unit))
             return;
         HUDshakes.set(playersUnits.indexOf(unit), 3.0f);
@@ -221,12 +320,18 @@ public class Battle {
             }
         }
         finishedBattle = playerWon || !someoneAliveInFriendlyGroup;
+        if (finishedBattle) {
+            finishedTime = System.currentTimeMillis();
+            curUnit = null;
+        }
     }
 
     public void draw(World w, SpriteBatch batch) {
+        float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
+        float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         if (initialized && (trans.closed || finishedBattle)) {
 
-            if (curUnit == null) {
+            if (!finishedBattle && curUnit == null) {
                 while (curUnit == null || curUnit.stats.dead) {
                     curUnit = turnOrder.get(0);
                     turnOrder.remove(0);
@@ -335,8 +440,6 @@ public class Battle {
             //bg.draw(batch, SCREEN_WIDTH / 2, SCREEN_HEIGHT, SCREEN_WIDTH / 2, 0);
             friendlyGroup.draw(w, batch, SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f, curUnit);
             enemyGroup.draw(w, batch, 3.0f * SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f, curUnit);
-            float screenRatioX = Gdx.graphics.getWidth()/1280.0f;
-            float screenRatioY = Gdx.graphics.getHeight()/720.0f;
             batch.draw(divider, 0, 0, Gdx.graphics.getWidth()/screenRatioX, Gdx.graphics.getHeight()/screenRatioY);
 
             if (!finishedBattle) drawHUD(batch, w);
@@ -369,16 +472,53 @@ public class Battle {
                 curUnit = null;
             }
 
-            checkFinished();
+            if (!finishedBattle) checkFinished();
             if (finishedBattle && trans.outwards) {
                 trans.reset();
+                if (playerWon) {
+                    drops = new ArrayList<Item>();
+                    for (int i = 0; i < units.size(); ++i)
+                        for (int j = 0; j < units.get(i).drops.size(); ++j) {
+                            Inventory.addItem(drops, units.get(i).drops.get(j));
+                            Inventory.addItem(playersUnits.get(0).inventory, units.get(i).drops.get(j));
+                        }
+                    ArrayList<Texture> sprites = new ArrayList<Texture>();
+                    ArrayList<ArrayList<String>> titles = new ArrayList<ArrayList<String>>();
+                    titles.add(new ArrayList<String>());
+                    titles.add(new ArrayList<String>());
+                    for (int i = 0; i < drops.size(); ++i) {
+                        sprites.add(drops.get(i).icon);
+                        String stackStr = "";
+                        if (drops.get(i).stack > 1) stackStr += " (" + drops.get(i).stack + ")";
+                        titles.get(0).add("<- " + drops.get(i).getName(0) + stackStr + " ->");
+                        titles.get(1).add("<- " + drops.get(i).getName(1) + stackStr + " ->");
+                    }
 
+                    dropsView = new CircularSelector(w.assets, titles.get(w.menu.currentLanguage), sprites, palatino24,  Gdx.graphics.getWidth()/screenRatioX/2.0f, 300/screenRatioY, 128, 64, 2, w.menu);
+                    ArrayList<ArrayList<String>> endOptions = new ArrayList<ArrayList<String>>();
+                    endOptions.add(new ArrayList<String>());
+                    endOptions.add(new ArrayList<String>());
+                    endOptions.get(0).add("End battle");
+                    endOptions.get(1).add("Закончить бой");
+                    endOptionsList = new MenuListSelector(endOptions, w.assets, "cursor.png", palatino24, 100, 0, 100/screenRatioY, true, w.menu);
+                }
             }
         }
         trans.draw(batch);
         if (finishedBattle) drawHUD(batch, w);
         if (finishedBattle && trans.closed) {
-
+            if (w.menu.currentLanguage == 0)
+                palatino24.draw(batch, "You receive:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("You receive:").width/2.0f, 400/screenRatioY);
+            else
+                palatino24.draw(batch, "Вы получаете:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("Вы получаете:").width/2.0f, 400/screenRatioY);
+            dropsView.draw(batch, false);
+            endOptionsList.draw(batch, false);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+                finished = true;
+                ambient.stop();
+            }
         }
+        if (ambient != null)
+            ambient.setVolume(ambientId, w.menu.musicVolume / 100.0f);
     }
 }

@@ -1,4 +1,4 @@
-<item id = "0" mass="1" equip_slot="NONE" stackable="false" maxStack="999999999" flag="" replaces="">
+<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="999999999" flag="" replaces="">
     <eng 
         name = "Money" 
         description = "$_$"

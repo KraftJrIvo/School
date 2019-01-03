@@ -49,7 +49,7 @@ public class Particle extends Entity {
         else if (this.pp.statesAnims.get(curStateId) != null) anim = this.pp.statesAnims.get(curStateId);
         direction = spawnProperties.spawnDir + (float)Math.random() * spawnProperties.dirSpread - spawnProperties.dirSpread/2.0f;
         speed = spawnProperties.spawnSpeed + (float)Math.random() * spawnProperties.speedSpread;
-        impulse = spawnProperties.spawnImpulse + (float)Math.random() * spawnProperties.impulseSpread;
+        impulse = spawnProperties.spawnImpulse + ((float)Math.random() * 2.0f - 1.0f) * spawnProperties.impulseSpread;
         curStateBounces = 0;
         centered = true;
         r = pp.r;
@@ -137,7 +137,7 @@ public class Particle extends Entity {
         else if (this.pp.statesAnims.get(curStateId) != null) anim = this.pp.statesAnims.get(curStateId);
         direction = spawnProperties.spawnDir + (float)Math.random() * spawnProperties.dirSpread - spawnProperties.dirSpread/2.0f;
         speed = spawnProperties.spawnSpeed + (float)Math.random() * spawnProperties.speedSpread;
-        impulse = spawnProperties.spawnImpulse + (float)Math.random() * spawnProperties.impulseSpread;
+        impulse = spawnProperties.spawnImpulse + ((float)Math.random() * 2.0f - 1.0f) * spawnProperties.impulseSpread;
         curStateBounces = 0;
         centered = true;
         r = pp.r;
@@ -151,7 +151,7 @@ public class Particle extends Entity {
         textW = font.getBounds(text).width + 2;
     }
 
-    public Particle(AssetManager assets, Texture tex, Color fontColor, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
+    public Particle(AssetManager assets, Texture tex, boolean platformMode, float spawnX, float spawnY, float spawnZ) {
         super(assets, (Texture)null, spawnX, spawnY, 0, 0, 0);
         ParticleProperties pp = new ParticleProperties();
         h=0;
@@ -183,7 +183,7 @@ public class Particle extends Entity {
         pp.statesInertia.add(0.69f);
         pp.statesAlphaSteps = new ArrayList<Float>();
         pp.statesAlphaSteps.add(0f);
-        pp.statesAlphaSteps.add(0.01f);
+        pp.statesAlphaSteps.add(0f);
         pp.statesMovePatterns = new ArrayList<ParticleProperties.MovePattern>();
         pp.statesMovePatterns.add(ParticleProperties.MovePattern.NORMAL);
         pp.statesMovePatterns.add(ParticleProperties.MovePattern.NONE);
@@ -213,7 +213,7 @@ public class Particle extends Entity {
         pp.statesChangeConditions = new ArrayList<ArrayList<ParticleProperties.StateChangeCondition>>();
         pp.statesChangeConditions.add(new ArrayList<ParticleProperties.StateChangeCondition>());
         pp.statesChangeConditions.add(new ArrayList<ParticleProperties.StateChangeCondition>());
-        pp.statesChangeConditions.get(0).add(new ParticleProperties().new StateChangeCondition("BOUNCE-3-1"));
+        pp.statesChangeConditions.get(0).add(new ParticleProperties().new StateChangeCondition("BOUNCE-1-1"));
         pp.statesparticleSpawns = new ArrayList<ArrayList<ParticleProperties.ParticleSpawnProperties>>();
         pp.statesparticleSpawns.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
         pp.statesparticleSpawns.add(new ArrayList<ParticleProperties.ParticleSpawnProperties>());
@@ -228,7 +228,7 @@ public class Particle extends Entity {
         else if (this.pp.statesAnims.get(curStateId) != null) anim = this.pp.statesAnims.get(curStateId);
         direction = spawnProperties.spawnDir + (float)Math.random() * spawnProperties.dirSpread - spawnProperties.dirSpread/2.0f;
         speed = spawnProperties.spawnSpeed + (float)Math.random() * spawnProperties.speedSpread;
-        impulse = spawnProperties.spawnImpulse + (float)Math.random() * spawnProperties.impulseSpread;
+        impulse = spawnProperties.spawnImpulse + ((float)Math.random() * 2.0f - 1.0f) * spawnProperties.impulseSpread;
         curStateBounces = 0;
         centered = true;
         r = pp.r;
@@ -238,7 +238,6 @@ public class Particle extends Entity {
         changeState(0);
         this.text = text;
         font = new BitmapFont(Gdx.files.internal("palatino24.fnt"), Gdx.files.internal("palatino24.png"), false);
-        this.fontColor = fontColor;
         textW = font.getBounds(text).width + 2;
         this.simpleTexture = tex;
     }

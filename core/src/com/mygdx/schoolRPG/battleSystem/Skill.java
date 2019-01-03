@@ -141,7 +141,11 @@ public class Skill {
             for (int i = 0; i < baseDamages.size(); ++i) {
                 actualDamages.add(baseDamages.get(i) + attacker.stats.str);
             }
+            boolean deadPrev = target.stats.dead;
             target.hit(udg, damageTypes, actualDamages);
+            if (!deadPrev && target.stats.dead) {
+                udg.battle.addExpToPool(target, target.stats.baseExpReward);
+            }
         }
         if (baseHeal > 0) {
             target.heal(w, baseHeal, healPercent, udg, curUnitX - texFront.getFirstFrame().getRegionWidth(), curUnitY + udg.layerDist/2.0f);
@@ -192,7 +196,7 @@ public class Skill {
                 } else if (appearAlpha >= 1.0f && !spawned) {
                     //spawn
                     for (int j = 0; j < 10; ++j) {
-                        Particle p = new Particle(w.assets, texFront.getFirstFrame().getTexture(), Color.WHITE, false, curUnitX - texFront.getFirstFrame().getRegionWidth(), curUnitY + udg.layerDist/2.0f, 1.0f);
+                        Particle p = new Particle(w.assets, texFront.getFirstFrame().getTexture(), false, curUnitX - texFront.getFirstFrame().getRegionWidth(), curUnitY + udg.layerDist/2.0f, 1.0f);
                         p.setAlphaStep(0, 0.01f);
                         udg.addParticle(p);
                     }

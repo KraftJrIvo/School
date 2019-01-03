@@ -1,35 +1,45 @@
 <dialog>
-  <speechBlock id="0" textEng="Start&#10;" textRus="Начало&#10;" speakerNameEng="" speakerNameRus="">
+  <speechBlock id="0" textEng="Start&#10;" textRus="Начало&#10;" speakerId="" speakerNameEng="" speakerNameRus="">
     <sprite name=""/>
     <link priority="0" textEng="" textRus="" goto="1" condition=""/>
   </speechBlock>
-  <speechBlock id="1" textEng="hello, maan!&#10;" textRus="Здарова, мужик!&#10;" speakerNameEng="hobo" speakerNameRus="бомж">
+  <speechBlock id="1" textEng="Hello, maan!&#10;" textRus="Здарова, мужик!&#10;" speakerId="" speakerNameEng="hobo" speakerNameRus="бомж">
     <sprite name="normaldi"/>
     <link priority="0" textEng="" textRus="" goto="2" condition=""/>
   </speechBlock>
-  <speechBlock id="2" textEng="do you have some beer?&#10;" textRus="Есть пузырь?&#10;" speakerNameEng="hobo" speakerNameRus="бомж">
+  <speechBlock id="2" textEng="Do you have some beer?&#10;" textRus="Есть пузырь?&#10;" speakerId="" speakerNameEng="hobo" speakerNameRus="бомж">
     <sprite name="normaldi"/>
     <link priority="0" textEng="No" textRus="Нет" goto="3" condition=""/>
     <link priority="0" textEng="Yes" textRus="Да" goto="4" condition=""/>
   </speechBlock>
-  <speechBlock id="3" textEng="nope!(well... At least I said truth) &#10;" textRus="не-а!(Ну я хотя бы сказал правду.)&#10;" speakerNameEng="you" speakerNameRus="ты">
+  <speechBlock id="3" textEng="Nope!
+&#10;(Well... At least I said the truth) &#10;" textRus="Не-а!
+&#10;(Ну я хотя бы сказал правду)&#10;" speakerId="" speakerNameEng="you" speakerNameRus="ты">
     <sprite name="evil hobo"/>
     <link priority="0" textEng="" textRus="" goto="5" condition=""/>
   </speechBlock>
-  <speechBlock id="4" textEng="Yep!(Why do I lie?){seriously?}&#10;" textRus="Есть!(зачем мне врать?){серьёзно?}&#10;" speakerNameEng="you" speakerNameRus="ты">
+  <speechBlock id="4" textEng="Yep!
+&#10;(Why did I lie?)
+&#10;{Seriously?}&#10;" textRus="Есть!
+&#10;(Зачем я соврал?)
+&#10;{Серьёзно?}&#10;" speakerId="" speakerNameEng="you" speakerNameRus="ты">
     <sprite name="normaldi"/>
     <link priority="0" textEng="" textRus="" goto="6" condition=""/>
   </speechBlock>
-  <speechBlock id="5" textEng="YOU BETTER RUN, @DOG@!!!&#10;" textRus="НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!&#10;" speakerNameEng="hobo" speakerNameRus="бомж">
+  <speechBlock id="5" textEng="YOU BETTER RUN, @DAMMIT@!!!&#10;" textRus="НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!&#10;" speakerId="" speakerNameEng="hobo" speakerNameRus="бомж">
     <sprite name="evil hobo"/>
   </speechBlock>
-  <speechBlock id="6" textEng="#Seriously? Where?#&#10;" textRus="#Серьёзно? Где?#&#10;" speakerNameEng="hobo" speakerNameRus="бомж">
+  <speechBlock id="6" textEng="#Seriously?#
+&#10;Where?&#10;" textRus="#Серьёзно?#
+&#10;Где?&#10;" speakerId="" speakerNameEng="hobo" speakerNameRus="бомж">
     <sprite name="normaldi"/>
     <link priority="0" textEng="" textRus="" goto="7" condition=""/>
   </speechBlock>
-  <speechBlock id="7" textEng="A-a-a, i got it! You don't have beer!&#10;" textRus="А-а-а, я всё понял! У тебя ничего нет!&#10;" speakerNameEng="hobo" speakerNameRus="бомж">
+  <speechBlock id="7" textEng="A-a-a, i got it!
+&#10;You don't have any beer!&#10;" textRus="А-а-а, я всё понял!
+&#10;У тебя ничего нет!&#10;" speakerId="" speakerNameEng="hobo" speakerNameRus="бомж">
     <sprite name="evil hobo"/>
     <link priority="0" textEng="" textRus="" goto="5" condition=""/>
   </speechBlock>
 </dialog>
-<!--<editor>[{"x":900,"y":200,"lines":[["Start"],["Начало"]],"spriteName":"","w":69.66666666666667,"h":19,"text":["Start","Начало"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[1],"linksPriorities":[0],"linksConditions":[""],"speakerName":["",""],"linkRemove":-1,"isStart":true},{"x":896,"y":240,"lines":[["hello, maan!"],["Здарова, мужик!"]],"spriteName":"normaldi","w":69.66666666666667,"h":19,"text":["hello, maan!","Здарова, мужик!"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[2],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":868,"y":275,"lines":[["do you have some beer?"],["Есть пузырь?"]],"spriteName":"normaldi","w":116.625,"h":19,"text":["do you have some beer?","Есть пузырь?"],"parent":1,"links":[["No","Нет"],["Yes","Да"]],"linkedTextBlocks":[3,4],"linksPriorities":[0,0],"linksConditions":["",""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":754,"y":352,"lines":[["nope!(well... At least I said truth) "],["не-а!(Ну я хотя бы сказал правду.)"]],"spriteName":"evil hobo","w":160.09895833333334,"h":19,"text":["nope!(well... At least I said truth) ","не-а!(Ну я хотя бы сказал правду.)"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["you","ты"],"linkRemove":-1,"isStart":false},{"x":952,"y":353,"lines":[["Yep!(Why do I lie?){seriously?}"],["Есть!(зачем мне врать?){серьёзно?}"]],"spriteName":"normaldi","w":148.21875,"h":19,"text":["Yep!(Why do I lie?){seriously?}","Есть!(зачем мне врать?){серьёзно?}"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[6],"linksPriorities":[0],"linksConditions":[""],"speakerName":["you","ты"],"linkRemove":-1,"isStart":false},{"x":839,"y":500,"lines":[["YOU BETTER RUN, @DOG@!!!"],["НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!"]],"spriteName":"evil hobo","w":149.73958333333334,"h":19,"text":["YOU BETTER RUN, @DOG@!!!","НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!"],"parent":3,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":951,"y":412,"lines":[["#Seriously? Where?#"],["#Серьёзно? Где?#"]],"spriteName":"normaldi","w":100.5,"h":19,"text":["#Seriously? Where?#","#Серьёзно? Где?#"],"parent":4,"links":[["",""]],"linkedTextBlocks":[7],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":922,"y":455,"lines":[["A-a-a, i got it! You don't have beer!"],["А-а-а, я всё понял! У тебя ничего нет!"]],"spriteName":"evil hobo","w":166.81770833333334,"h":19,"text":["A-a-a, i got it! You don't have beer!","А-а-а, я всё понял! У тебя ничего нет!"],"parent":6,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false}]</editor>-->
+<!--<editor>[{"x":900,"y":200,"lines":[["Start"],["Начало"]],"spriteName":"","speakerId":"","w":69.66666666666667,"h":19,"text":["Start","Начало"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[1],"linksPriorities":[0],"linksConditions":[""],"speakerName":["",""],"linkRemove":-1,"isStart":true},{"x":896,"y":242,"lines":[["Hello, maan!"],["Здарова, мужик!"]],"spriteName":"normaldi","speakerId":"","w":69.66666666666667,"h":19,"text":["Hello, maan!","Здарова, мужик!"],"parent":0,"links":[["",""]],"linkedTextBlocks":[2],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":868,"y":275,"lines":[["Do you have some beer?"],["Есть пузырь?"]],"spriteName":"normaldi","speakerId":"","w":116.81667073567708,"h":19,"text":["Do you have some beer?","Есть пузырь?"],"parent":1,"links":[["No","Нет"],["Yes","Да"]],"linkedTextBlocks":[3,4],"linksPriorities":[0,0],"linksConditions":["",""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":729,"y":419,"lines":[["Nope!\n","(Well... At least I said the truth) "],["Не-а!\n","(Ну я хотя бы сказал правду)"]],"spriteName":"evil hobo","speakerId":"","w":152.53888956705728,"h":34,"text":["Nope!\n(Well... At least I said the truth) ","Не-а!\n(Ну я хотя бы сказал правду)"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["you","ты"],"linkRemove":-1,"isStart":false},{"x":1037,"y":421,"lines":[["Yep!\n","(Why did I lie?)\n","{Seriously?}"],["Есть!\n","(Зачем я соврал?)\n","{Серьёзно?}"]],"spriteName":"normaldi","speakerId":"","w":78.66666666666667,"h":49,"text":["Yep!\n(Why did I lie?)\n{Seriously?}","Есть!\n(Зачем я соврал?)\n{Серьёзно?}"],"parent":-1,"links":[["",""]],"linkedTextBlocks":[6],"linksPriorities":[0],"linksConditions":[""],"speakerName":["you","ты"],"linkRemove":-1,"isStart":false},{"x":837,"y":674,"lines":[["YOU BETTER RUN, @DAMMIT@!!!"],["НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!"]],"spriteName":"evil hobo","speakerId":"","w":171.66666666666666,"h":19,"text":["YOU BETTER RUN, @DAMMIT@!!!","НУ ВСЁ, @ЩЩЩЕНОК@!!! ТЕБЕ ЛУЧШЕ БЕЖАТЬ!!!!"],"parent":7,"links":[],"linkedTextBlocks":[],"linksPriorities":[],"linksConditions":[],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":1001,"y":522,"lines":[["#Seriously?#\n","Where?"],["#Серьёзно?#\n","Где?"]],"spriteName":"normaldi","speakerId":"","w":69.66666666666667,"h":34,"text":["#Seriously?#\nWhere?","#Серьёзно?#\nГде?"],"parent":4,"links":[["",""]],"linkedTextBlocks":[7],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false},{"x":947,"y":573,"lines":[["A-a-a, i got it!\n","You don't have any beer!"],["А-а-а, я всё понял!\n","У тебя ничего нет!"]],"spriteName":"evil hobo","speakerId":"","w":118.61111450195312,"h":34,"text":["A-a-a, i got it!\nYou don't have any beer!","А-а-а, я всё понял!\nУ тебя ничего нет!"],"parent":6,"links":[["",""]],"linkedTextBlocks":[5],"linksPriorities":[0],"linksConditions":[""],"speakerName":["hobo","бомж"],"linkRemove":-1,"isStart":false}]</editor>-->

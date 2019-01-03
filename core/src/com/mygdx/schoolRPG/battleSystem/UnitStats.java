@@ -24,6 +24,7 @@ public class UnitStats {
     public int maxAp;
     public int exp;
     public int nextLvlExp;
+    public int prevLvlExp;
     public int baseStr;
     public int str;
     public int baseVit;
@@ -76,6 +77,24 @@ public class UnitStats {
         }
         baseExpReward = Integer.parseInt(stats.getAttribute("baseExpReward"));
         exp = 0;
+        prevLvlExp = 0;
         nextLvlExp = 100 * level + ((100 * level) / 10);
+    }
+
+    public int getLevelXp(int level) {
+        return 100 * level + ((100 * level) / 10);
+    }
+
+    public void levelUp() {
+        prevLvlExp = nextLvlExp;
+        level++;
+        nextLvlExp = getLevelXp(level);
+    }
+
+    public void checkLevelUp() {
+        if (exp > nextLvlExp)
+        {
+            levelUp();
+        }
     }
 }

@@ -166,7 +166,8 @@ public class Dialog implements InputProcessor {
                 if (foundAnswer) {
                     for (int j = 0; j < speechTransitionsText.get(i).size(); ++j) {
                         if (parser.parseCondition(speechTransitionsConditions.get(i).get(j), null)) {
-                            phrases.add(speechTransitionsText.get(i).get(j));
+                            phrases.get(0).add(speechTransitionsText.get(i).get(j).get(0));
+                            phrases.get(1).add(speechTransitionsText.get(i).get(j).get(1));
                         }
                     }
                     Choice choice = new Choice(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, npcs, player, parent, parser);
@@ -177,8 +178,7 @@ public class Dialog implements InputProcessor {
                         phrases.get(1).add(okGivePhrases[1]);
                         //phrases.add(notOkGivePhrases[language]);
                         phrases.get(0).add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
-                        phrases.get(1
-                        ).add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
+                        phrases.get(1).add("];[" + itemName + ";" + itemsCount + ";" + giveToId);
                     }
                     Speech speech = new Speech(this, speakerId, speaker[language], phrases, assets, charPath + "/" + mainCharId + "/graphics/" + spriteFileName + ".png", speakerId, varOwner, varId, varVal, npcs, player, parent, parser);
                     speeches.add(speech);

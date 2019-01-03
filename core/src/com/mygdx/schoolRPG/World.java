@@ -35,7 +35,7 @@ public class World{
     InputStream fis;
     public boolean initialised = false, loaded = false, areasCreated = false;
     public FileHandle worldDir = null;
-    int curAreaX = 0, curAreaY = 0, curAreaZ = 0, oldAreaX = 0, oldAreaY = 0, oldAreaZ = 0;
+    public int curAreaX = 0, curAreaY = 0, curAreaZ = 0, oldAreaX = 0, oldAreaY = 0, oldAreaZ = 0;
     float areaTransitionX = 0, areaTransitionY = 0, areaTransitionZ = 0;
     String name;
     boolean platformMode = false;
@@ -79,7 +79,7 @@ public class World{
     boolean startedChanging = false;
     public int save;
     boolean loadedState = false;
-    RoomsMap map;
+    public RoomsMap map;
     boolean teleporting = false;
 
     public boolean worldChange = false;
@@ -97,6 +97,7 @@ public class World{
     public ArrayList<ArrayList<Integer>> charVarsForTransfer;
     public ArrayList<ArrayList<String>> charVarNamesForTransfer;
     public String headWear, bodyWear, objectInHands;
+    public int presetX = -1, presetY = -1, presetZ = -1;
 
     public BattleSystem battleSystem;
 
@@ -182,13 +183,15 @@ public class World{
             curAreaZ = r.roomZ;
             Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             Player player = curArea.player;
-            float playerX = w.nextWorldX * curArea.TILE_WIDTH;
-            float playerY = w.nextWorldY * curArea.TILE_HEIGHT;
-            player.hitBox.x = playerX;
-            player.x = playerX;
-            player.graphicX = playerX;
-            player.hitBox.y = playerY;
-            player.y = playerY;
+            if (player != null) {
+                float playerX = w.nextWorldX * curArea.TILE_WIDTH;
+                float playerY = w.nextWorldY * curArea.TILE_HEIGHT;
+                player.hitBox.x = playerX;
+                player.x = playerX;
+                player.graphicX = playerX;
+                player.hitBox.y = playerY;
+                player.y = playerY;
+            }
             for (int i = 0; i < w.worldVarsForTransfer.size(); ++i) {
                 if (varNames.contains(w.worldVarsNamesForTransfer.get(i))) {
                     vars.set(varNames.indexOf(w.worldVarsNamesForTransfer.get(i)), w.worldVarsForTransfer.get(i));
@@ -223,7 +226,10 @@ public class World{
                 }
                 if (receiver != null) {
                     receiver.inventory.clear();
+                    ObjectLoader ol = new ObjectLoader();
                     for (int j = 0; j < w.itemNamesForTransfer.get(i).size(); ++j) {
+                        ol.loadItem(assets, this, w.itemNamesForTransfer.get(i).get(j));
+                        while (!assets.update()) System.out.print("");
                         Item item = new Item(this, worldDir.path(), w.itemNamesForTransfer.get(i).get(j));
                         receiver.takeItem(item);
                         if (w.itemNamesForTransfer.get(i).get(j).equals(w.headWear)) {
@@ -886,6 +892,12 @@ public class World{
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+
+            if (presetX != -1) {
+                curAreaX = presetX;
+                curAreaY = presetY;
+                curAreaZ = presetZ;
             }
 
             worldDir = Gdx.files.internal(folderPath);
@@ -1680,6 +1692,7 @@ public class World{
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
+/*
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
@@ -1687,10 +1700,12 @@ public class World{
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
                 enemyUnits.add(new Unit(this, "slime", 1));
+*/
                 Battle battle = new Battle(this, enemyUnits, yourUnits, "music/KraftJrIvo - Business.mp3");
                 loaded = false;
                 battle.load(this);
                 curArea.worldObjectsHandler.currentBattle = battle;
+                menu.drawPause = false;
             }
         }
         if (curArea.worldObjectsHandler.currentBattle != null && curArea.worldObjectsHandler.currentBattle.loaded) {

@@ -200,14 +200,14 @@ public class Inventory {
         releasedAfterChange = true;
     }
 
-    public void addItem(ArrayList<Item> items, Item item) {
+    public static void addItem(ArrayList<Item> items, Item item) {
         for (int i = 0; i < items.size(); ++i) {
             if (items.get(i).stackable && items.get(i).fileName.equals(item.fileName) && items.get(i).stack < items.get(i).maxStack) {
-                items.get(i).stack++;
+                items.get(i).stack += item.stack;
                 return;
             }
         }
-        items.add(new Item(item));
+        if (item.stack > 0) items.add(new Item(item));
     }
 
     public void draw(SpriteBatch batch, boolean paused) {

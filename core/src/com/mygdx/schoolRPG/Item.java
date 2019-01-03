@@ -42,7 +42,7 @@ public class Item {
     boolean stackable;
     int maxStack;
     String varName;
-    Texture icon;
+    public Texture icon;
     Texture bigIcon;
     GlobalSequence sides;
     public boolean consumable = false;

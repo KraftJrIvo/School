@@ -62,7 +62,7 @@ public class MainMenu extends Menu {
 
         if (gameSelect && Gdx.input.isKeyJustPressed(Input.Keys.FORWARD_DEL)) {
             int index = gameSelector.getSelectedIndex();
-            if (index != 0 && index != gameSelector.titles.size()-1) {
+            if (index != 0 && index != gameSelector.titles.get(0).size()-1) {
                 int worldId = worldsIds.get(index);
                 if (worldsIds.get(index-1) == worldId) {
                     int gameNum = 1;
@@ -93,7 +93,7 @@ public class MainMenu extends Menu {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || (Gdx.input.justTouched() && Gdx.input.getX() < 500)) {
             if (gameSelect) {
                 int index = gameSelector.getSelectedIndex();
-                if (index == gameSelector.titles.size() - 1) {
+                if (index == gameSelector.titles.get(0).size() - 1) {
                     gameSelect = false;
                 } else {
                     int worldId = worldsIds.get(index);

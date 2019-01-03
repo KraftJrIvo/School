@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.schoolRPG.RoomNode;
 import com.mygdx.schoolRPG.World;
 import com.mygdx.schoolRPG.tools.JoyStick;
 
@@ -106,6 +107,16 @@ public class GameMenu extends Menu {
                 worlds.get(curWorld).initialiseResources(assets);
             } else {
                 worlds.get(curWorld).load(assets);
+                if (transferringWorld != null && worlds.get(curWorld).map.getRoomByName(transferringWorld.nextWorldRoom) != null) {
+                    int x = worlds.get(curWorld).map.getRoomByName(transferringWorld.nextWorldRoom).roomX;
+                    int y = worlds.get(curWorld).map.getRoomByName(transferringWorld.nextWorldRoom).roomY;
+                    int z = worlds.get(curWorld).map.getRoomByName(transferringWorld.nextWorldRoom).roomZ;
+                    worlds.set(curWorld, new World(this, "worlds/" + transferringWorld.nextWorldDir, curWorld));
+                    worlds.get(curWorld).presetX = x;
+                    worlds.get(curWorld).presetY = y;
+                    worlds.get(curWorld).presetZ = z;
+                    worlds.get(curWorld).load(assets);
+                }
             }
             //initialised = true;
         }

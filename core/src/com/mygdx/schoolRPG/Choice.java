@@ -26,7 +26,8 @@ public class Choice extends Speech {
         float screenRatioY = Gdx.graphics.getHeight()/720.0f;
         //System.out.println();
         question = phrases.get(menu.currentLanguage).get(0);
-        phrases.remove(0);
+        for (int i = 0; i < phrases.size(); ++i)
+            phrases.get(i).remove(0);
         selector = new MenuListSelector(phrases, assets, "cursor.png", font, overlay.getHeight() - 20, 350, 175, false, parent);
         transitionId = -1;
         this.parent = parent;

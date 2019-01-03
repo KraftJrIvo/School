@@ -198,7 +198,7 @@ public class CircularSelector {
         }
         font.setColor(new Color(1.0f,1.0f,1.0f,fontAlpha));
         if (drawTitles) {
-            font.draw(batch, titles.get(selectedIndex), centerX - font.getBounds(titles.get(selectedIndex)).width/2.0f, centerY - sprites.get(ids.get(0)).getHeight()/2*scale);
+            font.draw(batch, titles.get(selectedIndex), centerX - font.getBounds(titles.get(selectedIndex)).width/2.0f, centerY - (sprites.get(ids.get(0)).getHeight()/2.0f)*scale - 60/screenRatioY);
         }
         font.setColor(Color.WHITE);
     }

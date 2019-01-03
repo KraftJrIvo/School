@@ -12,7 +12,7 @@
         movePattern="NORMAL"
         collisionGroup="0"
         flySoundLoop=""
-        bounceSound="pop1.wav"
+        bounceSound=""
         nextStateCondition="BOUNCE-10-1"
     />
     <state 
