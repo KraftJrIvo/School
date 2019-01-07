@@ -101,6 +101,13 @@ public class World{
 
     public BattleSystem battleSystem;
 
+    boolean triggerSaveNeeded = false;
+    boolean triggerResetObjects = false;
+    boolean overlayOpaque = false;
+    float saveOverlayAlpha = 0f;
+
+    ArrayList<Unit> playersUnits;
+
     public void prepareForWorldChange(String nextWorldDir, String nextWorldRoom, int nextWorldX, int nextWorldY) {
         this.nextWorldDir = nextWorldDir;
         this.nextWorldRoom = nextWorldRoom;
@@ -331,6 +338,11 @@ public class World{
         return ByteBuffer.wrap(bytes).getFloat();
     }
 
+    private void resetArea(int id) {
+        areas.set(id, new Area(areas.get(id).x, areas.get(id).y, areas.get(id).z, areas.get(id).width/firtsAreaWidth, areas.get(id).height/firtsAreaHeight, areas.get(id).map, areas.get(id).width, areas.get(id).height, areas.get(id).TILE_WIDTH, areas.get(id).TILE_HEIGHT, platformMode, this, areas.get(id).name));
+        areas.get(id).ambient = areasAmbients.get(id);
+    }
+
     private void saveState() {
         File savesDir = new File(worldDir + "/saves");
         if (!savesDir.exists()) {
@@ -341,6 +353,11 @@ public class World{
             currentSave.createNewFile();
             FileOutputStream saveFile = new FileOutputStream(currentSave, false);
 
+            saveFile.write(vars.size());
+            for (int i =0; i < vars.size(); ++i) {
+                saveFile.write(varNames.get(i).length());
+                saveFile.write(varNames.get(i).getBytes());
+            }
             for (int i =0; i < vars.size(); ++i) {
                 saveFile.write(vars.get(i));
             }
@@ -391,9 +408,28 @@ public class World{
             saveFile.write(headWear + 1);
             saveFile.write(bodyWear + 1);
             saveFile.write(handsObject + 1);
+
+            int nAreas = 0;
+            for (int i = 0; i < areas.size(); ++i)
+                if (areas.get(i).loaded)
+                    nAreas++;
+            saveFile.write(nAreas);
+            for (int i = 0; i < areas.size(); ++i)
+                if (areas.get(i).loaded)
+                    saveFile.write(i);
+
+            saveFile.write(npcs.size());
             for (int i =0; i < npcs.size(); ++i) {
-                for (int j =0; j < npcs.get(i).vars.size(); ++j) {
-                    saveFile.write(npcs.get(i).vars.get(j));
+                saveFile.write(npcs.get(i).charId);
+            }
+            for (int i =0; i < npcs.size(); ++i) {
+                saveFile.write(npcs.get(i).vars.size());
+                for (int ii =0; ii < npcs.get(i).vars.size(); ++ii) {
+                    saveFile.write(npcs.get(i).varNames.get(ii).length());
+                    saveFile.write(npcs.get(i).varNames.get(ii).getBytes());
+                }
+                for (int ii =0; ii < vars.size(); ++ii) {
+                    saveFile.write(npcs.get(i).vars.get(ii));
                 }
                 saveFile.write(npcsAreas.get(i));
                 saveFile.write(float2ByteArray(npcs.get(i).hitBox.x));
@@ -419,12 +455,22 @@ public class World{
                 saveFile.write(handsObject + 1);
             }
 
+            saveFile.write(movables.size());
+            for (int i =0; i < movables.size(); ++i) {
+                saveFile.write(movables.get(i).uniqueID.length());
+                saveFile.write(movables.get(i).uniqueID.getBytes());
+            }
             for (int i =0; i < movables.size(); ++i) {
                 saveFile.write(movablesAreas.get(i));
                 saveFile.write(float2ByteArray(movables.get(i).hitBox.x));
                 saveFile.write(float2ByteArray(movables.get(i).hitBox.y));
             }
 
+            saveFile.write(objects.size());
+            for (int i =0; i < objects.size(); ++i) {
+                saveFile.write(objects.get(i).entity.uniqueID.length());
+                saveFile.write(objects.get(i).entity.uniqueID.getBytes());
+            }
             for (int i =0; i < objects.size(); ++i) {
                 saveFile.write(objects.get(i).currentState);
                 if (objects.get(i).entity.drawChar) {
@@ -477,14 +523,31 @@ public class World{
         FileHandle currentSave = Gdx.files.internal(worldDir + "/saves/state" + save);
         try {
             InputStream saveFile = currentSave.read();
-            for (int i =0; i < vars.size(); ++i) {
-                int var = saveFile.read();
-                vars.set(i, var);
+            vars.clear();
+            varNames.clear();
+            int numVars = saveFile.read();
+            for (int i =0; i < numVars; ++i) {
+                int varNameLen = saveFile.read();
+                byte[] varNameBytes = new byte[varNameLen];
+                saveFile.read(varNameBytes);
+                String varName = new String(varNameBytes, StandardCharsets.UTF_8);
+                varNames.add(varName);
             }
+            for (int i =0; i < numVars; ++i) {
+                vars.add(saveFile.read());
+            }
+            Area prevCurArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
             curAreaX = saveFile.read();
             curAreaY = saveFile.read();
             curAreaZ = saveFile.read();
+            //loaded = false;
+            //initialised = false;
+            loadNearAreas();
+            while (!assets.update())
+                System.out.print("");
+            //initialiseResources(assets);
             Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            curArea.player = prevCurArea.player;
             int activeCheckpoint = saveFile.read();
             if (activeCheckpoint < 255) {
                 curArea.worldObjectsHandler.saveOnCheckPoint(curArea.worldObjectsHandler.checkPoints.get(activeCheckpoint));
@@ -531,12 +594,74 @@ public class World{
             }else {
                 player.objectInHands = null;
             }
-            for (int i =0; i < npcs.size(); ++i) {
-                for (int j =0; j < npcs.get(i).vars.size(); ++j) {
-                    int var = saveFile.read();
-                    npcs.get(i).vars.set(j, var);
+
+            //ArrayList<String> areasAmbients;
+            npcs.clear();
+            npcsAreas.clear();
+            objects.clear();
+            movables.clear();
+            movablesAreas.clear();
+            //ArrayList<Entity> itemsOnFloor;
+            //ArrayList<Integer> itemsOnFloorAreas;
+            for (int i = 0; i < areas.size(); ++i) {
+                resetArea(i);
+            }
+            int nAreas = saveFile.read();
+            for (int i = 0; i < nAreas; ++i) {
+                int aid = saveFile.read();
+                areas.get(aid).load();
+                while (!assets.update())
+                    System.out.print("");
+                areas.get(aid).initialiseResources(assets, this, characterMaker);
+            }
+            loadNearAreas();
+            while (!assets.update())
+                System.out.print("");
+
+            curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+
+            int npcsNum = saveFile.read();
+            //npcs.clear();
+            ArrayList<NPC> newNPCs = new ArrayList<NPC>();
+            ObjectLoader ol = new ObjectLoader();
+
+            for (int i =0; i < npcsNum; ++i) {
+                int playerWidth = 16;
+                int playerHeight = 5;
+                int playerFloor = 10;
+                int chid = saveFile.read();
+                ol.loadChar(assets, this, chid);
+                while (!assets.update())
+                    System.out.print("");
+                newNPCs.add(new NPC(assets, null, 0, 0, playerWidth, playerHeight, playerFloor, false, characterMaker, chid, this));
+                for (int j = 0; j < areas.size(); ++j)
+                    for (int k = 0; k < areas.get(j).worldObjectsHandler.NPCs.size(); ++k)
+                        if (areas.get(j).worldObjectsHandler.NPCs.get(k).charId == chid)
+                            newNPCs.get(newNPCs.size()-1).spawnArea = j;
+            }
+            for (int i = 0; i < npcs.size(); ++i) {
+                for (int j = 0; j < areas.size(); ++j) {
+                    for (int k = 0; k < areas.get(j).worldObjectsHandler.NPCs.size(); ++k) {
+                        if (areas.get(j).worldObjectsHandler.NPCs.get(k).name.equals(npcs.get(i))) {
+                            areas.get(j).worldObjectsHandler.NPCs.set(k, npcs.get(i));
+                        }
+                    }
                 }
-                npcsAreas.set(i,saveFile.read());
+            }
+            npcsAreas.clear();
+            for (int i =0; i < npcsNum; ++i) {
+                int numNPCVars = saveFile.read();
+                for (int ii =0; ii < numNPCVars; ++ii) {
+                    int varNameLen = saveFile.read();
+                    byte[] varNameBytes = new byte[varNameLen];
+                    saveFile.read(varNameBytes);
+                    String varName = new String(varNameBytes, StandardCharsets.UTF_8);
+                    npcs.get(i).varNames.add(varName);
+                }
+                for (int ii = 0; ii < numVars; ++ii) {
+                    npcs.get(i).vars.add(saveFile.read());
+                }
+                npcsAreas.add(saveFile.read());
                 saveFile.read(flo);
                 npcs.get(i).hitBox.x = toFloat(flo);
                 saveFile.read(flo);
@@ -544,8 +669,10 @@ public class World{
                 if (npcs.get(i).spawnArea != npcsAreas.get(i)) {
                     //ObjectCell cell = areas.get(npcs.get(i).spawnArea).worldObjectsHandler.removeSolid(areas.get(npcs.get(i).spawnArea).worldObjectsHandler.solids.indexOf(npcs.get(i)));
                     //ObjectCell soc = areas.get(npcsAreas.get(i)).worldObjectsHandler.addSolid(npcs.get(i), this, cell.currentState, cell.items);
-                    areas.get(npcs.get(i).spawnArea).worldObjectsHandler.deleteObjectCellsForEntity(npcs.get(i));
-                    areas.get(npcs.get(i).spawnArea).worldObjectsHandler.NPCs.remove(npcs.get(i));
+                    //if (npcs.get(i).spawnArea != -1) {
+                        areas.get(npcs.get(i).spawnArea).worldObjectsHandler.deleteObjectCellsForEntity(npcs.get(i));
+                        areas.get(npcs.get(i).spawnArea).worldObjectsHandler.NPCs.remove(npcs.get(i));
+                    //}
                     areas.get(npcsAreas.get(i)).worldObjectsHandler.addNPC(npcs.get(i), this, -1, -1);
                 }
                 itemsCount = saveFile.read();
@@ -579,10 +706,25 @@ public class World{
                 }
             }
 
+            movablesAreas.clear();
+            int movablesNum = saveFile.read();
+            ArrayList<HittableEntity> newMovables = new ArrayList<HittableEntity>();
+            for (int i = 0; i < movablesNum; ++i) {
+                byte[] bitfield = new byte[saveFile.read()];
+                saveFile.read(bitfield);
+                String str = new String(bitfield, StandardCharsets.UTF_8);
+                for (int j = 0; j < movables.size(); ++j)
+                    if (movables.get(j).uniqueID.equals(str))
+                        newMovables.add(movables.get(j));
+            }
+            movables = newMovables;
             for (int i =0; i < movables.size(); ++i) {
-                movablesAreas.set(i,saveFile.read());
+                //movablesAreas.set(i,saveFile.read());
+                int aid = saveFile.read();
+                movablesAreas.add(aid);
                 saveFile.read(flo);
                 movables.get(i).hitBox.x = toFloat(flo);
+                //areas.get(aid).
                 saveFile.read(flo);
                 movables.get(i).hitBox.y = toFloat(flo);
                 if (movables.get(i).spawnArea != movablesAreas.get(i)) {
@@ -595,6 +737,18 @@ public class World{
                     }
                 }
             }
+
+            int objNum = saveFile.read();
+            ArrayList<ObjectCell> newObjects = new ArrayList<ObjectCell>();
+            for (int i =0; i < objNum; ++i) {
+                byte[] bitfield = new byte[saveFile.read()];
+                saveFile.read(bitfield);
+                String str = new String(bitfield, StandardCharsets.UTF_8);
+                for (int j = 0; j < objects.size(); ++j)
+                    if (objects.get(j).entity.uniqueID.equals(str))
+                        newObjects.add(objects.get(j));
+            }
+            objects = newObjects;
 
             for (int i =0; i < objects.size(); ++i) {
                 objects.get(i).currentState = saveFile.read();
@@ -625,8 +779,8 @@ public class World{
             }
 
             //deleteObjectCellsForEntity(activeItem);
-            for (int i =0; i<areas.size(); ++i) {
-                for (int j =0; j<areas.get(i).worldObjectsHandler.items.size(); ++j) {
+            for (int i =0; i < areas.size(); ++i) {
+                for (int j =0; j < areas.get(i).worldObjectsHandler.items.size(); ++j) {
                     areas.get(i).worldObjectsHandler.deleteObjectCellsForEntity(areas.get(i).worldObjectsHandler.items.get(j));
                 }
                 areas.get(i).worldObjectsHandler.items.clear();
@@ -648,7 +802,7 @@ public class World{
             itemsOnFloor.clear();
             itemsOnFloorAreas.clear();
             itemsCount = saveFile.read();
-            for (int i =0; i<itemsCount; ++i) {
+            for (int i =0; i < itemsCount; ++i) {
                 int areaId = saveFile.read();
                 int bytesCount = saveFile.read();
                 byte[] bitfield = new byte[bytesCount];
@@ -693,12 +847,12 @@ public class World{
             } else {
                 menu.paused = false;
             }
-            player.hitBox.x = playerX;
-            player.x = playerX;
-            player.graphicX = playerX;
-            player.hitBox.y = playerY;
-            player.y = playerY;
-            player.graphicY = playerY;
+            curArea.player.hitBox.x = playerX;
+            curArea.player.x = playerX;
+            curArea.player.graphicX = playerX;
+            curArea.player.hitBox.y = playerY;
+            curArea.player.y = playerY;
+            curArea.player.graphicY = playerY;
             menu.drawPause = false;
             //menu.unpausable = false;
         } catch (FileNotFoundException e) {
@@ -739,6 +893,7 @@ public class World{
             battleSystem = new BattleSystem(this);
             assets.load(worldDir + "/bg/battle_trans_top.png", Texture.class);
             assets.load(worldDir + "/bg/battle_trans_bottom.png", Texture.class);
+            playersUnits = new ArrayList<Unit>();
         }
         if (battleSystem != null) battleSystem.load(this);
         //assets.load(folderPath + "bg/bg.png", Texture.class);
@@ -1191,6 +1346,30 @@ public class World{
             e.printStackTrace();
         }
         //System.out.println();
+        if (playersUnits != null && playersUnits.size() == 0) {
+            playersUnits.add(new Unit(this, "you", 1));
+        }
+    }
+
+    public void triggerSave() {
+        if (overlayOpaque)
+            saveOverlayAlpha -= 0.02f;
+        else
+            saveOverlayAlpha += 0.02f;
+        if (saveOverlayAlpha > 1.0f) saveOverlayAlpha = 1.0f;
+        else if (saveOverlayAlpha < 0f) saveOverlayAlpha = 0f;
+        overlayOpaque = overlayOpaque || (saveOverlayAlpha >= 1.0f);
+        if (overlayOpaque) {
+            if (triggerResetObjects) {
+                for (int i = 0; i < areas.size(); ++i)
+                    areas.get(i).worldObjectsHandler.resetObjects();
+            }
+            saveState();
+        }
+        if (saveOverlayAlpha <= 0) {
+            triggerSaveNeeded = false;
+            overlayOpaque = false;
+        }
     }
 
     private void createNewSave() {
@@ -1669,6 +1848,15 @@ public class World{
 
     }
 
+    public void triggerBattle(ArrayList<Unit> yourUnits, ArrayList<Unit> enemyUnits) {
+        Area curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+        Battle battle = new Battle(this, enemyUnits, yourUnits, "music/KraftJrIvo - Business.mp3");
+        loaded = false;
+        battle.load(this);
+        curArea.worldObjectsHandler.currentBattle = battle;
+        menu.drawPause = false;
+    }
+
     public void draw(SpriteBatch batch) {
         if (currentSound != null) {
             currentSound.setVolume(currentSoundId, menu.musicVolume/100.0f);
@@ -1773,6 +1961,7 @@ public class World{
                 menu.unpausable = false;
                 curArea.worldObjectsHandler.currentBattle.draw(this, batch);
                 if (curArea.worldObjectsHandler.currentBattle.finished) {
+                    if (!curArea.worldObjectsHandler.currentBattle.playerWon) loadState();
                     curArea.worldObjectsHandler.currentBattle = null;
                     menu.dialogSkipping = false;
                     menu.drawPause = true;
@@ -1941,6 +2130,12 @@ public class World{
                 loadNearAreas();
             }
             //System.out.println(areaTransitionX);
+        }
+        if (triggerSaveNeeded) {
+            triggerSave();
+            batch.setColor(1,1,1, saveOverlayAlpha);
+            batch.draw(assets.get("p.png", Texture.class), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            batch.setColor(1,1,1, 1);
         }
     }
 

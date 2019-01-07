@@ -1,0 +1,65 @@
+﻿<unit baseHeight="10">
+	<name rus="Слизь" eng="Slime"/>
+	<stats
+		baseHp="30"
+		baseAp="1"
+		baseStr="2"
+		baseVit="3"
+		baseDex="1"
+		baseExpReward="10"
+	/>	
+	<skills>
+		<skill name="slimeBasicAttack" prob="1"/>
+		<!--<skill name="slimePoisonSpit" prob="1"/>-->
+	</skills>
+	<inventory>		
+	</inventory>
+	<held-item name=""/>
+	<drops>		
+		<dropGroup prob="1">
+			<drop name="slimeBall" min="1" max="1" prob="0.25"/>
+			<drop name="slimeBall" min="2" max="2" prob="0.125"/>
+			<drop name="slimeBall" min="3" max="3" prob="0.0625"/>
+		</dropGroup>
+		<dropGroup prob="1">
+			<drop name="money" min="0" max="10" prob="1"/>
+		</dropGroup>
+	</drops>
+	<states>
+		<state condition="hp &gt; maxHp/2">
+			<idle tex="idle" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
+			<hit tex="hit" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0.5" spawnImpulse="2" dirSpread="6.28" speedSpread="0.5" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
+			</hit>
+		</state>
+		<state condition="">
+			<idle tex="damaged" animFps="0" animLoop="false" animFrames="1" soundLoop=""/>
+			<hit tex="hit" animFps="0" animLoop="false" animFrames="1" sound="hit.mp3">
+				<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0.5" spawnImpulse="1" dirSpread="6.28" speedSpread="0.5" impulseSpread="2" spawnSound="" minNum="2" maxNum="5"/>
+			</hit>
+		</state>
+		<death-state tex="dead" animFps="0" animLoop="false" animFrames="1" sound="death.mp3">
+			<particle name="slimeBall" spawnX="0" spawnY="0" spawnZ="0" spawnDir="0" spawnSpeed="0.5" spawnImpulse="1" dirSpread="6.28" speedSpread="0.5" impulseSpread="2" spawnSound="" minNum="5" maxNum="10"/>
+		</death-state>
+	</states>
+	<fighter tex="fight" animFps="0" animLoop="false" animFrames="1"/>
+	<start-speech>
+		<speech rus="Хлюп-хлюп-хлюп!" ang="Slurp-slurp-slurp!"/>
+		<speech rus="Буууууууульк!" ang="Bluuuuuuuuuurp!"/>
+	</start-speech>
+	<hit-speech>
+		<speech rus="Хлюп!" ang="Slurp!"/>
+		<speech rus="Бульк!" ang="Blurp!"/>
+		<speech rus="Буль-Буль!" ang="Guuurgle!"/>
+	</hit-speech>
+	<round-speech>
+		<speech rus="Хлюп!" ang="Slurp!"/>
+		<speech rus="Бульк!" ang="Blurp!"/>
+		<speech rus="Буль-Буль!" ang="Guuurgle!"/>
+	</round-speech>
+	<damage-types-susceptibilies>
+		<susceptibility damageType="melee-slash" percent="20"/>
+		<susceptibility damageType="melee-thrust" percent="-80"/>
+		<susceptibility damageType="poison" percent="-100"/>
+	</damage-types-susceptibilies>
+</unit>

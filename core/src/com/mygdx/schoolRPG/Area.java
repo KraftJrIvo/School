@@ -72,8 +72,11 @@ public class Area {
     public boolean loading = false;
     public String ambient = "";
 
+    public byte[] map;
+
 
     public Area(int x, int y, int z, int w, int h, byte[] map, int width, int height , int tileWidth, int tileHeight, boolean platformMode, World world, String name) {
+        this.map = map.clone();
         TILE_WIDTH = tileWidth;
         TILE_HEIGHT = tileHeight;
         this.world = world;

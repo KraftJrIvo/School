@@ -1,0 +1,11 @@
+<object statesCount="1" startState="0" radius="20" offsetX="0" offsetY="0" container="false" resetState="0">
+    <state id="0"
+           switchable="true"
+           tex="candle"
+           texType="anim"
+		   fps="5"
+		   framesCount="2"
+		   looping="true"> 
+		   <savepoint name="outside" resetObjects="true"/>
+		   </state>
+</object>

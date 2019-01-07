@@ -79,7 +79,7 @@ public class ParticleProperties {
             this.dirSpread = dirSpread;
             this.speedSpread = speedSpread;
             this.impulseSpread = impulseSpread;
-            if (assets.isLoaded(spawnSoundPath)) spawnSound = assets.get(spawnSoundPath, Sound.class);
+            if (assets != null && assets.isLoaded(spawnSoundPath)) spawnSound = assets.get(spawnSoundPath, Sound.class);
         }
         public ParticleSpawnProperties(String particleName, float spawnX, float spawnY, float spawnZ) {
             this.particleName = particleName;

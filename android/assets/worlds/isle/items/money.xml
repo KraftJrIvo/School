@@ -1,0 +1,10 @@
+<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="999999999" flag="" replaces="">
+    <eng 
+        name = "Money" 
+        description = "$_$"
+    />    
+    <rus 
+        name = "Деньги" 
+        description = "$_$"
+    />    
+</item>

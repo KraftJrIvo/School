@@ -7,7 +7,9 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.XmlReader;
+import com.mygdx.schoolRPG.battleSystem.Unit;
 import com.mygdx.schoolRPG.menus.GameMenu;
+import com.mygdx.schoolRPG.menus.Menu;
 import com.mygdx.schoolRPG.tools.*;
 import javafx.util.Pair;
 import org.w3c.dom.Element;
@@ -96,6 +98,10 @@ public class ObjectCell {
     public ArrayList<Sound> statesSwitchSounds;
     public ArrayList<Sound> statesSoundLoops;
     public ArrayList<Integer> statesLoopsVolumes;
+    public ArrayList<Boolean> statesSavepoints;
+    public ArrayList<ArrayList<String>> statesBattleEnemyNames;
+    public ArrayList<ArrayList<Pair<Integer, Integer>>> statesBattleEnemyCounts;
+    public ArrayList<ArrayList<Pair<Integer, Integer>>> statesBattleEnemyLevels;
     int zPath = 0;
     ArrayList<String> names;
     int charId;
@@ -112,6 +118,7 @@ public class ObjectCell {
     boolean shouldJump = false;
     int jumpState = -1;
     public Particle jumpPrt = null;
+    int resetState = -1;
 
     public ObjectCell(float width, float height, Entity entity, ObjectType type, int id, boolean hIsY, ArrayList<Item> items, Area area) {
         this.type = type;
@@ -339,6 +346,21 @@ public class ObjectCell {
             shouldJump = true;
             jumpState = currentState;
         }
+        if (statesSavepoints.get(currentState) != null) {
+            area.world.triggerSaveNeeded = true;
+            area.world.triggerResetObjects = statesSavepoints.get(currentState);
+        }
+        if (statesBattleEnemyNames.get(currentState) != null) {
+            ArrayList<Unit> enemyUnits = new ArrayList<Unit>();
+            for (int i = 0; i < statesBattleEnemyNames.get(currentState).size(); ++i) {
+                int count = (int)Math.floor(Math.random() * (statesBattleEnemyCounts.get(currentState).get(i).getValue() - statesBattleEnemyCounts.get(currentState).get(i).getKey()) + 1) + statesBattleEnemyCounts.get(currentState).get(i).getKey();
+                for (int j = 0; j < count; ++j) {
+                    int level = (int)Math.floor(Math.random() * (statesBattleEnemyLevels.get(currentState).get(i).getValue() - statesBattleEnemyLevels.get(currentState).get(i).getKey()) + 1) + statesBattleEnemyLevels.get(currentState).get(i).getKey();
+                    enemyUnits.add(new Unit(area.world, statesBattleEnemyNames.get(currentState).get(i), level));
+                }
+            }
+            area.world.triggerBattle(area.world.playersUnits, enemyUnits);
+        }
         if (!proximity) {
             if (statesGotos.get(currentState) == -1) {
                 currentState++;
@@ -353,12 +375,16 @@ public class ObjectCell {
             currentState = forceNextState;
             forceNextState = -1;
         }
+        updateAfterStateChange(area);
+    }
+
+    private void updateAfterStateChange(Area area) {
         jumpedThisState = false;
         jumpPrt = null;
-        updateSoundState(menu);
-        updateEntityState(assets, worldDir);
+        updateSoundState(area.world.menu);
+        updateEntityState(area.world.assets, area.world.worldDir.path());
         this.charId = charId;
-        updateHiddenPlayer(assets, worldDir);
+        updateHiddenPlayer(area.world.assets, area.world.worldDir.path());
         area.playerHidden = statesHidePlayer.get(currentState);
         startTime = System.currentTimeMillis();
         lastSpawned = 0;
@@ -379,6 +405,7 @@ public class ObjectCell {
             area.world.changeArea(false, toArea.x - area.world.curAreaX, toArea.y - area.world.curAreaY, toArea.z - area.world.curAreaZ, statesTeleportCoords.get(currentState));
         }
     }
+
 
     public boolean checkProximity(float x, float y) {
         if (statesProximityGotos.get(currentState) != -1) {
@@ -515,6 +542,13 @@ public class ObjectCell {
         return textureRegion;
     }
 
+    public void resetState(Area area) {
+        if (resetState != -1) {
+            currentState = resetState;
+            updateAfterStateChange(area);
+        }
+    }
+
     private int getWearDir(String dir) {
         if (dir.equals("front")) {
             return 0;
@@ -604,6 +638,7 @@ public class ObjectCell {
             statesFramesCount = new ArrayList<Integer>();
             statesCharsTex = new ArrayList<String>();
             statesDrawPlayer = new ArrayList<Boolean>();
+            statesSavepoints = new ArrayList<Boolean>();
             statesHeads = new ArrayList<ArrayList<TextureRegion>>();
             statesBodies = new ArrayList<ArrayList<TextureRegion>>();
             statesHeadWears = new ArrayList<ArrayList<TextureRegion>>();
@@ -625,6 +660,13 @@ public class ObjectCell {
             statesTeleportWorlds = new ArrayList<String>();
             statesTeleportRooms = new ArrayList<String>();
             statesTeleportCoords = new ArrayList<Coords>();
+            statesBattleEnemyNames = new ArrayList<ArrayList<String>>();
+            statesBattleEnemyCounts = new ArrayList<ArrayList<Pair<Integer, Integer>>>();
+            statesBattleEnemyLevels = new ArrayList<ArrayList<Pair<Integer, Integer>>>();
+
+            Element mainElem = (Element) doc.getElementsByTagName("object").item(0);
+            if (!mainElem.getAttribute("resetState").equals("") && !mainElem.getAttribute("resetState").equals("-1"))
+                resetState = Integer.parseInt(mainElem.getAttribute("resetState"));
 
             for (int i= 0; i< nList.getLength(); ++i) {
                 Node nNode = nList.item(i);
@@ -749,6 +791,27 @@ public class ObjectCell {
                     statesTeleportRooms.add(null);
                     statesTeleportCoords.add(null);
                 }
+                if (eElement.getElementsByTagName("savepoint").getLength() > 0) {
+                    statesSavepoints.add(Boolean.parseBoolean(((Element)eElement.getElementsByTagName("savepoint").item(0)).getAttribute("resetObjects")));
+                } else {
+                    statesSavepoints.add(null);
+                }
+                if (eElement.getElementsByTagName("battle").getLength() > 0) {
+                    NodeList enemies = eElement.getElementsByTagName("enemy");
+                    statesBattleEnemyNames.add(new ArrayList<String>());
+                    statesBattleEnemyCounts.add(new ArrayList<Pair<Integer, Integer>>());
+                    statesBattleEnemyLevels.add(new ArrayList<Pair<Integer, Integer>>());
+                    for (int ii = 0; ii < enemies.getLength(); ++ii) {
+                        Element enemy = (Element) enemies.item(ii);
+                        statesBattleEnemyNames.get(statesBattleEnemyNames.size()-1).add(enemy.getAttribute("name"));
+                        statesBattleEnemyCounts.get(statesBattleEnemyNames.size()-1).add(new Pair<Integer, Integer>(Integer.parseInt(enemy.getAttribute("minCount")), Integer.parseInt(enemy.getAttribute("maxCount"))));
+                        statesBattleEnemyLevels.get(statesBattleEnemyNames.size()-1).add(new Pair<Integer, Integer>(Integer.parseInt(enemy.getAttribute("minLevel")), Integer.parseInt(enemy.getAttribute("maxLevel"))));
+                    }
+                } else {
+                    statesBattleEnemyNames.add(null);
+                    statesBattleEnemyCounts.add(null);
+                    statesBattleEnemyLevels.add(null);
+                }
                 String soundLoopPath = eElement.getAttribute("loopSound");
                 if (!soundLoopPath.equals("")) {
                     statesSoundLoops.add(assets.get(world.worldDir + "/sounds/" + eElement.getAttribute("loopSound"), Sound.class));
@@ -858,6 +921,8 @@ public class ObjectCell {
             }
             startTime = System.currentTimeMillis();
             lastSpawned = 0;
+
+            updateEntityState(assets, world.worldDir.path());
         }
     }
 

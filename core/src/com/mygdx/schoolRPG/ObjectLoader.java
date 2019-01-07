@@ -125,7 +125,7 @@ public class ObjectLoader {
         loadWeather(assets, world);
     }
 
-    private void loadChar(AssetManager assets, World world, int charId) {
+    public void loadChar(AssetManager assets, World world, int charId) {
         String path = world.worldDir + "/chars/" + charId;
         FileHandle fh = Gdx.files.internal(path + "/stats");
         if (fh.exists()) {

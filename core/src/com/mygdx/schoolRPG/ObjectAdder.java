@@ -399,7 +399,9 @@ public class ObjectAdder {
                         if (height >= 15) {
                             floorHeight = 4;
                         }
-                        worldObjectsHandler.addSolid(new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, true, blocks.get(5).get(t).get(i)), world, -1, null, objectCheckId);
+                        HittableEntity he = new HittableEntity(assets, world.sprites.get(world.tileIndices.get(img)), xx, y, width, height, floorHeight, true, blocks.get(5).get(t).get(i));
+                        he.uniqueID = "05." + t + "." + i;
+                        worldObjectsHandler.addSolid(he, world, -1, null, objectCheckId);
                     } else {
                         width = blocks.get(6).get(t).get(i);
                         height = blocks.get(7).get(t).get(i);
@@ -604,6 +606,7 @@ public class ObjectAdder {
                         int playerHeight = 5;
                         int playerFloor = 10;
                         NPC npc = new NPC(assets, null, (t*area.TILE_WIDTH), ((i)*area.TILE_HEIGHT), playerWidth, playerHeight, playerFloor, false, characterMaker, type + 56, world);
+                        npc.spawnArea = world.areas.indexOf(area);
                         characterMaker.setDirection(dir, type + 56);
                         //npc.movable = true;
                         //ObjectCell soc = worldObjectsHandler.addSolid(npc, world, -1, null);
@@ -652,6 +655,7 @@ public class ObjectAdder {
         }
         for (int i =0 ;i < area.worldObjectsHandler.objects.size(); ++i) {
             world.objects.add(area.worldObjectsHandler.objects.get(i));
+            area.worldObjectsHandler.objects.get(i).entity.uniqueID = area.worldObjectsHandler.objects.get(i).id + "." + area.worldObjectsHandler.objects.get(i).entity.x + "." + area.worldObjectsHandler.objects.get(i).entity.y;
         }
 
     }

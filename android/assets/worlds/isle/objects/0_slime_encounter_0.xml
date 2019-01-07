@@ -1,0 +1,13 @@
+<object statesCount="2" startState="0" radius="20" offsetX="8" offsetY="0" container="false" resetState="0">
+    <state id="0"
+           switchable="true"
+           tex="slime_idle"
+           texType="sprite"> 
+		   <battle>
+				<enemy name="slime" minCount="1" maxCount="5" minLevel="1" maxLevel="3"/>
+		   </battle>
+		   </state>
+    <state id="1"
+           switchable="false"
+		   collidable="false"/> 
+</object>

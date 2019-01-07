@@ -495,13 +495,13 @@ public class Battle {
                     }
 
                     dropsView = new CircularSelector(w.assets, titles.get(w.menu.currentLanguage), sprites, palatino24,  Gdx.graphics.getWidth()/screenRatioX/2.0f, 300/screenRatioY, 128, 64, 2, w.menu);
-                    ArrayList<ArrayList<String>> endOptions = new ArrayList<ArrayList<String>>();
-                    endOptions.add(new ArrayList<String>());
-                    endOptions.add(new ArrayList<String>());
-                    endOptions.get(0).add("End battle");
-                    endOptions.get(1).add("Закончить бой");
-                    endOptionsList = new MenuListSelector(endOptions, w.assets, "cursor.png", palatino24, 100, 0, 100/screenRatioY, true, w.menu);
                 }
+                ArrayList<ArrayList<String>> endOptions = new ArrayList<ArrayList<String>>();
+                endOptions.add(new ArrayList<String>());
+                endOptions.add(new ArrayList<String>());
+                endOptions.get(0).add("End battle");
+                endOptions.get(1).add("Закончить бой");
+                endOptionsList = new MenuListSelector(endOptions, w.assets, "cursor.png", palatino24, 100, 0, 100/screenRatioY, true, w.menu);
             }
         }
         trans.draw(batch);
@@ -511,7 +511,7 @@ public class Battle {
                 palatino24.draw(batch, "You receive:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("You receive:").width/2.0f, 400/screenRatioY);
             else
                 palatino24.draw(batch, "Вы получаете:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("Вы получаете:").width/2.0f, 400/screenRatioY);
-            dropsView.draw(batch, false);
+            if (playerWon) dropsView.draw(batch, false);
             endOptionsList.draw(batch, false);
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
                 finished = true;

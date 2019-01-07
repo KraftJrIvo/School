@@ -86,7 +86,7 @@ public class GlobalSequence {
 
 	private void importSequence (AssetManager assets, String sName) {
 		texture = assets.get(sName);
-		int imgCount = texture.getWidth()/texture.getHeight();//(int)Math.ceil(texture.getWidth()/texture.getHeight());
+		int imgCount = Math.max(texture.getWidth()/texture.getHeight(), 1);//(int)Math.ceil(texture.getWidth()/texture.getHeight());
 		bImages = new TextureRegion[imgCount];
 		for (int i =0; i < imgCount; ++i) {
 			int width = texture.getWidth()/imgCount;

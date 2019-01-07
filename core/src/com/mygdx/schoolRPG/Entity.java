@@ -53,6 +53,7 @@ public class Entity implements Comparable {
     public AnimationSequence charAnim = null;
     public boolean drawChar = false;
     public boolean draw = true;
+    public String uniqueID = "none";
 
     void setFloor(boolean b) {
         floor = b;

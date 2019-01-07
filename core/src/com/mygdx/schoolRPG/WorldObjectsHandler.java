@@ -200,6 +200,11 @@ public class WorldObjectsHandler {
         }
     }
 
+    public void resetObjects() {
+        for (int i = 0; i < objects.size(); ++i)
+            objects.get(i).resetState(area);
+    }
+
     public void invalidateParticlesCollisions(Particle p) {
         int tileX = (int)(p.x/(area.TILE_WIDTH));
         int tileY = (int)((p.y)/(area.TILE_HEIGHT));
