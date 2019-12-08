@@ -21,7 +21,7 @@
 			<skill name="slimeBasicAttack" APcost="0" cooldown="0" positive="false">
 			<name rus="Удар слизня" eng="Slime punch"/>
 			<animation type="melee-fist" name="slimeFist" fps="0" frames="1" looping="false" sound="slimePunch.wav"/>
-			<damage damageType="melee-fist" baseDamage="5"/>
+			<damage damageType="melee-fist" baseDamage="0"/>
 		</skill>
 		<skill name="slimePoisonSpit" APcost="1" cooldown="3" positive="false">
 			<name rus="Ядовитый плевок" eng="Poison spit"/>

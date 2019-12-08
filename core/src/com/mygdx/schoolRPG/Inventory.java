@@ -207,7 +207,10 @@ public class Inventory {
                 return;
             }
         }
-        if (item.stack > 0) items.add(new Item(item));
+        if (item.stack > 0) {
+            items.add(new Item(item));
+            items.get(items.size() - 1).stack = item.stack;
+        }
     }
 
     public void draw(SpriteBatch batch, boolean paused) {

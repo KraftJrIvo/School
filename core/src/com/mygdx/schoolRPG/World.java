@@ -512,6 +512,24 @@ public class World{
                 saveFile.write(0);
             }
 
+            if (playersUnits != null) {
+                saveFile.write(1);
+                saveFile.write(playersUnits.size());
+                for (int i = 0; i < playersUnits.size(); ++i) {
+                    saveFile.write(playersUnits.get(i).name.length());
+                    saveFile.write(playersUnits.get(i).name.getBytes());
+                    saveFile.write(playersUnits.get(i).stats.level);
+                    saveFile.write(playersUnits.get(i).stats.exp);
+                    saveFile.write(playersUnits.get(i).inventory.size());
+                    for (int j = 0; j < playersUnits.get(i).inventory.size(); ++j) {
+                        saveFile.write(playersUnits.get(i).inventory.get(j).fileName.length());
+                        saveFile.write(playersUnits.get(i).inventory.get(j).fileName.getBytes());
+                        saveFile.write(playersUnits.get(i).inventory.get(j).stack);
+                    }
+                }
+            } else
+                saveFile.write(0);
+
             saveFile.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -537,6 +555,16 @@ public class World{
                 vars.add(saveFile.read());
             }
             Area prevCurArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
+            if (prevCurArea.worldObjectsHandler.currentBattle != null) {
+                prevCurArea.worldObjectsHandler.currentBattle.stopSound();
+                prevCurArea.worldObjectsHandler.currentBattle = null;
+                menu.dialogSkipping = false;
+                menu.drawPause = true;
+                menu.paused = false;
+                menu.unpausable = true;
+                updateAmbient();
+            }
+
             curAreaX = saveFile.read();
             curAreaY = saveFile.read();
             curAreaZ = saveFile.read();
@@ -567,11 +595,14 @@ public class World{
             int itemsCount = saveFile.read();
             player.inventory.clear();
             player.movingConfiguration = new MovingConfiguration();
+            ObjectLoader ol = new ObjectLoader();
             for (int i =0; i < itemsCount; ++i) {
                 int bytesCount = saveFile.read();
                 byte[] bitfield = new byte[bytesCount];
                 saveFile.read(bitfield);
                 String str = new String(bitfield, StandardCharsets.UTF_8);
+                ol.loadItem(assets, this, str);
+                while (!assets.update()) System.out.print("");
                 Item item = new Item(this, worldDir.path(), str);
                 item.stack = saveFile.read();
                 player.inventory.add(item);
@@ -610,20 +641,21 @@ public class World{
             for (int i = 0; i < nAreas; ++i) {
                 int aid = saveFile.read();
                 areas.get(aid).load();
-                while (!assets.update())
+                while (!assets.update()) {
                     System.out.print("");
+                }
                 areas.get(aid).initialiseResources(assets, this, characterMaker);
             }
             loadNearAreas();
-            while (!assets.update())
+            while (!assets.update()) {
                 System.out.print("");
+            }
 
             curArea = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ));
 
             int npcsNum = saveFile.read();
             //npcs.clear();
             ArrayList<NPC> newNPCs = new ArrayList<NPC>();
-            ObjectLoader ol = new ObjectLoader();
 
             for (int i =0; i < npcsNum; ++i) {
                 int playerWidth = 16;
@@ -686,20 +718,20 @@ public class World{
                     item.stack = saveFile.read();
                     npcs.get(i).inventory.add(item);
                 }
-                headWear = saveFile.read();
-                if (headWear > 0) {
+                int npcHeadWear = saveFile.read();
+                if (npcHeadWear > 0) {
                     npcs.get(i).headWear = npcs.get(i).inventory.get(headWear-1).sides;
                 } else {
                     npcs.get(i).headWear = null;
                 }
-                bodyWear = saveFile.read();
-                if (bodyWear > 0) {
+                int npcBodyWear = saveFile.read();
+                if (npcBodyWear > 0) {
                     npcs.get(i).bodyWear = npcs.get(i).inventory.get(bodyWear-1).sides;
                 } else {
                     npcs.get(i).bodyWear = null;
                 }
-                handsObject = saveFile.read();
-                if (handsObject > 0) {
+                int npcHandsObject = saveFile.read();
+                if (npcHandsObject > 0) {
                     npcs.get(i).objectInHands = npcs.get(i).inventory.get(handsObject-1).sides;
                 } else {
                     npcs.get(i).objectInHands = null;
@@ -847,6 +879,56 @@ public class World{
             } else {
                 menu.paused = false;
             }
+
+            int unitsN = saveFile.read();
+            if (unitsN == 1) {
+                unitsN = saveFile.read();
+                if (unitsN > 0) playersUnits.clear();
+                else {
+                    for (int i = 0; i < playersUnits.size(); ++i)
+                        playersUnits.get(i).reset();
+                }
+
+                for (int i = 0; i < unitsN; ++i) {
+                    int unitNameLen = saveFile.read();
+                    byte[] unitNameBytes = new byte[unitNameLen];
+                    saveFile.read(unitNameBytes);
+                    String unitName = new String(unitNameBytes, StandardCharsets.UTF_8);
+                    int unitLevel = saveFile.read();
+                    playersUnits.add(new Unit(this, unitName, unitLevel));
+                    playersUnits.get(playersUnits.size()-1).stats.exp = saveFile.read();
+                    int unitInventorySize = saveFile.read();
+                    for (int j = 0; j < unitInventorySize; ++j) {
+                        int unitItemNameLen = saveFile.read();
+                        byte[] unitItemNameBytes = new byte[unitItemNameLen];
+                        saveFile.read(unitItemNameBytes);
+                        String unitItemName = new String(unitItemNameBytes, StandardCharsets.UTF_8);
+                        ol.loadItem(assets, this, unitItemName);
+                        while (!assets.update()) System.out.print("");
+                        playersUnits.get(i).inventory.add(new Item(this, worldDir.path(), unitItemName));
+                        playersUnits.get(i).inventory.get(j).stack = saveFile.read();
+                    }
+                    if (unitName.equals("you")) {
+                        curArea.player.inventory = playersUnits.get(i).inventory;
+                        if (headWear > 0) {
+                            player.headWear = player.inventory.get(headWear-1).sides;
+                        } else {
+                            player.headWear = null;
+                        }
+                        if (bodyWear > 0) {
+                            player.bodyWear = player.inventory.get(bodyWear-1).sides;
+                        } else {
+                            player.bodyWear = null;
+                        }
+                        if (handsObject > 0) {
+                            player.objectInHands = player.inventory.get(handsObject-1).sides;
+                        }else {
+                            player.objectInHands = null;
+                        }
+                    }
+                }
+            }
+
             curArea.player.hitBox.x = playerX;
             curArea.player.x = playerX;
             curArea.player.graphicX = playerX;
@@ -1348,6 +1430,7 @@ public class World{
         //System.out.println();
         if (playersUnits != null && playersUnits.size() == 0) {
             playersUnits.add(new Unit(this, "you", 1));
+            playersUnits.get(0).inventory = areas.get(areaIds.get(curAreaX).get(curAreaY).get(curAreaZ)).player.inventory;
         }
     }
 
@@ -1363,6 +1446,8 @@ public class World{
             if (triggerResetObjects) {
                 for (int i = 0; i < areas.size(); ++i)
                     areas.get(i).worldObjectsHandler.resetObjects();
+                for (int i = 0; i < playersUnits.size(); ++i)
+                    playersUnits.get(i).reset();
             }
             saveState();
         }

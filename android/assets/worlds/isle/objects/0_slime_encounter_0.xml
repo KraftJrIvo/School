@@ -2,7 +2,8 @@
     <state id="0"
            switchable="true"
            tex="slime_idle"
-           texType="sprite"> 
+           texType="sprite"
+		   goto="0"> 
 		   <battle>
 				<enemy name="slime" minCount="1" maxCount="5" minLevel="1" maxLevel="3"/>
 		   </battle>

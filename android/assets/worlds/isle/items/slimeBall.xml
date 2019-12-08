@@ -1,4 +1,4 @@
-<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="64" var="" replaces="">
+<item id = "0" mass="1" equip_slot="NONE" stackable="true" maxStack="64" var="" replaces="" consumable="true">
     <eng 
         name = "Slime ball" 
         description = "Eeeky ball of green goo."
@@ -7,4 +7,5 @@
         name = "Комок слизи" 
         description = "Мерзкий шарик зелёной слизи."
     />    
+	<effect name="mediumHeal"/>
 </item>

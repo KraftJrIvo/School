@@ -1,7 +1,7 @@
 ﻿<unit baseHeight="10">
 	<name rus="Слизь" eng="Slime"/>
 	<stats
-		baseHp="30"
+		baseHp="20"
 		baseAp="1"
 		baseStr="2"
 		baseVit="3"

@@ -232,6 +232,11 @@ public class ObjectCell {
             entity.tex = null;
             entity.anim = new AnimationSequence(assets, worldDir + "/anim/" + statesTex.get(currentState) + ".png", statesFPS.get(currentState), statesLooping.get(currentState), statesFramesCount.get(currentState));
         }
+        if (!statesCollidables.get(currentState)) {
+            entity.collidable = false;
+        } else {
+            entity.collidable = true;
+        }
     }
 
 
@@ -353,13 +358,14 @@ public class ObjectCell {
         if (statesBattleEnemyNames.get(currentState) != null) {
             ArrayList<Unit> enemyUnits = new ArrayList<Unit>();
             for (int i = 0; i < statesBattleEnemyNames.get(currentState).size(); ++i) {
-                int count = (int)Math.floor(Math.random() * (statesBattleEnemyCounts.get(currentState).get(i).getValue() - statesBattleEnemyCounts.get(currentState).get(i).getKey()) + 1) + statesBattleEnemyCounts.get(currentState).get(i).getKey();
+                int count = (int)Math.floor(Math.random() * (statesBattleEnemyCounts.get(currentState).get(i).getValue() + 1 - statesBattleEnemyCounts.get(currentState).get(i).getKey())) + statesBattleEnemyCounts.get(currentState).get(i).getKey();
                 for (int j = 0; j < count; ++j) {
-                    int level = (int)Math.floor(Math.random() * (statesBattleEnemyLevels.get(currentState).get(i).getValue() - statesBattleEnemyLevels.get(currentState).get(i).getKey()) + 1) + statesBattleEnemyLevels.get(currentState).get(i).getKey();
+                    int level = (int)Math.floor(Math.random() * (statesBattleEnemyLevels.get(currentState).get(i).getValue() + 1 - statesBattleEnemyLevels.get(currentState).get(i).getKey())) + statesBattleEnemyLevels.get(currentState).get(i).getKey();
                     enemyUnits.add(new Unit(area.world, statesBattleEnemyNames.get(currentState).get(i), level));
                 }
             }
             area.world.triggerBattle(area.world.playersUnits, enemyUnits);
+            area.worldObjectsHandler.currentBattle.triggerCell = this;
         }
         if (!proximity) {
             if (statesGotos.get(currentState) == -1) {
@@ -378,7 +384,7 @@ public class ObjectCell {
         updateAfterStateChange(area);
     }
 
-    private void updateAfterStateChange(Area area) {
+    public void updateAfterStateChange(Area area) {
         jumpedThisState = false;
         jumpPrt = null;
         updateSoundState(area.world.menu);
@@ -388,11 +394,6 @@ public class ObjectCell {
         area.playerHidden = statesHidePlayer.get(currentState);
         startTime = System.currentTimeMillis();
         lastSpawned = 0;
-        if (!statesCollidables.get(currentState)) {
-            entity.collidable = false;
-        } else {
-            entity.collidable = true;
-        }
         if (statesTeleportWorlds.get(currentState) != null) {
             if (statesTeleportRooms.get(currentState) != null) {
                 area.world.changeWorld(statesTeleportWorlds.get(currentState), statesTeleportRooms.get(currentState), (int)statesTeleportCoords.get(currentState).x, (int)statesTeleportCoords.get(currentState).y);

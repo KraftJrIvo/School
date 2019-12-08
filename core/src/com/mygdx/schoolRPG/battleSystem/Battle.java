@@ -58,6 +58,8 @@ public class Battle {
 
     ArrayList<Integer> expPools;
 
+    public ObjectCell triggerCell;
+
     public Battle(World w, ArrayList<Unit> units, ArrayList<Unit> playersUnits, String ambientPath) {
         this.units = units;
         this.playersUnits = playersUnits;
@@ -181,7 +183,7 @@ public class Battle {
                     if (HUDOffsetsY.get(i) > centerY) HUDOffsetsY.set(i, HUDOffsetsY.get(i) - Math.abs(HUDOffsetsY.get(i) - centerY)/10.0f);
                     if (HUDOffsetsY.get(i) - centerY < Math.abs(HUDOffsetsY.get(i) - centerY)/10.0f) HUDOffsetsY.set(i, centerY);
                 }
-                if (expPools.get(i) > 0 && Math.abs(HUDOffsetsX.get(i) - centerX) < 1 && Math.abs(HUDOffsetsY.get(i) - centerY) < 1) {
+                if (playerWon && expPools.get(i) > 0 && Math.abs(HUDOffsetsX.get(i) - centerX) < 1 && Math.abs(HUDOffsetsY.get(i) - centerY) < 1) {
                     notifyStatChange(unit, 2, expPools.get(i));
                     expPools.set(i, 0);
                 }
@@ -200,7 +202,7 @@ public class Battle {
                             palatino24.draw(batch, "Победа!", ww/2.0f - palatino24.getBounds("Победа!").width/2.0f, h + centerY + 30);
                         }
                     } else {
-                        if (w.menu.currentLanguage == 1) {
+                        if (w.menu.currentLanguage == 0) {
                             palatino24.setColor(new Color(0, 0, 0, alph));
                             palatino24.draw(batch, "You lost!", ww/2.0f - palatino24.getBounds("You lost!").width/2.0f + 2, h + centerY + 30 + 2);
                             palatino24.setColor(new Color(1.0f, 1.0f, 1.0f, alph));
@@ -300,6 +302,10 @@ public class Battle {
                 friendlyGroup.setCurSkill(curUnit.skills.get(unitMovesList.getSelectedIndex()), curUnit, null);
             }
         }
+    }
+
+    public void stopSound() {
+        ambient.stop();
     }
 
     private void checkFinished() {
@@ -427,10 +433,19 @@ public class Battle {
                         }
                         if (item != null) {
                             if (item.effect.positive) {
+                                if (friendlyGroup.showSelector) {
+                                    item.stack--;
+                                    if (item.stack == 0) curUnit.inventory.remove(item);
+                                }
                                 useSkill(friendlyGroup, item.effect);
                             } else {
+                                if (enemyGroup.showSelector) {
+                                    item.stack--;
+                                    if (item.stack == 0) curUnit.inventory.remove(item);
+                                }
                                 useSkill(enemyGroup, item.effect);
                             }
+
                         }
                     }
                 }
@@ -507,13 +522,24 @@ public class Battle {
         trans.draw(batch);
         if (finishedBattle) drawHUD(batch, w);
         if (finishedBattle && trans.closed) {
-            if (w.menu.currentLanguage == 0)
-                palatino24.draw(batch, "You receive:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("You receive:").width/2.0f, 400/screenRatioY);
-            else
-                palatino24.draw(batch, "Вы получаете:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("Вы получаете:").width/2.0f, 400/screenRatioY);
-            if (playerWon) dropsView.draw(batch, false);
+            if (playerWon && drops.size() > 0) {
+                if (w.menu.currentLanguage == 0)
+                    palatino24.draw(batch, "You receive:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("You receive:").width/2.0f, 400/screenRatioY);
+                else
+                    palatino24.draw(batch, "Вы получаете:", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("Вы получаете:").width/2.0f, 400/screenRatioY);
+            } else {
+                if (w.menu.currentLanguage == 0)
+                    palatino24.draw(batch, "You receive nothing.", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("You receive nothing.").width/2.0f, 400/screenRatioY);
+                else
+                    palatino24.draw(batch, "Вы ничего не получаете.", Gdx.graphics.getWidth()/screenRatioX/2.0f - palatino24.getBounds("Вы ничего не получаете.").width/2.0f, 400/screenRatioY);
+            }
+            if (playerWon && drops.size() > 0) dropsView.draw(batch, false);
             endOptionsList.draw(batch, false);
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+                if (playerWon && triggerCell != null) {
+                    triggerCell.currentState = 1;
+                    triggerCell.updateEntityState(w.assets, w.worldDir.path());
+                }
                 finished = true;
                 ambient.stop();
             }

@@ -69,7 +69,7 @@ public class Unit {
 
     ObjectLoader loader;
 
-    String name;
+    public String name;
     ArrayList<String> nickname;
 
     ConditionParser parser;
@@ -307,6 +307,11 @@ public class Unit {
         hitDTs = new ArrayList<DamageType>();
     }
 
+    public void reset() {
+        stats.reset();
+        checkStates();
+    }
+
     public void playHitSound(World w) {
         statesHitSounds.get(currentState).play(w.menu.soundVolume / 100.0f);
     }
@@ -354,8 +359,8 @@ public class Unit {
                 w.assets.load(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("sound"), Sound.class);
             }
         }
-        Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
-        w.assets.load(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class);
+        //Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
+        //w.assets.load(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class);
 
         NodeList dgList = doc.getElementsByTagName("dropGroup");
         for (int i = 0; i < dgList.getLength(); ++i) {
@@ -416,8 +421,8 @@ public class Unit {
                 statesHitSounds.set(i, w.assets.get(w.worldDir + "/units/" + name + "/" + eElement.getAttribute("sound"), Sound.class));
             }
         }
-        Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
-        fighterTex = new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(fighterSpriteElement.getAttribute("animFps")), Boolean.parseBoolean(fighterSpriteElement.getAttribute("animLoop")), Integer.parseInt(fighterSpriteElement.getAttribute("animFrames")));
+        //Element fighterSpriteElement = (Element) doc.getElementsByTagName("fighter").item(0);
+        //fighterTex = new AnimationSequence(w.assets, w.assets.get(w.worldDir + "/units/" + name + "/" + fighterSpriteElement.getAttribute("tex") + ".png", Texture.class), Integer.parseInt(fighterSpriteElement.getAttribute("animFps")), Boolean.parseBoolean(fighterSpriteElement.getAttribute("animLoop")), Integer.parseInt(fighterSpriteElement.getAttribute("animFrames")));
 
         NodeList dgList = doc.getElementsByTagName("dropGroup");
         for (int i = 0; i < dgList.getLength(); ++i) {

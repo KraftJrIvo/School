@@ -97,4 +97,10 @@ public class UnitStats {
             levelUp();
         }
     }
+
+    public void reset() {
+        hp = maxHp;
+        ap = maxAp;
+        dead = false;
+    }
 }
